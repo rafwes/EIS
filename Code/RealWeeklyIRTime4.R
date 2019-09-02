@@ -1,6 +1,6 @@
 
 
-# cd "Documents/UIowa/Research/Nielsen/Habit Formation"
+# cd "/extra/agalvao/eis_nielsen"
 
 rm(list = ls())
 
@@ -17,7 +17,7 @@ Trips <- read.csv('Datasets/GroceryTrips.csv')
 Trips$projection_factor_magnet <- ifelse(is.na(Trips$projection_factor_magnet), 0, Trips$projection_factor_magnet)
 
 #WeeklyIR <- read.csv('UseData/WTB4WK.csv')
-WeeklyIR <- read.csv('habit-formation/UseData/WTB4WK.csv')
+WeeklyIR <- read.csv('EIS/UseData/WTB4WK.csv')
 
 BadTrips <- which(Trips$panel_year != Trips$year)
 Trips <- Trips[-BadTrips,]
