@@ -1,4 +1,4 @@
-# cd 'Documents/UIowa/Research/Nielsen/Habit Formation'
+# cd '/extra/agalvao/eis_nielsen/nielsen_extracts'
 
 import pandas as pd
 import numpy as np
@@ -35,7 +35,7 @@ GTripsR = GTripsR.reset_index(drop=True)
 
 ############################################################################
 
-IRData = pd.read_csv("habit-formation/UseData/IRData.csv", sep=",")
+IRData = pd.read_csv("EIS/UseData/IRData.csv", sep=",")
 #IRData = pd.read_csv("UseData/IRData.csv", sep=",")
 
 Northeast = ['ME', 'VT', 'NH', 'MA', 'RI', 'CT', 'NJ', 'NY', 'PA']
