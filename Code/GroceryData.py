@@ -37,7 +37,7 @@ GTripsR = GTripsR.reset_index(drop=True)
 
 ############################################################################
 
-IRData = pd.read_csv("EIS/UseData/IRData.csv", sep=",")
+IRData = pd.read_csv("../EIS/UseData/IRData.csv", sep=",")
 #IRData = pd.read_csv("UseData/IRData.csv", sep=",")
 
 Northeast = ['ME', 'VT', 'NH', 'MA', 'RI', 'CT', 'NJ', 'NY', 'PA']
