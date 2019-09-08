@@ -1,6 +1,6 @@
 
 
-# cd "Documents/UIowa/Research/Nielsen/Habit Formation"
+# cd "/extra/agalvao/eis_nielsen"
 
 rm(list = ls())
 
@@ -66,7 +66,7 @@ Trips4_1$monthR <- factor(Trips4_1$monthR)
 
 
 ##############################
-source("habit-formation/Code/KaplanNew/gmmq.R")
+source("EIS/Code/KaplanNew/gmmq.R")
 #source("Code/Quantile/gmmq.R")
 ##############################
 
@@ -92,9 +92,9 @@ print("e")
 Z3FE <- plm(Lag2Inf ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
 Z3Tilde <- Z3FE$resid
 
-print("e2")
-FSFE <- plm(FSChange ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-FSTilde <- FSFE$resid
+#print("e2")
+#FSFE <- plm(FSChange ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+#FSTilde <- FSFE$resid
 
 #print("e3")
 #AgeFE <- plm(FSChange ~ month, data=Trips4_1, model='within', #index=c('household_code', 'weekR'))
@@ -107,17 +107,17 @@ print("f")
 Z.inst1<-lm(YTilde~Z1Tilde+Z2Tilde+Z3Tilde)$fitted
 Z.inst2<-lm(XTilde~Z1Tilde+Z2Tilde+Z3Tilde)$fitted
 #Z.inst3<-lm(FSTilde~Z1Tilde+Z2Tilde+Z3Tilde)$fitted
-Z.inst3<-FSTilde
+#Z.inst3<-FSTilde
 #Z.inst4<-lm(AgeTilde~FSTilde+AgeTilde+Z1Tilde+Z2Tilde+Z3Tilde)$fitted
-Z.excl <- cbind(Z.inst1,Z.inst2,Z.inst3)
-Y <- cbind(YTilde,XTilde,FSTilde)
+Z.excl <- cbind(Z.inst1,Z.inst2)
+Y <- cbind(YTilde,XTilde)
 X <- cbind(matrix(data=1,ncol=1,nrow=nrow(Y)))
 #X <- FSTilde
 
 
 print("g")
-#PLM <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-PLM <- plm(Y ~ LogR + FSChange + month | YInst + Lag2LogNomR + Lag2Inf + FSChange + month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+PLM <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+#PLM <- plm(Y ~ LogR + FSChange + month | YInst + Lag2LogNomR + Lag2Inf + FSChange + month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
 summary(PLM)
 PLM$coef[1]
 
@@ -226,12 +226,12 @@ for (i in 1:nt){
     coef.eis[i]<-conv2.fn(ret2b$b)[2]
     coef.eis[i]<-conv2.fn(ret2b$b)[3]
 
-    #g.theta1<-1/(coef.beta[i]*coef.eis[i])
-    #g.theta2<--log(coef.beta[i])*(1/coef.eis[i]^2)
-    #g.theta<-c(g.theta1,g.theta2)
     g.theta1<-1/(coef.beta[i]*coef.eis[i])
     g.theta2<--log(coef.beta[i])*(1/coef.eis[i]^2)
     g.theta<-c(g.theta1,g.theta2)
+    #g.theta1<-1/(coef.beta[i]*coef.eis[i])
+    #g.theta2<--log(coef.beta[i])*(1/coef.eis[i]^2)
+    #g.theta<-c(g.theta1,g.theta2)
     #mu * 1/gamma^2
     #What goes here for g.theta3?
     # ln(beta)/gamma 1/gamma mu/gamma
@@ -400,7 +400,7 @@ colnames(QGMMResults) <- c("tau", "Beta", "Beta.SE", "EIS", "EIS.SE", "EIS.Band"
 
 print(QGMMResults)
 
-write.csv(QGMMResults, "habit-formation/Output/QGMMResultsAllModel2.csv", row.names=FALSE)
+write.csv(QGMMResults, "EIS/Output/QGMMResultsAll.csv", row.names=FALSE)
 
 
 #print("5")
