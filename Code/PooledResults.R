@@ -66,7 +66,7 @@ print(unique(cbind(Trips4_1$year, Trips4_1$month)))
 
 #########################################################################
 
-Weekly4LagInst1 <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_1, model='pooled', index=c('household_code', 'weekR'))
+Weekly4LagInst1 <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
 summary(Weekly4LagInst1)
 #save(Weekly4LagInst1, file="RDA/Weekly4LagInstT1_A.rda")
 
@@ -96,7 +96,7 @@ print(unique(cbind(Trips4_2$year, Trips4_2$month)))
 
 #########################################################################
 
-Weekly4LagInst2 <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_2, model='pooled', index=c('household_code', 'weekR'))
+Weekly4LagInst2 <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_2, model='pooling', index=c('household_code', 'weekR'))
 summary(Weekly4LagInst2)
 #save(Weekly4LagInst2, file="RDA/Weekly4LagInstT2_A.rda")
 
@@ -126,7 +126,7 @@ print(unique(cbind(Trips4_3$year, Trips4_3$month)))
 
 #########################################################################
 
-Weekly4LagInst3 <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_3, model='pooled', index=c('household_code', 'weekR'))
+Weekly4LagInst3 <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_3, model='pooling', index=c('household_code', 'weekR'))
 summary(Weekly4LagInst3)
 #save(Weekly4LagInst3, file="RDA/Weekly4LagInstT3_A.rda")
 
@@ -159,7 +159,7 @@ print(unique(cbind(Trips4$year, Trips4$month)))
 
 #########################################################################
 
-Weekly4LagInstAll <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4, model='pooled', index=c('household_code', 'weekR'))
+Weekly4LagInstAll <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4, model='pooling', index=c('household_code', 'weekR'))
 summary(Weekly4LagInstAll)
 #save(Weekly4LagInst3, file="RDA/Weekly4LagInstT3_A.rda")
 
