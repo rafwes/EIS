@@ -219,7 +219,7 @@ for (i in 1:nt){
     
     print(ret2b$b)
     
-    exit()
+    #exit()
 
 
     coef.beta[i]<-conv2.fn(ret2b$b)[1]
