@@ -164,8 +164,8 @@ Ldfn22 <- function(y,x,b) cbind((Lfn2(y=y,x=x,b=b)+1) / b[1],
 
 H.HUGE <- 0.001 
 n<-nrow(Trips4_1)
-#tau<-seq(0.1,0.9,0.1)
-tau<-seq(0.5,0.5,0.05)
+tau<-seq(0.1,0.9,0.1)
+#tau<-seq(0.5,0.5,0.05)
 nt<-length(tau)
 #nt<-29
 #tau<-(1:nt)/(nt+1)
