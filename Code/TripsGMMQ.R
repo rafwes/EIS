@@ -190,9 +190,9 @@ for (i in 1:nt){
     #            h=H.HUGE, VERBOSE=FALSE, RETURN.Z=TRUE, b.init=c(.99,PLM$coef[1])),
     #             error=function(w)list(b=c(NA,NA),h=NA))
     #             print("B")
-    ret2b <- tryCatch(gmmq(tau=tau[i], dB=3, Y=Y, X=X, Z.excl=Z.excl,
+    ret2b <- tryCatch(gmmq(tau=tau[i], dB=2, Y=Y, X=X, Z.excl=Z.excl,
               Lambda=Lfn2b, Lambda.derivative=Ldfn2b,
-              h=H.HUGE, VERBOSE=FALSE, RETURN.Z=FALSE,          b.init=c(.99,PLM$coef[1],0)),
+              h=H.HUGE, VERBOSE=FALSE, RETURN.Z=FALSE,          b.init=c(.99,PLM$coef[1])),
              error=function(w)list(b=c(NA,NA),h=NA))
              #print("C")
 #ret2 <- tryCatch(gmmq(tau=tau[i], dB=2, Y=Y, X=X, Z.excl=Z.excl,
@@ -216,6 +216,8 @@ for (i in 1:nt){
 
     # The fourth column above represents the non-linear estimates following Yogo (2004). Here it is again.
     #cat("\nNonLinear Median Estimates Following Yogo (2004):", conv3.fn(ret2$b), "\n") 
+    
+    print(ret2b)
     
     print(ret2b$b)
     
