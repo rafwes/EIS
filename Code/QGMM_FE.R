@@ -73,38 +73,38 @@ source("EIS/Code/KaplanNew/gmmq.R")
 #########################################################################
 
 print("a")
-#YFE <- plm(Y ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-#YTilde <- YFE$resid
+YFE <- plm(Y ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+YTilde <- YFE$resid
 
 print("b")
-#XFE <- plm(LogR ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-#XTilde <- XFE$resid
+XFE <- plm(LogR ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+XTilde <- XFE$resid
 
 print("c")
-#Z1FE <- plm(YInst ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-#Z1Tilde <- Z1FE$resid
+Z1FE <- plm(YInst ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+Z1Tilde <- Z1FE$resid
 
 print("d")
-#Z2FE <- plm(Lag2LogNomR ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-#Z2Tilde <- Z2FE$resid
+Z2FE <- plm(Lag2LogNomR ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+Z2Tilde <- Z2FE$resid
 
 print("e")
-#Z3FE <- plm(Lag2Inf ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
-#Z3Tilde <- Z3FE$resid
+Z3FE <- plm(Lag2Inf ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
+Z3Tilde <- Z3FE$resid
 
 
 
 print("f")
 #Z.excl <- cbind(Z1Tilde, Z2Tilde, Z3Tilde)
-Z.inst1<-lm(Y~YInst+Lag2LogNomR+Lag2Inf)$fitted
-Z.inst2<-lm(LogR~YInst+Lag2LogNomR+Lag2Inf)$fitted
+Z.inst1<-lm(YTilde~Z1Tilde+Z2Tilde+Z3Tilde)$fitted
+Z.inst2<-lm(XTilde~Z1Tilde+Z2Tilde+Z3Tilde)$fitted
 Z.excl <- cbind(Z.inst1,Z.inst2)
 Y <- cbind(YTilde,XTilde)
 X <- matrix(data=1,ncol=1,nrow=nrow(Y))
 
 
 print("g")
-PLM <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
+PLM <- plm(Y ~ LogR + month | YInst + Lag2LogNomR + Lag2Inf + month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
 summary(PLM)
 PLM$coef[1]
 
@@ -337,7 +337,7 @@ colnames(QGMMResults) <- c("tau", "Beta", "Beta.SE", "EIS", "EIS.SE", "EIS.Band"
 
 print(QGMMResults)
 
-write.csv(QGMMResults, "EIS/Output/QGMM_PooledResultsP2.csv", row.names=FALSE)
+write.csv(QGMMResults, "EIS/Output/QGMM_FEResultsP2.csv", row.names=FALSE)
 
 
 #print("5")
