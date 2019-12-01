@@ -26,11 +26,13 @@ for (ii in length(Years)) {
   
   pandt <- left_join(paneliststemp, tripstemp, by = c("household_code", "panel_year"))
   
+  print(head(pandt))
   print(ncol(pandt))
   
   Trips <- rbindlist(list(Trips, pandt), use.names=TRUE)
 }
 
+print(head(Trips))
 print(ncol(Trips))
 
 fwrite(head(Trips), "EIS/test.csv")
