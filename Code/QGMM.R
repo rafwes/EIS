@@ -26,25 +26,25 @@ Trips4 <- Trips4[c('household_code', 'week', 'month', 'weekR', 'monthR', 'year',
 
 #print(unique(cbind(Trips4$year, Trips4$month)))
 
-#Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
-#Beg1 <- unique(Trips4_1a$monthR)
-#Trips4_1b <- Trips4[which(Trips4$year == 2006 & Trips4$month == 8),]
-#End1 <- unique(Trips4_1b$monthR)
+Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
+Beg1 <- unique(Trips4_1a$monthR)
+Trips4_1b <- Trips4[which(Trips4$year == 2006 & Trips4$month == 8),]
+End1 <- unique(Trips4_1b$monthR)
 
-Trips4_2a <- Trips4[which(Trips4$year == 2006 & Trips4$month == 9),]
-Beg2 <- unique(Trips4_2a$monthR)
-Trips4_2b <- Trips4[which(Trips4$year == 2008 & Trips4$month == 12),]
-End2 <- unique(Trips4_2b$monthR)
+#Trips4_2a <- Trips4[which(Trips4$year == 2006 & Trips4$month == 9),]
+#Beg2 <- unique(Trips4_2a$monthR)
+#Trips4_2b <- Trips4[which(Trips4$year == 2008 & Trips4$month == 12),]
+#End2 <- unique(Trips4_2b$monthR)
 
 #Trips4_3a <- Trips4[which(Trips4$year == 2009 & Trips4$month == 1),]
 #Beg3 <- unique(Trips4_3a$monthR)
 #Trips4_3b <- Trips4[which(Trips4$year == 2014 & Trips4$month == 12),]
 #End3 <- unique(Trips4_3b$monthR)
 
-#print(Beg1)
-#print(End1)
-print(Beg2)
-print(End2)
+print(Beg1)
+print(End1)
+#print(Beg2)
+#print(End2)
 #print(Beg3)
 #print(End3)
 
@@ -53,7 +53,7 @@ print(End2)
 ########################################################################
 
 
-Trips4_1 <- Trips4[which(Trips4$monthR >= Beg2 & Trips4$monthR <= End2),]
+Trips4_1 <- Trips4[which(Trips4$monthR >= Beg1 & Trips4$monthR <= End1),]
 Trips4_1$household_code <- factor(Trips4_1$household_code)
 Trips4_1$week <- factor(Trips4_1$week)
 Trips4_1$month <- factor(Trips4_1$month)
@@ -92,14 +92,15 @@ print("e")
 #Z3FE <- plm(Lag2Inf ~ month, data=Trips4_1, model='within', index=c('household_code', 'weekR'))
 #Z3Tilde <- Z3FE$resid
 
-
+Y <- Trips4_1$Y
+LogR <- Trips4_1$LogR
 
 print("f")
 #Z.excl <- cbind(Z1Tilde, Z2Tilde, Z3Tilde)
-Z.inst1<-lm(Y~YInst+Lag2LogNomR+Lag2Inf)$fitted
-Z.inst2<-lm(LogR~YInst+Lag2LogNomR+Lag2Inf)$fitted
+Z.inst1<-lm(Y~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
+Z.inst2<-lm(LogR~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
 Z.excl <- cbind(Z.inst1,Z.inst2)
-Y <- cbind(YTilde,XTilde)
+Y <- cbind(Y,LogR)
 X <- matrix(data=1,ncol=1,nrow=nrow(Y))
 
 
@@ -149,7 +150,8 @@ Ldfn22 <- function(y,x,b) cbind((Lfn2(y=y,x=x,b=b)+1) / b[1],
 # Sanity check: large h => replicates 2SLS
 #taus<-seq(0.2,0.8,0.05)
 
-H.HUGE <- 0.001 
+#H.HUGE <- 0.001 
+H.HUGE <- 0.0001
 n<-nrow(Trips4_1)
 tau<-seq(0.1,0.9,0.1)
 nt<-length(tau)
@@ -161,7 +163,8 @@ se.beta<-array(0,dim=c(nt,1))
 se.eis<-array(0,dim=c(nt,1))
 band.eis<-array(0,dim=c(nt,1))
 
-band<-seq(0.05,0.95,0.45)
+#band<-seq(0.05,0.95,0.45)
+band <- 1.4
 nb<-length(band)
 
 for (i in 1:nt){
@@ -337,7 +340,7 @@ colnames(QGMMResults) <- c("tau", "Beta", "Beta.SE", "EIS", "EIS.SE", "EIS.Band"
 
 print(QGMMResults)
 
-write.csv(QGMMResults, "EIS/Output/QGMM_PooledResultsP2.csv", row.names=FALSE)
+write.csv(QGMMResults, "EIS/Output/QGMM_PooledResultsP1_Adjusted3.csv", row.names=FALSE)
 
 
 #print("5")
