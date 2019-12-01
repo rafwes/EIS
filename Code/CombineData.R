@@ -1,4 +1,4 @@
-# cd '/extra/agalvao/eis_nielsen/nielsen_extracts'
+# cd '/extra/agalvao/eis_nielsen'
 
 library(data.table)
 library(tidyverse)
@@ -19,10 +19,10 @@ pandtCols <- c(panelistsColsNew, tripsCols[-2])
 Trips <- data.table(1)[,`:=`(pandtCols,NA)][,V1:=NULL][.0]
 
 for (ii in length(Years)) {
-  paneliststemp <- fread(paste0("HMS/", Years[ii], "/Annual_Files/panelists_", Years[ii], ".tsv"), col.names = panelistsCols)
+  paneliststemp <- fread(paste0("nielsen_extracts/HMS/", Years[ii], "/Annual_Files/panelists_", Years[ii], ".tsv"), col.names = panelistsCols)
   colnames(paneliststemp) <- panelistsColsNew
   
-  tripstemp <- fread(paste0("HMS/", Years[ii], "/Annual_Files/trips_", Years[ii], ".tsv"), col.names=tripsCols)
+  tripstemp <- fread(paste0("nielsen_extracts/HMS/", Years[ii], "/Annual_Files/trips_", Years[ii], ".tsv"), col.names=tripsCols)
   
   pandt <- left_join(paneliststemp, tripstemp, by = c("household_code", "panel_year"))
   
