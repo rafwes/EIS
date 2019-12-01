@@ -10,11 +10,11 @@ panelistsCols <- c('Household_Cd', 'Panel_Year', 'Projection_Factor', 'Projectio
 
 panelistsColsNew <- c('household_code', 'panel_year', 'projection_factor', 'projection_factor_magnet', 'household_income', 'household_size', 'type_of_residence', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'male_head_occupation', 'female_head_occupation', 'male_head_employment', 'female_head_employment', 'marital_status', 'race', 'hispanic_origin', 'fips_state_descr')
 
-tripsCols <- c('trip_code_uc', 'household_code', 'retailer_code', 'purchase_date', 'panel_year', 'total_spent')
+tripsCols <- c('household_code', 'panel_year', 'trip_code_uc', 'retailer_code', 'purchase_date', 'total_spent')
 
 retailersCols <- c('retailer_code', 'channel_type')
 
-pandtCols <- c(panelistsColsNew, tripsCols[-2])
+pandtCols <- c(panelistsColsNew, tripsCols[-(1:2)])
 
 Trips <- data.table(1)[,`:=`(eval(pandtCols),NA)][,V1:=NULL][.0]
 
