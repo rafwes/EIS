@@ -33,3 +33,4 @@ for (ii in length(Years)) {
 
 ncol(Trips)
 
+fwrite(head(Trips), "test.csv")
