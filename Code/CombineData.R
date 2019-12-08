@@ -28,12 +28,12 @@ for (ii in 1:length(Years)) {
   
   print(ii)
   print(head(pandt))
-  print(ncol(pandt))
+  print(nrow(pandt))
   
   Trips <- rbindlist(list(Trips, pandt), use.names=TRUE)
 }
 
 print(head(Trips))
-print(ncol(Trips))
+print(nrow(Trips))
 
 fwrite(head(Trips), "EIS/test.csv")
