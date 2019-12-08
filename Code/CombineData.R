@@ -39,14 +39,14 @@ print(nrow(Trips))
 retailerstemp <- fread("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv", select=retailersCols)
 TripsR <- left_join(Trips, retailerstemp, by="retailer_code")
 
-print(nrow(Trips))
+print(nrow(TripsR))
 
 GTripsR <- lazy_dt(TripsR) %>%
   filter(channel_type=="Grocery") %>% 
   as.data.table()
 
 print("Filtered by Grocery")
-print(head(Trips))
-print(nrow(Trips))
+print(head(GTripsR))
+print(nrow(GTripsR))
 
 fwrite(head(Trips), "EIS/test.csv")
