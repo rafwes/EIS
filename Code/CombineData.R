@@ -18,7 +18,7 @@ pandtCols <- c(panelistsColsNew, tripsCols[-(1:2)])
 
 Trips <- data.table(1)[,`:=`(eval(pandtCols),NA)][,V1:=NULL][.0]
 
-for (ii in length(Years)) {
+for (ii in 1:length(Years)) {
   paneliststemp <- fread(paste0("nielsen_extracts/HMS/", Years[ii], "/Annual_Files/panelists_", Years[ii], ".tsv"), select = panelistsCols)
   colnames(paneliststemp) <- panelistsColsNew
   
@@ -26,6 +26,7 @@ for (ii in length(Years)) {
   
   pandt <- left_join(paneliststemp, tripstemp, by = c("household_code", "panel_year"))
   
+  print(ii)
   print(head(pandt))
   print(ncol(pandt))
   
