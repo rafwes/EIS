@@ -41,9 +41,9 @@ TripsR <- left_join(Trips, retailerstemp, by="retailer_code")
 
 print(nrow(Trips))
 
-GTripsR <- TripsR %>%
-  filter(TripsR, channel_type=="Grocery") %>% 
-  as_tibble()
+GTripsR <- lazy_dt(TripsR) %>%
+  filter(channel_type=="Grocery") %>% 
+  as.data.table()
 
 print("Filtered by Grocery")
 print(head(Trips))
