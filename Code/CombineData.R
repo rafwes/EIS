@@ -36,14 +36,14 @@ for (ii in 1:length(Years)) {
 
 print(nrow(Trips))
 
-retailerstemp <- fread("HMS/Master_Files/Latest/retailers.tsv", select=retailersCols)
+retailerstemp <- fread("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv", select=retailersCols)
 TripsR <- left_join(Trips, retailerstemp, by="retailer_code")
 
 print(nrow(Trips))
 
 GTripsR <- TripsR %>%
   filter(TripsR, channel_type=="Grocery") %>% 
-  as.data.table()
+  as_tibble()
 
 print("Filtered by Grocery")
 print(head(Trips))
