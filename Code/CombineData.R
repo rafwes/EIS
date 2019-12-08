@@ -2,6 +2,7 @@
 
 library(data.table)
 library(tidyverse)
+library(dtplyr)
 
 Years <- c('2004', '2005', '2006', '2007','2008', '2009', '2010', '2011', '2012', '2013', '2014')
 Years <- c('2004', '2005')
@@ -33,6 +34,18 @@ for (ii in 1:length(Years)) {
   Trips <- rbindlist(list(Trips, pandt), use.names=TRUE)
 }
 
+print(nrow(Trips))
+
+retailerstemp <- fread("HMS/Master_Files/Latest/retailers.tsv", select=retailersCols)
+TripsR <- left_join(Trips, retailerstemp, by="retailer_code")
+
+print(nrow(Trips))
+
+GTripsR <- TripsR %>%
+  filter(TripsR, channel_type=="Grocery") %>% 
+  as.data.table()
+
+print("Filtered by Grocery")
 print(head(Trips))
 print(nrow(Trips))
 
