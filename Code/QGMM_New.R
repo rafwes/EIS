@@ -164,8 +164,8 @@ for (i in 1:nt){
                        error=function(w)list(b=c(NA,NA),h=NA))
   
   # Get Coefficients 
-  coef.beta[i]<-conv2.fn(ret2b$b)[1]
-  coef.eis[i]<-conv2.fn(ret2b$b)[2]
+  coef.beta[i]<-conv2.fn(ret2b$b)[2]
+  coef.eis[i]<-conv2.fn(ret2b$b)[1]
   
   # Get G 
   g.theta1<-1/(coef.beta[i]*coef.eis[i])

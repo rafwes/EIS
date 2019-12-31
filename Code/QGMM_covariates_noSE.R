@@ -166,6 +166,10 @@ nt<-length(tau)
 coef.beta<-array(0,dim=c(nt,1))
 coef.eis<-array(0,dim=c(nt,1))
 
+head(Y)
+head(X)
+head(Z.excl)
+
 for (i in 1:nt){
 
     print(tau[i])
@@ -178,6 +182,9 @@ for (i in 1:nt){
 
     coef.beta[i]<-conv2.fn(ret2b$b)[1]
     coef.eis[i]<-conv2.fn(ret2b$b)[2]
+    
+    coef.beta[i]
+    coef.eis[i]
 
 }
 
