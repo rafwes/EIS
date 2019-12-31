@@ -249,8 +249,11 @@ for (i in 1:nt){
   
 }
 
-QGMMResults <- cbind(tau,coef.beta,se.beta,coef.eis,se.eis,band.eis)
-colnames(QGMMResults) <- c("tau", "Beta", "Beta.SE", "EIS", "EIS.SE", "EIS.Band")
+#QGMMResults <- cbind(tau,coef.beta,se.beta,coef.eis,se.eis,band.eis)
+#colnames(QGMMResults) <- c("tau", "Beta", "Beta.SE", "EIS", "EIS.SE", "EIS.Band")
+
+QGMMResults <- cbind(tau,coef.beta,coef.eis)
+colnames(QGMMResults) <- c("tau", "Beta", "EIS")
 
 print(QGMMResults)
 
