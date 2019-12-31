@@ -167,85 +167,85 @@ for (i in 1:nt){
   coef.beta[i]<-conv2.fn(ret2b$b)[2]
   coef.eis[i]<-conv2.fn(ret2b$b)[1]
   
-  # Get G 
-  g.theta1<-1/(coef.beta[i]*coef.eis[i])
-  g.theta2<--log(coef.beta[i])*(1/coef.eis[i]^2)
-  g.theta<-c(g.theta1,g.theta2)
-  
-  # Create empty SE matrix
-  se.beta.t<-array(0,dim=c(nb,1))
-  se.eis.t<-array(0,dim=c(nb,1))
-  
-  for (j in 1:nb){
-    
-    print(band[j])
-    
-    # Get Covariance
-    cov.est <- cov.est.fn(tau=tau,Y=cbind(Y,D),X=X.excl,Z=Z.excl,Lambda=Lfn2b.gmmq,Lambda.derivative=Ldfn2b.gmmq,beta.hat=ret2b$b,Itilde=Itilde.KS17,Itilde.deriv=Itilde.deriv.KS17,h=H.HUGE,structure=c('ts'),cluster.X.col=0,LRV.kernel=c('Bartlett'),LRV.ST=NA,VERBOSE=FALSE,h.adj=band[j])
-    
-    
-    # Y=cbind(Y,D)
-    # X=X.excl
-    # Z=Z.excl
-    # Lambda=Lfn2b.gmmq
-    # Lambda.derivative=Ldfn2b.gmmq
-    # beta.hat=ret2b$b
-    # Itilde.deriv=Itilde.deriv.KS17
-    # h=H.HUGE
-    # VERBOSE=FALSE
-    #   n <- dim(Z)[1]
-    #   L <- Lfn2b.gmmq(Y,X,beta.hat)
-    #   Ld <- Ldfn2b.gmmq(Y,X,beta.hat)
-    #   # tmpsum <- array(0,dim=c(dim(Z)[2],length(beta.hat)))
-    #   # for (i in 1:n) {
-    #   #   tmp <- Itilde.deriv(-L[i]/h) *
-    #   #     matrix(Z[i,],ncol=1) %*% matrix(Ld[i,], nrow=1)
-    #   #   tmpsum <- tmpsum + tmp
-    #   # }
-    #   tmpsum2 <- t(array(data=Itilde.deriv(-L/h),dim=dim(Z)) * Z) %*% Ld
-    #   G.hat <- (-tmpsum2/(n*h))
-    #   
-    #   Ginv <- tryCatch(solve(G.hat))
-    
-    print("cov")
-    print(cov.est)
-    
-    # Get SE when the cov matrix comes out
-    if (all(is.na(cov.est))) {
-      se.beta.t[j] <- NA
-      se.eis.t[j] <- NA
-    } else {
-      cov <- cov.est
-      
-      cov_beta<-g.theta%*%cov%*%g.theta
-      cov_eis<-cov[2,2]
-      
-      se.beta.t[j]<-sqrt(cov_beta/n)
-      se.eis.t[j]<-sqrt(cov_eis/n)
-    }
-    
-    print("se.eis.t")
-    print(se.eis.t[j])
-    
-    
-  }
-  print("Made it through")
-  print(se.eis.t)
-  print(which.min(se.eis.t))
-  print(band[which.min(se.eis.t)])
-  print(se.beta.t[which.min(se.eis.t)])
-  print(se.eis.t[which.min(se.eis.t)])
-  
-  # Get minimum SE
-  MinLoc <- which.min(se.eis.t)
-  finalband <- band[MinLoc]
-  min.se.beta <- se.beta.t[MinLoc]
-  min.se.eis <- se.eis.t[MinLoc]
-  
-  # Keep minimum SE
-  se.beta[i]<-min.se.beta
-  se.eis[i]<-min.se.eis
-  band.eis[i] <- finalband
+  # # Get G 
+  # g.theta1<-1/(coef.beta[i]*coef.eis[i])
+  # g.theta2<--log(coef.beta[i])*(1/coef.eis[i]^2)
+  # g.theta<-c(g.theta1,g.theta2)
+  # 
+  # # Create empty SE matrix
+  # se.beta.t<-array(0,dim=c(nb,1))
+  # se.eis.t<-array(0,dim=c(nb,1))
+  # 
+  # for (j in 1:nb){
+  #   
+  #   print(band[j])
+  #   
+  #   # Get Covariance
+  #   cov.est <- cov.est.fn(tau=tau,Y=cbind(Y,D),X=X.excl,Z=Z.excl,Lambda=Lfn2b.gmmq,Lambda.derivative=Ldfn2b.gmmq,beta.hat=ret2b$b,Itilde=Itilde.KS17,Itilde.deriv=Itilde.deriv.KS17,h=H.HUGE,structure=c('ts'),cluster.X.col=0,LRV.kernel=c('Bartlett'),LRV.ST=NA,VERBOSE=FALSE,h.adj=band[j])
+  #   
+  #   
+  #   # Y=cbind(Y,D)
+  #   # X=X.excl
+  #   # Z=Z.excl
+  #   # Lambda=Lfn2b.gmmq
+  #   # Lambda.derivative=Ldfn2b.gmmq
+  #   # beta.hat=ret2b$b
+  #   # Itilde.deriv=Itilde.deriv.KS17
+  #   # h=H.HUGE
+  #   # VERBOSE=FALSE
+  #   #   n <- dim(Z)[1]
+  #   #   L <- Lfn2b.gmmq(Y,X,beta.hat)
+  #   #   Ld <- Ldfn2b.gmmq(Y,X,beta.hat)
+  #   #   # tmpsum <- array(0,dim=c(dim(Z)[2],length(beta.hat)))
+  #   #   # for (i in 1:n) {
+  #   #   #   tmp <- Itilde.deriv(-L[i]/h) *
+  #   #   #     matrix(Z[i,],ncol=1) %*% matrix(Ld[i,], nrow=1)
+  #   #   #   tmpsum <- tmpsum + tmp
+  #   #   # }
+  #   #   tmpsum2 <- t(array(data=Itilde.deriv(-L/h),dim=dim(Z)) * Z) %*% Ld
+  #   #   G.hat <- (-tmpsum2/(n*h))
+  #   #   
+  #   #   Ginv <- tryCatch(solve(G.hat))
+  #   
+  #   print("cov")
+  #   print(cov.est)
+  #   
+  #   # Get SE when the cov matrix comes out
+  #   if (all(is.na(cov.est))) {
+  #     se.beta.t[j] <- NA
+  #     se.eis.t[j] <- NA
+  #   } else {
+  #     cov <- cov.est
+  #     
+  #     cov_beta<-g.theta%*%cov%*%g.theta
+  #     cov_eis<-cov[2,2]
+  #     
+  #     se.beta.t[j]<-sqrt(cov_beta/n)
+  #     se.eis.t[j]<-sqrt(cov_eis/n)
+  #   }
+  #   
+  #   print("se.eis.t")
+  #   print(se.eis.t[j])
+  #   
+  #   
+  # }
+  # print("Made it through")
+  # print(se.eis.t)
+  # print(which.min(se.eis.t))
+  # print(band[which.min(se.eis.t)])
+  # print(se.beta.t[which.min(se.eis.t)])
+  # print(se.eis.t[which.min(se.eis.t)])
+  # 
+  # # Get minimum SE
+  # MinLoc <- which.min(se.eis.t)
+  # finalband <- band[MinLoc]
+  # min.se.beta <- se.beta.t[MinLoc]
+  # min.se.eis <- se.eis.t[MinLoc]
+  # 
+  # # Keep minimum SE
+  # se.beta[i]<-min.se.beta
+  # se.eis[i]<-min.se.eis
+  # band.eis[i] <- finalband
   
 }
 
@@ -254,5 +254,5 @@ colnames(QGMMResults) <- c("tau", "Beta", "Beta.SE", "EIS", "EIS.SE", "EIS.Band"
 
 print(QGMMResults)
 
-#write.csv(QGMMResults, "EIS/Output/QGMM_New_PooledResultsAll.csv", row.names=FALSE)
+write.csv(QGMMResults, "EIS/Output/QGMM_New_PooledResultsAll.csv", row.names=FALSE)
 
