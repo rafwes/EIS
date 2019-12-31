@@ -82,8 +82,8 @@ Z <- cbind(Z.excl, X.excl)
 X <- cbind(D, X.excl)
 
 ## Yogo (2004) 2SLS log-linear estimator as a starting point
-PZ <- Z %*% solve(t(Z)%*%Z) %*% t(Z)
-StartingPointReg <- solve(t(X)%*%PZ%*%X) %*% (t(X)%*%PZ%*%Y) 
+#PZ <- Z %*% solve(t(Z)%*%Z) %*% t(Z)
+#StartingPointReg <- solve(t(X)%*%PZ%*%X) %*% (t(X)%*%PZ%*%Y) 
 
 #PLM <- plm(Y ~ LogR + Xvar + month | YInst + Lag2LogNomR + Lag2Inf + Xvar + month, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
 PLM <- plm(Y ~ LogR + Xvar | YInst + Lag2LogNomR + Lag2Inf + Xvar, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))

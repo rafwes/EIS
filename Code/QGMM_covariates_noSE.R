@@ -183,8 +183,8 @@ for (i in 1:nt){
     coef.beta[i]<-conv2.fn(ret2b$b)[1]
     coef.eis[i]<-conv2.fn(ret2b$b)[2]
     
-    coef.beta[i]
-    coef.eis[i]
+    print(coef.beta[i])
+    print(coef.eis[i])
 
 }
 
