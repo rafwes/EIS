@@ -86,7 +86,7 @@ X <- cbind(D, X.excl)
 #StartingPointReg <- solve(t(X)%*%PZ%*%X) %*% (t(X)%*%PZ%*%Y) 
 
 #PLM <- plm(Y ~ LogR + Xvar + month | YInst + Lag2LogNomR + Lag2Inf + Xvar + month, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
-PLM <- plm(Y ~ LogR + Xvar | YInst + Lag2LogNomR + Lag2Inf + Xvar, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
+PLM <- plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
 summary(PLM)
 StartingPointReg <- c(PLM$coef[2], PLM$coef[1])
 

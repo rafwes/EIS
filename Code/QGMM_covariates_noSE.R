@@ -176,8 +176,10 @@ for (i in 1:nt){
 
     ret2b <- tryCatch(gmmq(tau=tau[i], dB=dimX, Y=Y, X=X, Z.excl=Z.excl,
               Lambda=Lfn2b, Lambda.derivative=Ldfn2b,
-              h=H.HUGE, VERBOSE=FALSE, RETURN.Z=FALSE,          b.init=c(.99,PLM$coef[1])),
+              h=H.HUGE, VERBOSE=TRUE, RETURN.Z=FALSE,          b.init=c(PLM$coef[1], PLM$coef[2], PLM$coef[3])),
              error=function(w)list(b=c(NA,NA),h=NA))
+             
+             print(ret2b)
 
 
     coef.beta[i]<-conv2.fn(ret2b$b)[1]
