@@ -65,6 +65,16 @@ Trips4_1$monthR <- factor(Trips4_1$monthR)
 
 #########################################################################
 
+Trips4_1 <- Trips4_1 %>%
+  group_by(household_code) %>% 
+  mutate(lagincome = dplyr::lag(household_income)) %>%
+  ungroup() %>%
+  mutate(income_change = household_income - lagincome) %>%
+  drop_na() %>%
+  mutate(increase_income = ifelse(income_change > 0, 1, 0)) %>%
+  mutate(decrease_income = ifelse(income_change < 0, 1, 0)) 
+
+#########################################################################
 
 
 ##############################
@@ -96,21 +106,23 @@ print("e")
 
 Y <- Trips4_1$Y
 LogR <- Trips4_1$LogR
-Xvar <- Trips4_1$household_income
+increase_income <- Trips4_1$increase_income
+decrease_income <- Trips4_1$decrease_income
 
 print("f")
 #Z.excl <- cbind(Z1Tilde, Z2Tilde, Z3Tilde)
 Z.inst1<-lm(Y~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
 Z.inst2<-lm(LogR~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
-Z.inst3<-lm(Xvar~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
-Z.excl <- cbind(Z.inst1,Z.inst2,Z.inst3)
+Z.inst3<-lm(increase_income~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
+Z.inst4<-lm(decrease_income~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
+Z.excl <- cbind(Z.inst1,Z.inst2,Z.inst3,Z.inst4)
 Y <- cbind(Y,LogR)
-X <- cbind(matrix(data=1,ncol=1,nrow=nrow(Y)), Xvar)
+X <- cbind(matrix(data=1,ncol=1,nrow=nrow(Y)), increase_income, decrease_income)
 
 
 print("g")
 #PLM <- plm(Y ~ LogR + Xvar + month | YInst + Lag2LogNomR + Lag2Inf + Xvar + month, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
-PLM <- plm(Y ~ LogR + Xvar | YInst + Lag2LogNomR + Lag2Inf + Xvar, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
+PLM <- plm(Y ~ LogR + increase_income + decrease_income | YInst + Lag2LogNomR + Lag2Inf + increase_income + decrease_income, data=Trips4_1, model='pooling', index=c('household_code', 'weekR'))
 summary(PLM)
 PLM$coef[1]
 
@@ -155,7 +167,7 @@ Ldfn22 <- function(y,x,b) cbind((Lfn2(y=y,x=x,b=b)+1) / b[1],
 # Sanity check: large h => replicates 2SLS
 #taus<-seq(0.2,0.8,0.05)
 
-dimX <- 3
+dimX <- 4
 H.HUGE <- 0.001 
 #H.HUGE <- 0.0001
 n<-nrow(Trips4_1)
