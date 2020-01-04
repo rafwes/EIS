@@ -25,10 +25,11 @@ print("Number of Households - All")
 unique(Trips4$household_code)
 
 # Low Income
+print("Low Income")
 Trips4 <- filter(Trips4, household_income <= 13)
-# Middle Income
+print("Middle Income")
 #Trips4 <- filter(Trips4, household_income > 13 & household_income < 27)
-# High Income
+print("High Income")
 #Trips4 <- filter(Trips4, household_income >= 27)
 
 print("Number of Households - Income Segment")
@@ -269,5 +270,5 @@ colnames(QGMMResults) <- c("tau", "Beta", "EIS")
 
 print(QGMMResults)
 
-write.csv(QGMMResults, "EIS/Output/QGMM_New_PooledResultsAll.csv", row.names=FALSE)
+write.csv(QGMMResults, "EIS/Output/QGMM_New_PooledResultsAll_LowIncome.csv", row.names=FALSE)
 
