@@ -24,12 +24,12 @@ Trips4 <- Trips4[c('household_code', 'week', 'month', 'weekR', 'monthR', 'year',
 print("Number of Households - All")
 unique(Trips4$household_code)
 
-# Low Income
+# Income Segments
 print("Low Income")
 Trips4 <- filter(Trips4, household_income <= 13)
-print("Middle Income")
+#print("Middle Income")
 #Trips4 <- filter(Trips4, household_income > 13 & household_income < 27)
-print("High Income")
+#print("High Income")
 #Trips4 <- filter(Trips4, household_income >= 27)
 
 print("Number of Households - Income Segment")
