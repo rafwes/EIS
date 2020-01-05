@@ -22,7 +22,7 @@ Trips4 <- read.csv('Datasets/RealTripsChangesWeeklyIRAllTime4.csv')
 Trips4 <- Trips4[c('household_code', 'week', 'month', 'weekR', 'monthR', 'year', 'Y', 'LogR', 'YInst', 'Lag2LogNomR', 'Lag2Inf', 'household_income')]
 
 print("Number of Households - All")
-print(nrow(unique(Trips4$household_code)))
+print(length(unique(Trips4$household_code)))
 
 # Income Segments
 TripsLow <- filter(Trips4, household_income <= 13)
@@ -31,8 +31,8 @@ TripsHigh <- filter(Trips4, household_income >= 27)
 
 print("Number of Households - Income Segment")
 print("Low Income")
-print(nrow(unique(TripsLow$household_code)))
+print(length(unique(TripsLow$household_code)))
 print("Middle Income")
-print(nrow(unique(TripsMid$household_code)))
+print(length(unique(TripsMid$household_code)))
 print("High Income")
-print(nrow(unique(TripsHigh$household_code)))
+print(length(unique(TripsHigh$household_code)))
