@@ -26,8 +26,8 @@ print(nrow(unique(Trips4$household_code)))
 
 # Income Segments
 TripsLow <- filter(Trips4, household_income <= 13)
-Trips4Mid <- filter(Trips4, household_income > 13 & household_income < 27)
-Trips4High <- filter(Trips4, household_income >= 27)
+TripsMid <- filter(Trips4, household_income > 13 & household_income < 27)
+TripsHigh <- filter(Trips4, household_income >= 27)
 
 print("Number of Households - Income Segment")
 print("Low Income")
