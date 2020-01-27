@@ -132,6 +132,8 @@ TripsCPI <- aggregate(Trips$CPI, by=list(Trips$household_code, Trips$monthR), FU
 colnames(TripsCPI) <- c('household_code', 'monthR', 'CPI')
 TripsLagCPI <- aggregate(Trips$LagCPI, by=list(Trips$household_code, Trips$monthR), FUN=mean)
 colnames(TripsLagCPI) <- c('household_code', 'monthR', 'LagCPI')
+TripsInflation <- aggregate(Trips$Inflation, by=list(Trips$household_code, Trips$monthR), FUN=mean)
+colnames(TripsInflation) <- c('household_code', 'monthR', 'Inflation')
 
 Trips$CPI <- NULL
 Trips$LagCPI <- NULL
