@@ -344,25 +344,30 @@ LagHC <- lag(HC, -1, na.pad=TRUE)
 LagHC <- data.frame(LagHC)
 Trips <- cbind(Trips, LagHC, Change3LogC, Change3LogR, Change3LogNomR, Change3Inf)
 
+print("D1")
 Trips$LagHC <- ifelse(Trips$household_code != Trips$LagHC, NA, Trips$household_code)
 
 Trips <- na.omit(Trips)
 
+print("D2")
 Trips$Change3LogC <- as.numeric(as.character(Trips$Change3LogC))
 Trips$Change3LogR <- as.numeric(as.character(Trips$Change3LogR))
 Trips$Change3LogNomR <- as.numeric(as.character(Trips$Change3LogNomR))
 Trips$Change3Inf <- as.numeric(as.character(Trips$Change3Inf))
 
+print("D3")
 Trips$Lag4LogC <- Trips$Lag3LogC - Trips$Change3LogC
 Trips$Lag4LogR <- Trips$Lag3LogR - Trips$Change3LogR
 Trips$Lag4LogNomR <- Trips$Lag3LogNomR - Trips$Change3LogNomR
 Trips$Lag4Inf <- Trips$Lag3Inf - Trips$Change3Inf
 
-
+print("D4")
 TripCols <- c('household_code', 'projection_factor_magnet', 'month', 'monthR', 'year', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'real_total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'Change2LogC', 'Change2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf', 'Change2LogNomR', 'Change2Inf', 'Lag3LogC', 'Lag3LogR', 'Lag3LogNomR', 'Lag3Inf', 'Change3LogC', 'Change3LogR', 'Change3LogNomR', 'Change3Inf', 'Lag4LogC', 'Lag4LogR', 'Lag4LogNomR', 'Lag4Inf')
+print("D5")
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
 
+print("D6")
 Trips <- Trips[order(Trips$household_code, Trips$monthR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
