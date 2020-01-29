@@ -193,6 +193,7 @@ Trips <- na.omit(Trips)
 Trips <- Trips[order(Trips$household_code, Trips$monthR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
+print("A")
 
 ChangeLogC <- diff(Trips$LogC)
 ChangeLogC <- data.frame(ChangeLogC)
@@ -234,6 +235,8 @@ Trips <- Trips[order(Trips$household_code, Trips$monthR),]
 rownames(Trips) <- 1:nrow(Trips)
 
 
+print("B")
+
 Change1LogC <- diff(Trips$LagLogC)
 Change1LogC <- data.frame(Change1LogC)
 Change1LogC <- rbind('NA', Change1LogC)
@@ -273,6 +276,8 @@ rownames(Trips) <- 1:nrow(Trips)
 Trips <- Trips[order(Trips$household_code, Trips$monthR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
+
+print("C")
 
 Change2LogC <- diff(Trips$Lag2LogC)
 Change2LogC <- data.frame(Change2LogC)
@@ -320,6 +325,8 @@ Trips <- Trips[order(Trips$household_code, Trips$monthR),]
 rownames(Trips) <- 1:nrow(Trips)
 
 
+print("D")
+
 Change3LogC <- diff(Trips$Lag3LogC)
 Change3LogC <- data.frame(Change3LogC)
 Change3LogC <- rbind('NA', Change3LogC)
@@ -361,7 +368,7 @@ rownames(Trips) <- 1:nrow(Trips)
 
 
 
-
+print("E")
 
 Change4LogC <- diff(Trips$Lag4LogC)
 Change4LogC <- data.frame(Change4LogC)
