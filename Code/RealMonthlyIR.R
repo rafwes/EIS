@@ -159,8 +159,8 @@ rownames(Trips) <- 1:nrow(Trips)
 
 
 
-Trips <- aggregate(Trips$total_spent, by=list(Trips$household_code, Trips$monthR, Trips$month, Trips$year, Trips$projection_factor_magnet, Trips$r, Trips$household_income, Trips$household_size, Trips$marital_status, Trips$male_head_age, Trips$female_head_age, Trips$male_head_education, Trips$female_head_education, Trips$TB4WK, Trips$Inflation), FUN=sum)
-colnames(Trips) <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'r',  'household_income', 'household_size', 'marital_status', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'Nomr', 'Inflation', 'total_spent')
+Trips <- aggregate(Trips$real_total_spent, by=list(Trips$household_code, Trips$monthR, Trips$month, Trips$year, Trips$projection_factor_magnet, Trips$r, Trips$household_income, Trips$household_size, Trips$marital_status, Trips$male_head_age, Trips$female_head_age, Trips$male_head_education, Trips$female_head_education, Trips$TB4WK, Trips$Inflation), FUN=sum)
+colnames(Trips) <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'r',  'household_income', 'household_size', 'marital_status', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'Nomr', 'Inflation', 'real_total_spent')
 
 
 #Trips <- merge(Trips, TripsMonth, by=c('household_code', 'weekR'))
@@ -179,7 +179,7 @@ Trips['LogNomR'] <- log(Trips$NomR)
 
 
 
-Trips['LogC'] <- log(Trips$total_spent)
+Trips['LogC'] <- log(Trips$real_total_spent)
 
 Trips <- na.omit(Trips)
 
@@ -226,7 +226,7 @@ Trips$LagLogR <- Trips$LogR - Trips$ChangeLogR
 Trips$LagLogNomR <- Trips$LogNomR - Trips$ChangeLogNomR
 Trips$LagInf <- Trips$Inflation - Trips$ChangeInf
 
-TripCols <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf')
+TripCols <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'real_total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf')
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
 
@@ -268,7 +268,7 @@ Trips$Lag2LogR <- Trips$LagLogR - Trips$Change1LogR
 Trips$Lag2LogNomR <- Trips$LagLogNomR - Trips$Change1LogNomR
 Trips$Lag2Inf <- Trips$LagInf - Trips$Change1Inf
 
-TripCols <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf')
+TripCols <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'real_total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf')
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
 
@@ -311,7 +311,7 @@ Trips$Lag3LogNomR <- Trips$Lag2LogNomR - Trips$Change2LogNomR
 Trips$Lag3Inf <- Trips$Lag2Inf - Trips$Change2Inf
 
 
-TripCols <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'Change2LogC', 'Change2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf', 'Change2LogNomR', 'Change2Inf', 'Lag3LogC', 'Lag3LogR', 'Lag3LogNomR', 'Lag3Inf')
+TripCols <- c('household_code', 'monthR', 'month', 'year', 'projection_factor_magnet', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'real_total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'Change2LogC', 'Change2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf', 'Change2LogNomR', 'Change2Inf', 'Lag3LogC', 'Lag3LogR', 'Lag3LogNomR', 'Lag3Inf')
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
 
@@ -363,6 +363,9 @@ Trips$Lag4Inf <- Trips$Lag3Inf - Trips$Change3Inf
 
 print("D4")
 TripCols <- c('household_code', 'projection_factor_magnet', 'month', 'monthR', 'year', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'real_total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'Change2LogC', 'Change2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf', 'Change2LogNomR', 'Change2Inf', 'Lag3LogC', 'Lag3LogR', 'Lag3LogNomR', 'Lag3Inf', 'Change3LogC', 'Change3LogR', 'Change3LogNomR', 'Change3Inf', 'Lag4LogC', 'Lag4LogR', 'Lag4LogNomR', 'Lag4Inf')
+
+colnames(Trips)
+
 print("D5")
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
