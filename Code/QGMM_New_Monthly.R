@@ -71,6 +71,7 @@ n <- nrow(Y)
 X.excl <- matrix(data=1, nrow=n, ncol=1)
 D <- as.matrix(Trips4_1$LogR)
 
+head(Trips4_1)
 
 Z.inst1<-lm(Y~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
 Z.inst2<-lm(LogR~YInst+Lag2LogNomR+Lag2Inf, data=Trips4_1)$fitted
