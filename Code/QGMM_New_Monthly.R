@@ -26,8 +26,8 @@ Trips4 <- Trips4[c('household_code', 'month', 'monthR', 'year', 'Y', 'LogR', 'YI
 
 Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
 Beg1 <- unique(Trips4_1a$monthR)
-Trips4_1b <- Trips4[which(Trips4$year == 2006 & Trips4$month == 8),]
-End1 <- unique(Trips4_1b$monthR)
+#Trips4_1b <- Trips4[which(Trips4$year == 2006 & Trips4$month == 8),]
+#End1 <- unique(Trips4_1b$monthR)
 
 #Trips4_2a <- Trips4[which(Trips4$year == 2006 & Trips4$month == 9),]
 #Beg2 <- unique(Trips4_2a$monthR)
@@ -36,8 +36,8 @@ End1 <- unique(Trips4_1b$monthR)
 
 #Trips4_3a <- Trips4[which(Trips4$year == 2009 & Trips4$month == 1),]
 #Beg3 <- unique(Trips4_3a$monthR)
-#Trips4_3b <- Trips4[which(Trips4$year == 2014 & Trips4$month == 12),]
-#End3 <- unique(Trips4_3b$monthR)
+Trips4_3b <- Trips4[which(Trips4$year == 2014 & Trips4$month == 12),]
+End3 <- unique(Trips4_3b$monthR)
 
 #print(Beg1)
 #print(End1)
@@ -51,7 +51,7 @@ End1 <- unique(Trips4_1b$monthR)
 ########################################################################
 
 
-Trips4_1 <- Trips4[which(Trips4$monthR >= Beg1 & Trips4$monthR <= End1),]
+Trips4_1 <- Trips4[which(Trips4$monthR >= Beg1 & Trips4$monthR <= End3),]
 Trips4_1$household_code <- factor(Trips4_1$household_code)
 Trips4_1$month <- factor(Trips4_1$month)
 Trips4_1$monthR <- factor(Trips4_1$monthR)
@@ -255,5 +255,5 @@ colnames(QGMMResults) <- c("tau", "Beta", "EIS")
 
 print(QGMMResults)
 
-write.csv(QGMMResults, "EIS/Output/QGMM_New_PooledResultsP1_Monthly.csv", row.names=FALSE)
+write.csv(QGMMResults, "EIS/Output/QGMM_New_PooledResultsAll_Monthly.csv", row.names=FALSE)
 
