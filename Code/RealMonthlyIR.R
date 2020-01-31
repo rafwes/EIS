@@ -423,7 +423,6 @@ print("14")
 
 Trips$Y <- Trips$LogC - Trips$Lag4LogC
 Trips$YInst <- Trips$LagLogC - Trips$Lag5LogC
-Trips$FSChange <- Trips$household_size - Trips$Lag4FS
 
 Trips$Age <- apply(cbind(as.numeric(as.character(Trips$male_head_age)), as.numeric(as.character(Trips$female_head_age))), 1, max)
 Trips$Edu <- apply(cbind(as.numeric(as.character(Trips$male_head_education)), as.numeric(as.character(Trips$female_head_education))), 1, max)
