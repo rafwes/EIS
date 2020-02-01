@@ -24,6 +24,8 @@ Trips4 <- Trips4[c('household_code', 'month', 'monthR', 'year', 'Y', 'LogR', 'YI
 
 head(Trips4)
 
+print(unique(cbind(Trips4$year, Trips4$month, Trips4$monthR)))
+
 #print(unique(cbind(Trips4$year, Trips4$month)))
 
 Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
@@ -41,12 +43,12 @@ Beg1 <- unique(Trips4_1a$monthR)
 Trips4_3b <- Trips4[which(Trips4$year == 2014 & Trips4$month == 12),]
 End3 <- unique(Trips4_3b$monthR)
 
-#print(Beg1)
+print(Beg1)
 #print(End1)
 #print(Beg2)
 #print(End2)
 #print(Beg3)
-#print(End3)
+print(End3)
 
 
 ########################################################################
