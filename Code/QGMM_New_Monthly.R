@@ -28,7 +28,8 @@ print(unique(cbind(Trips4$year, Trips4$month, Trips4$monthR)))
 
 #print(unique(cbind(Trips4$year, Trips4$month)))
 
-Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
+#Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
+Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 6),]
 Beg1 <- unique(Trips4_1a$monthR)
 #Trips4_1b <- Trips4[which(Trips4$year == 2006 & Trips4$month == 8),]
 #End1 <- unique(Trips4_1b$monthR)
