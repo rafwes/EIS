@@ -22,6 +22,8 @@ Trips4 <- read.csv('Datasets/RealTripsChangesMonthlyIR.csv')
 Trips4 <- Trips4[c('household_code', 'month', 'monthR', 'year', 'Y', 'LogR', 'YInst', 'Lag2LogNomR', 'Lag2Inf', 'household_income')]
 #Trips4 <- filter(Trips4, household_income > 13)
 
+head(Trips4)
+
 #print(unique(cbind(Trips4$year, Trips4$month)))
 
 Trips4_1a <- Trips4[which(Trips4$year == 2004 & Trips4$month == 2),]
