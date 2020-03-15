@@ -2,8 +2,12 @@
 ## For each t-bill interest rate datapoint a equivalent 4-week stock return will be calculated.
 ## Interest rate will be inflation deflated by region.
 
-library(dplyr)
-library(lubridate)
+rm(list=ls())
+
+library(tidyverse)
+#library(dplyr)
+#library(tidyr)
+#library(lubridate)
 
 #getwd()
 #setwd()
@@ -14,10 +18,9 @@ step=as.integer(1)
 ###   Raw Data Import
 ### ======================================== ###
 
-
 ## Imports Weekly T-Bill Rates from FRED
 ## Description: 4-Week Treasury Bill: Secondary Market Rate (WTB4WK)
-## Frequency: Weekly, Ending Friday -- Averages of business days.
+## Frequency: Weekly, Ending Friday -- Averages of business days -- Bank Discount*
 ## Unit: Percent, Not Seasonally Adjusted 
 ## Dates: January 2003 - December 2016
 ## Source: https://fred.stlouisfed.org/series/WTB4WK
@@ -30,7 +33,7 @@ raw_tbill_weekly = read.csv('data_raw/fred_tbill_rates_weekly.csv',
 
 ## Imports Monthly T-Bill Rates from FRED
 ## Description: 4-Week Treasury Bill: Secondary Market Rate (TB4WK)
-## Frequency: Monthly -- Averages of business days.
+## Frequency: Monthly -- Averages of business days -- Bank Discount*
 ## Unit: Percent, Not Seasonally Adjusted 
 ## Dates: January 2003 - December 2016
 ## Source: https://fred.stlouisfed.org/series/TB4WK
@@ -39,6 +42,9 @@ raw_tbill_weekly = read.csv('data_raw/fred_tbill_rates_weekly.csv',
 
 raw_tbill_monthly = read.csv('data_raw/fred_tbill_rates_monthly.csv',
                            colClasses=c("Date","numeric"))
+
+## Obs: The Bank Discount rate is the rate at which a Bill is quoted in the secondary market 
+## and is based on the par value, amount of the discount and a 360-day year.
 
 
 ## Imports Daily S&P500 Stock Prices
@@ -123,21 +129,23 @@ rm(raw_cpi_northeast,raw_cpi_midwest,raw_cpi_south,raw_cpi_west)
 
 ## Drops yearly and half-yearly CPI data leaving only monthly data.
 
-cpi_monthly <- cpi_full %>% filter(!((PERIOD == "M13")|(PERIOD == "S01")|(PERIOD == "S02")))
+cpi_monthly_a1 <- cpi_full %>% filter(!((PERIOD == "M13")|(PERIOD == "S01")|(PERIOD == "S02")))
 rm(cpi_full)
 
 ## Adds a proper date column for CPI data and drops strange year/period columns
 
-cpi_monthly <- cbind(tbill_monthly$DATE, cpi_monthly)
-cpi_monthly <- rename(cpi_monthly, "DATE" = "tbill_monthly$DATE")
-cpi_monthly$YEAR <- NULL
-cpi_monthly$PERIOD <- NULL
-
-## Drop all stock data columns except "Date" and "Adjusted Close"
+cpi_monthly <- bind_cols((tbill_monthly %>% select(DATE)), cpi_monthly_a1)
+cpi_m$YEAR <- NULL
+cpi_m$PERIOD <- NULL
+rm(cpi_monthly_a1)
+## Drops all stock data columns except "Date" and "Adjusted Close"
 
 stocks_daily <- raw_stock_prices %>% select(Date,Adj.Close)
 rm(raw_stock_prices)
 colnames(stocks_daily) <- c("DATE","CLOSE")
+
+## Fills missing stock prices dates (weekends and holidays) with last available CLOSE data
+stocks_daily <- stocks_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(CLOSE)
 
 sprintf("Step %i: Finished Data Sanitation", step)
 step <- step+1
@@ -146,10 +154,40 @@ step <- step+1
 ###   Interest Rates Calculation
 ### ======================================== ###
 
+## When finished we shall have
 
-## Creates a daily stock index using "adjusted closing" prices.
-#stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[1])
+## Creates a daily stock index using "adjusted closing" prices. 
+## Base Period: 2004-01-01
+
+stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2004-01-01"])
+
+## Analogously to weekly/monthly tbill rates, let's populate monthly/weekly stock data
+## Start by taking weekly/monthly stock returns dates for which we have t-bill rates
+
+stocks_weekly_dates <- tbill_weekly %>% select(DATE)
+stocks_monthly_dates <- tbill_monthly %>% select(DATE)
+
+# Adds corresponding stock data to their dates
+
+stocks_weekly <- left_join(stocks_weekly_dates,stocks_daily)
+stocks_monthly <- left_join(stocks_monthly_dates,stocks_daily)
+
+rm(stocks_monthly_dates,stocks_weekly_dates)
+
 
 
 ############# garbage bin
-#week(raw_tbill_monthly$DATE)
+if(FALSE) {
+
+week(raw_tbill_monthly$DATE)
+all.equal(A,stocks_weekly_dates)
+
+class(cpi_monthly$DATE)
+class(cpi_monthly$CPI_NORTHEAST)
+class(stocks_monthly$DATE)
+class(stocks_monthly$CLOSE)
+class(stocks_monthly$STOCK_INDEX)
+class(tbill_monthly$DATE)
+class(tbill_monthly$TB4WK)
+
+}
