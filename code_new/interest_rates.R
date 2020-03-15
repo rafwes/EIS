@@ -14,6 +14,7 @@ library(tidyverse)
 
 print("Let's Start")
 step=as.integer(1)
+
 ### ======================================== ###
 ###   Raw Data Import
 ### ======================================== ###
@@ -104,7 +105,6 @@ step <- step+1
 ### ======================================== ###
 ###   Data Sanitization
 ### ======================================== ###
-
 ## After this section we shall have saved all raw data into
 ## coherent standardized dataframes and dropped unneeded dataframes.
 
@@ -158,28 +158,29 @@ sprintf("Step %i: Finished Data Sanitation", step)
 step <- step+1
 
 ### ======================================== ###
-###   Interest Rates Calculation
+###   Stock Return Calculation
 ### ======================================== ###
+## This section creates stock returns that are equivalent to t-bill bank discount rates,
+## that is, they represent a percentage return over a 360-day stock investment.
 
-## When finished we shall have
 
-## Creates a daily stock index using "adjusted closing" prices. 
-## Base Period: "2004-01-01"
+## Creates a daily stock index using "adjusted closing" prices. Base Period: "2004-01-01"
 
 stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2004-01-01"])
 
 
-## Calculates stock returns for a 360-days investment.
+## Calculates stock returns for a 360-days investment using index.
 
 stocks_daily$STOCK_RETURN_360 <- stocks_daily$STOCK_INDEX - lag(stocks_daily$STOCK_INDEX, n=360L)
-
 stock_returns_daily <- na.omit(stocks_daily %>% select(DATE,STOCK_RETURN_360))
+
 
 ## Analogously to weekly/monthly tbill rates, let's populate monthly/weekly stock data
 ## Start by taking weekly/monthly stock returns dates for which we have t-bill rates
 
 stocks_weekly_dates <- tbill_weekly %>% select(DATE)
 stocks_monthly_dates <- tbill_monthly %>% select(DATE)
+
 
 # Adds corresponding stock data to their dates
 
@@ -189,7 +190,12 @@ stock_returns_monthly <- na.omit(left_join(stocks_monthly_dates,stock_returns_da
 rm(stocks_monthly_dates,stocks_weekly_dates)
 
 
+sprintf("Step %i: Finished Stock Return Calculation", step)
+step <- step+1
 
+### ======================================== ###
+###   
+### ======================================== ###
 
 
 
