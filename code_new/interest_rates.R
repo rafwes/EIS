@@ -114,6 +114,7 @@ tbill_monthly <- raw_tbill_monthly
 tbill_weekly <- raw_tbill_weekly
 rm(raw_tbill_monthly,raw_tbill_weekly)
 
+
 ## Drop SERIES column, we already differentiate CPI region using column names.
 
 raw_cpi_northeast$SERIES <- NULL
@@ -121,28 +122,34 @@ raw_cpi_south$SERIES <- NULL
 raw_cpi_midwest$SERIES <- NULL
 raw_cpi_west$SERIES <- NULL
 
+
 ## Aggregates CPI regional data into a single table.
 
 cpi_full <- left_join(raw_cpi_northeast, raw_cpi_south) %>% left_join(., raw_cpi_midwest) %>% left_join(., raw_cpi_west)
 
 rm(raw_cpi_northeast,raw_cpi_midwest,raw_cpi_south,raw_cpi_west)
 
+
 ## Drops yearly and half-yearly CPI data leaving only monthly data.
 
 cpi_monthly_a1 <- cpi_full %>% filter(!((PERIOD == "M13")|(PERIOD == "S01")|(PERIOD == "S02")))
 rm(cpi_full)
 
+
 ## Adds a proper date column for CPI data and drops strange year/period columns
 
 cpi_monthly <- bind_cols((tbill_monthly %>% select(DATE)), cpi_monthly_a1)
-cpi_m$YEAR <- NULL
-cpi_m$PERIOD <- NULL
 rm(cpi_monthly_a1)
+cpi_monthly$YEAR <- NULL
+cpi_monthly$PERIOD <- NULL
+
+
 ## Drops all stock data columns except "Date" and "Adjusted Close"
 
 stocks_daily <- raw_stock_prices %>% select(Date,Adj.Close)
 rm(raw_stock_prices)
 colnames(stocks_daily) <- c("DATE","CLOSE")
+
 
 ## Fills missing stock prices dates (weekends and holidays) with last available CLOSE data
 stocks_daily <- stocks_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(CLOSE)
@@ -157,9 +164,16 @@ step <- step+1
 ## When finished we shall have
 
 ## Creates a daily stock index using "adjusted closing" prices. 
-## Base Period: 2004-01-01
+## Base Period: "2004-01-01"
 
 stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2004-01-01"])
+
+
+## Calculates stock returns for a 360-days investment.
+
+stocks_daily$STOCK_RETURN_360 <- stocks_daily$STOCK_INDEX - lag(stocks_daily$STOCK_INDEX, n=360L)
+
+stock_returns_daily <- na.omit(stocks_daily %>% select(DATE,STOCK_RETURN_360))
 
 ## Analogously to weekly/monthly tbill rates, let's populate monthly/weekly stock data
 ## Start by taking weekly/monthly stock returns dates for which we have t-bill rates
@@ -169,10 +183,13 @@ stocks_monthly_dates <- tbill_monthly %>% select(DATE)
 
 # Adds corresponding stock data to their dates
 
-stocks_weekly <- left_join(stocks_weekly_dates,stocks_daily)
-stocks_monthly <- left_join(stocks_monthly_dates,stocks_daily)
+stock_returns_weekly <- na.omit(left_join(stocks_weekly_dates,stock_returns_daily))
+stock_returns_monthly <- na.omit(left_join(stocks_monthly_dates,stock_returns_daily))
 
 rm(stocks_monthly_dates,stocks_weekly_dates)
+
+
+
 
 
 
@@ -191,3 +208,5 @@ class(tbill_monthly$DATE)
 class(tbill_monthly$TB4WK)
 
 }
+
+# Timeframe 2004-2014
