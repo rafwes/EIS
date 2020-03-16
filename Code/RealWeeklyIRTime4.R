@@ -14,11 +14,22 @@ print("1")
 #Trips <- read.csv('UseData/GroceryTripsSmall.csv')
 Trips <- read.csv('Datasets/GroceryTrips.csv')
 
+# If magnet is NA, make 0, else keep.
+# I think I was considering segmenting or weighting the data based on magnet
+# This also allows me to run na.omit() without remove observations 
+# where projection_factor_magnet == 0
+ 
 Trips$projection_factor_magnet <- ifelse(is.na(Trips$projection_factor_magnet), 0, Trips$projection_factor_magnet)
 
 #WeeklyIR <- read.csv('UseData/WTB4WK.csv')
 WeeklyIR <- read.csv('EIS/UseData/WTB4WK.csv')
 
+
+# panel_year and year do not necessarily align
+# one is assigned by Nielsen, and the other is taken direclty from the data.
+# For example, 12/30/10, might have a panel_year of 2011 and trip year of 2010
+# I just removed these cases from the dataset.
+# There might be a better way to handle this.
 BadTrips <- which(Trips$panel_year != Trips$year)
 Trips <- Trips[-BadTrips,]
 
@@ -31,21 +42,23 @@ Trips$female_head_age <- factor(Trips$female_head_age)
 Trips$male_head_education <- factor(Trips$male_head_education)
 Trips$female_head_education <- factor(Trips$female_head_education)
 
+# Rename columns
 colnames(Trips)[colnames(Trips)=="r"] <- "monthlyr"
 colnames(Trips)[colnames(Trips)=="value"] <- "CPI"
 colnames(Trips)[colnames(Trips)=="lagvalue"] <- "LagCPI"
 
+# Calculate Inflation
 Trips$Inflation <- Trips$CPI / Trips$LagCPI
 
 print("2")
 
 ###
-
+# Remove trips where the total amount spent ws 0. No need to keep these.
 ZeroTrips <- which(Trips$total_spent == 0)
 Trips <- Trips[-ZeroTrips,]
 
 ####
-
+# Use January of the latest year for the base CPI
 MaxYear <- max(Trips$year)
 MaxCPIData <- Trips[which(Trips$year==MaxYear & Trips$month == 1),]
 MaxCPISmall <- MaxCPIData[c("region", "CPI")] 
@@ -53,8 +66,8 @@ MaxCPISmall <- MaxCPIData[c("region", "CPI")]
 UniqueMaxCPISmall <- unique(MaxCPISmall)
 colnames(UniqueMaxCPISmall)[colnames(UniqueMaxCPISmall) == 'CPI'] <- 'BaseCPI'
 
+# Merge base CPI back into Trips and calculate a "real" total_spent
 Trips <- merge(Trips, UniqueMaxCPISmall, by=c('region'))
-
 Trips$real_total_spent <- Trips$total_spent * (Trips$BaseCPI / Trips$CPI)
 
 
@@ -65,6 +78,8 @@ print("2.5")
 
 
 ######
+
+# I once ran a robustness check using the middle 90% of Trips
 
 # Middle 90%
 
@@ -86,15 +101,15 @@ print("2.5")
 
 #####
 
-
+# Get week of each Trip
 Trips['week'] <- isoweek(Trips$purchase_date)
 
-
+# Get week and year of T-Bill data
 WeeklyIR['week'] <- isoweek(WeeklyIR$DATE)
 WeeklyIR['year'] <- year(WeeklyIR$DATE)
 
 
-
+# Merge Trips data with T-Bill data
 Trips <- merge(Trips, WeeklyIR, by=c('year', 'week'))
 Trips <- na.omit(Trips)
 
@@ -102,10 +117,14 @@ Trips <- na.omit(Trips)
 
 
 
-
+# For the last week and first weeks of each year, weeks are not full weeks
+# I remove these weeks from the data
+# Similar to years above, there may be a better way to handle this
 BadWeeks <- which(Trips$week == 52 | Trips$week == 53 | Trips$week == 1)
 Trips <- Trips[-BadWeeks,]
 
+# Created a running count of week. i.e., week 1 of year 2 = week 53
+# This could be done in like 4 lines of code. Not sure why I made this so hard.
 Trips['weekR'] <- Trips$week
 Trips['weekR'] <- ifelse(Trips$year == 2004, Trips$week + 52, Trips$weekR)
 Trips['weekR'] <- ifelse(Trips$year == 2005, Trips$week + 52+53, Trips$weekR)
@@ -125,6 +144,7 @@ Trips$week <- factor(Trips$week)
 
 print("3")
 
+# Create a running count of month
 Trips['monthR'] <- Trips$month
 Trips['monthR'] <- ifelse(Trips$year == 2004, Trips$month + 12, Trips$monthR)
 Trips['monthR'] <- ifelse(Trips$year == 2005, Trips$month + 12*2, Trips$monthR) 
@@ -146,6 +166,8 @@ Trips$year <- NULL
 
 print("4")
 
+# A week may belong to two months and hence have two CPIs
+# I take the average CPI, LagCPI, and Inflation in these cases
 TripsCPI <- aggregate(Trips$CPI, by=list(Trips$household_code, Trips$weekR), FUN=mean)
 colnames(TripsCPI) <- c('household_code', 'weekR', 'CPI')
 TripsLagCPI <- aggregate(Trips$LagCPI, by=list(Trips$household_code, Trips$weekR), FUN=mean)
@@ -153,6 +175,8 @@ colnames(TripsLagCPI) <- c('household_code', 'weekR', 'LagCPI')
 TripsInflation <- aggregate(Trips$Inflation, by=list(Trips$household_code, Trips$weekR), FUN=mean)
 colnames(TripsInflation) <- c('household_code', 'weekR', 'Inflation')
 
+# Make CPI, LagCPI, and Inflation null. 
+# Then marge the mean CPIs back in
 Trips$CPI <- NULL
 Trips$LagCPI <- NULL
 Trips$Inflation <- NULL
@@ -161,16 +185,18 @@ Trips <- merge(Trips, TripsCPI, by=c('household_code', 'weekR'))
 Trips <- merge(Trips, TripsLagCPI, by=c('household_code', 'weekR'))
 Trips <- merge(Trips, TripsInflation, by=c('household_code', 'weekR'))
 
-
+# Calculate the real interest rate return
 Trips$r <- (Trips$WTB4WK * 0.01) - ((Trips$CPI / Trips$LagCPI) -1 )
 
 print("4.5")
 
+# For each household and weekR, get the minimum month
 TripsMonth <- aggregate(Trips$month, by = list(Trips$household_code, Trips$weekR), FUN=min)
 colnames(TripsMonth) <- c('household_code', 'weekR', 'month')
 
 print("5")
 
+# For each houshold and WeekR, get the minimum monthR
 TripsMonthR <- aggregate(Trips$monthR, by = list(Trips$household_code, Trips$weekR), FUN=min)
 colnames(TripsMonthR) <- c('household_code', 'weekR', 'monthR')
 
@@ -178,40 +204,43 @@ print("6")
 
 head(Trips)
 
-
+# Order dataset
 Trips <- Trips[order(Trips$household_code, Trips$weekR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
 
 #Trips[which(Trips$household_code==2000351 & Trips$weekR == 387),]
 
-
+# Sum real_total_spent over each running week
+# Is this working right? Does having week in there mess things up?
 Trips <- aggregate(Trips$real_total_spent, by=list(Trips$household_code, Trips$projection_factor_magnet, Trips$weekR, Trips$week, Trips$r, Trips$household_income, Trips$household_size, Trips$marital_status, Trips$male_head_age, Trips$female_head_age, Trips$male_head_education, Trips$female_head_education, Trips$WTB4WK, Trips$Inflation), FUN=sum)
 colnames(Trips) <- c('household_code', 'projection_factor_magnet', 'weekR', 'week', 'r',  'household_income', 'household_size', 'marital_status', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'Nomr', 'Inflation', 'real_total_spent')
 
-
+# Merge Month back in
 Trips <- merge(Trips, TripsMonth, by=c('household_code', 'weekR'))
 Trips$month <- factor(Trips$month)
 
 print("7")
 
+# Merge MonthR back in
 Trips <- merge(Trips, TripsMonthR, by=c('household_code', 'weekR'))
 #Trips$monthR <- factor(Trips$monthR)
 
 print("8")
 
+# Order dataset
 Trips <- Trips[order(Trips$household_code, Trips$weekR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
 
-
+# Rename rate variables
 Trips['R'] <- 1 + Trips$r
 Trips['LogR'] <- log(Trips$R)
 Trips['NomR'] <- 1 + (Trips$Nomr * 0.01)
 Trips['LogNomR'] <- log(Trips$NomR)
 
 
-
+# Rename consumption variable
 Trips['LogC'] <- log(Trips$real_total_spent)
 
 Trips <- na.omit(Trips)
@@ -244,12 +273,22 @@ Trips$monthR <- factor(Trips$monthR)
 #write.csv(Trips, "Datasets/TripsMid.csv", row.names=FALSE)
 #write.csv(Trips, "Datasets/TripsMid90.csv", row.names=FALSE)
 
+# Reorder dataset
 Trips <- Trips[order(Trips$household_code, Trips$weekR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
 print("9")
 
 
+### This next set of code gets repeated X times.
+# I'm only going to comment it once
+# Also, I'm sure there is a way better way to do this.
+
+## Get 1st lags
+
+# Get the first difference and make a data.frame
+# The first observation needs to be NA, because it doesn't have a difference
+# Do this for LogC, LogR, LogNomR, Inf, and FS
 ChangeLogC <- diff(Trips$LogC)
 ChangeLogC <- data.frame(ChangeLogC)
 ChangeLogC <- rbind('NA', ChangeLogC)
@@ -265,13 +304,18 @@ ChangeInf <- rbind('NA', ChangeInf)
 ChangeFS <- diff(Trips$household_size)
 ChangeFS <- data.frame(ChangeFS)
 ChangeFS <- rbind('NA', ChangeFS)
+
+# zoo creates an index attribute by which the dataset is ordered
+# it's needed to run the lag() function
 HC <- zoo(Trips$household_code)
+# Take first lag and make data.frame
 LagHC <- lag(HC, -1, na.pad=TRUE)
 LagHC <- data.frame(LagHC)
+# Join all the data back together
 Trips <- cbind(Trips, LagHC, ChangeLogC, ChangeLogR, ChangeLogNomR, ChangeInf, ChangeFS)
 
+# If the household code doesn't match the lag, then remove
 Trips$LagHC <- ifelse(Trips$household_code != Trips$LagHC, NA, Trips$household_code)
-
 Trips <- na.omit(Trips)
 
 Trips$ChangeLogC <- as.numeric(as.character(Trips$ChangeLogC))
@@ -280,6 +324,7 @@ Trips$ChangeLogNomR <- as.numeric(as.character(Trips$ChangeLogNomR))
 Trips$ChangeInf <- as.numeric(as.character(Trips$ChangeInf))
 Trips$ChangeFS <- as.numeric(as.character(Trips$ChangeFS))
 
+# Calculate the lags using the original and the change
 Trips$LagLogC <- Trips$LogC - Trips$ChangeLogC
 Trips$LagLogR <- Trips$LogR - Trips$ChangeLogR
 Trips$LagLogNomR <- Trips$LogNomR - Trips$ChangeLogNomR
@@ -290,12 +335,14 @@ TripCols <- c('household_code', 'projection_factor_magnet', 'weekR', 'week', 'mo
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
 
-
+# Order dataset
 Trips <- Trips[order(Trips$household_code, Trips$weekR),] 
 rownames(Trips) <- 1:nrow(Trips)
 
 print("10")
 
+
+## Get 2nd lags
 
 Change1LogC <- diff(Trips$LagLogC)
 Change1LogC <- data.frame(Change1LogC)
@@ -343,6 +390,8 @@ rownames(Trips) <- 1:nrow(Trips)
 
 print("11")
 
+
+## Get 3rd lags
 
 Change2LogC <- diff(Trips$Lag2LogC)
 Change2LogC <- data.frame(Change2LogC)
@@ -392,6 +441,7 @@ rownames(Trips) <- 1:nrow(Trips)
 print("12")
 
 
+## Get 4th lags
 
 Change3LogC <- diff(Trips$Lag3LogC)
 Change3LogC <- data.frame(Change3LogC)
@@ -441,6 +491,7 @@ rownames(Trips) <- 1:nrow(Trips)
 print("13")
 
 
+## Get 5th lags
 
 Change4LogC <- diff(Trips$Lag4LogC)
 Change4LogC <- data.frame(Change4LogC)
@@ -479,6 +530,7 @@ Trips$Lag5Inf <- Trips$Lag4Inf - Trips$Change4Inf
 Trips$Lag5FS <- Trips$Lag4FS - Trips$Change4FS
 
 
+# Final Data
 TripCols <- c('household_code', 'projection_factor_magnet', 'weekR', 'week', 'month', 'monthR', 'year', 'household_size', 'marital_status', 'household_income', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'real_total_spent', 'LogC', 'ChangeLogC', 'LogR', 'ChangeLogR', 'LagLogC', 'LagLogR', 'Change1LogC', 'Change1LogR', 'Lag2LogC', 'Lag2LogR', 'Change2LogC', 'Change2LogR', 'NomR', 'LogNomR', 'ChangeLogNomR', 'LagLogNomR', 'ChangeInf', 'LagInf', 'Change1LogNomR', 'Lag2LogNomR', 'Change1Inf', 'Lag2Inf', 'Change2LogNomR', 'Change2Inf', 'Lag3LogC', 'Lag3LogR', 'Lag3LogNomR', 'Lag3Inf', 'Change3LogC', 'Change3LogR', 'Change3LogNomR', 'Change3Inf', 'Lag4LogC', 'Lag4LogR', 'Lag4LogNomR', 'Lag4Inf', 'Change4LogC', 'Change4LogR', 'Change4LogNomR', 'Change4Inf', 'Lag5LogC', 'Lag5LogR', 'Lag5LogNomR', 'Lag5Inf', 'ChangeFS', 'LagFS', 'Change1FS', 'Lag2FS', 'Change2FS', 'Lag3FS', 'Change3FS', 'Lag4FS', 'Change4FS', 'Lag5FS')
 Trips <- Trips[TripCols]
 rownames(Trips) <- 1:nrow(Trips)
@@ -489,6 +541,10 @@ rownames(Trips) <- 1:nrow(Trips)
 
 print("14")
 
+
+# Calculate columns needed from the lags
+# Y is the change in consumption growth
+# YInst is a lag of the change in consumption growth 
 Trips$Y <- Trips$LogC - Trips$Lag4LogC
 Trips$YInst <- Trips$LagLogC - Trips$Lag5LogC
 Trips$FSChange <- Trips$household_size - Trips$Lag4FS
