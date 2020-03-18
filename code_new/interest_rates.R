@@ -5,6 +5,7 @@
 rm(list=ls())
 
 library(tidyverse)
+library(zoo)
 #library(dplyr)
 #library(tidyr)
 #library(lubridate)
@@ -182,17 +183,43 @@ sprintf("Step %i: Finished Stock and CPI Index Calculation", step)
 step <- step+1
 
 ### ======================================== ###
-### 
+### Index Deflation
+### ======================================== ###
+
+index_table_nocpi <- left_join(tbill_daily %>% select(DATE,INDEX_TB),
+                               stocks_daily %>% select(DATE,INDEX_ST))
+index_table_monthcpi <- left_join(index_table_nocpi, 
+                                  cpi_monthly %>% select(DATE,INDEX_CPI_NE))
+rm(index_table_nocpi)
+
+# Interpolates CPI index linearly to create daily CPI index, 
+# since we only have data for the first day of the month.
+index_table <- index_table_monthcpi %>% mutate(INDEX_CPI_NE_I=na.approx(INDEX_CPI_NE, na.rm=FALSE))
+rm(index_table_monthcpi)
+
+# Deflating T-Bills and Stock Indexes
+index_table <- index_table %>% mutate(INDEX_TB_DEF_NE = 100*INDEX_TB/INDEX_CPI_NE_I)
+index_table <- index_table %>% mutate(INDEX_ST_DEF_NE = 100*INDEX_ST/INDEX_CPI_NE_I)
+
+
+sprintf("Step %i: Index Deflation", step)
+step <- step+1
+### ======================================== ###
+### blablabla
 ### ======================================== ###
 
 
+sprintf("Step %i: Finished blablabla", step)
+step <- step+1
+### ======================================== ###
+### blablabla
+### ======================================== ###
 
 ############# garbage bin
 if(FALSE) {
 
 week(raw_tbill_monthly$DATE)
 all.equal(A,stocks_weekly_dates)
-
 class(cpi_monthly$DATE)
 class(cpi_monthly$CPI_NORTHEAST)
 class(stocks_monthly$DATE)
