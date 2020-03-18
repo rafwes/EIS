@@ -189,7 +189,9 @@ for(i in 1:(datapoints-1)) {
   tbill_daily$INDEX[i+1] <- (tbill_daily$INDEX[i] * (1+tbill_daily$RATE_1[i]/100))
 }
 
+# Creates effective 360-day and 30-day rates of return based on t-bill index
 tbill_daily$RATE_EFF_360 <- (lead(tbill_daily$INDEX, n=360L) -  tbill_daily$INDEX)
+tbill_daily$RATE_EFF_30 <- (lead(tbill_daily$INDEX, n=30L) -  tbill_daily$INDEX)
 
 sprintf("Step %i: T-Bill Index Calculation", step)
 step <- step+1
