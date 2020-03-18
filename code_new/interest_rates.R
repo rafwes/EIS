@@ -35,33 +35,6 @@ raw_tbill_daily = read.csv('data_raw/fred_tbill_rates_daily.csv',
                            colClasses=c("Date","numeric"),
                            na.strings=c("NA","."))
 
-## Imports Weekly T-Bill Rates from FRED
-## Description: 4-Week Treasury Bill: Secondary Market Rate (WTB4WK)
-## Frequency: Weekly, Ending Friday -- Averages of business days -- Discount Basis*
-## Unit: Percent, Not Seasonally Adjusted 
-## Yields in percent per annum
-## Dates: January 2003 - December 2016
-## Source: https://fred.stlouisfed.org/series/WTB4WK
-## Primary Source: Board of Governors of the Federal Reserve System (US)
-## Retrival Date: March 12, 2020
-
-raw_tbill_weekly = read.csv('data_raw/fred_tbill_rates_weekly.csv',
-                          colClasses=c("Date","numeric"))
-
-
-## Imports Monthly T-Bill Rates from FRED
-## Description: 4-Week Treasury Bill: Secondary Market Rate (TB4WK)
-## Frequency: Monthly -- Averages of business days -- Discount Basis*
-## Unit: Percent, Not Seasonally Adjusted
-## Yields in percent per annum
-## Dates: January 2003 - December 2016
-## Source: https://fred.stlouisfed.org/series/TB4WK
-## Primary Source: Board of Governors of the Federal Reserve System (US)
-## Retrival Date: March 12, 2020
-
-raw_tbill_monthly = read.csv('data_raw/fred_tbill_rates_monthly.csv',
-                           colClasses=c("Date","numeric"))
-
 ## Obs: The Bank Discount rate is the rate at which a Bill is quoted in the secondary market 
 ## and is based on the par value, amount of the discount and a 360-day year.
 
@@ -99,19 +72,19 @@ c_names = c("SERIES","YEAR","PERIOD")
 c_classes = c("factor","integer","factor","numeric")
    
 raw_cpi_northeast = read.csv('data_raw/bls_cpi_northeast.csv', 
-                             col.names=c(c_names,"CPI_NORTHEAST"), 
+                             col.names=c(c_names,"CPI_NE"), 
                              colClasses=c_classes)
 
 raw_cpi_south = read.csv('data_raw/bls_cpi_south.csv',
-                          col.names=c(c_names,"CPI_SOUTH"), 
+                          col.names=c(c_names,"CPI_SO"), 
                           colClasses=c_classes)
 
 raw_cpi_midwest = read.csv('data_raw/bls_cpi_midwest.csv',
-                           col.names=c(c_names,"CPI_MIDWEST"), 
+                           col.names=c(c_names,"CPI_MW"), 
                            colClasses=c_classes)
 
 raw_cpi_west = read.csv('data_raw/bls_cpi_west.csv',
-                        col.names=c(c_names,"CPI_WEST"), 
+                        col.names=c(c_names,"CPI_WE"), 
                         colClasses=c_classes)
 
 rm(c_names,c_classes)
@@ -139,11 +112,6 @@ rm(raw_stocks_daily_close)
 tbill_daily <- raw_tbill_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(RATE_360)
 rm(raw_tbill_daily)
 
-# Renaming weekly/monthly tbill dataframes since no sanitization is needed.
-tbill_monthly <- raw_tbill_monthly
-tbill_weekly <- raw_tbill_weekly
-rm(raw_tbill_monthly,raw_tbill_weekly)
-
 ## Drop SERIES column, we already differentiate CPI region using column names.
 raw_cpi_northeast$SERIES <- NULL
 raw_cpi_south$SERIES <- NULL
@@ -155,12 +123,13 @@ cpi_full <- left_join(raw_cpi_northeast, raw_cpi_south) %>% left_join(., raw_cpi
 rm(raw_cpi_northeast,raw_cpi_midwest,raw_cpi_south,raw_cpi_west)
 
 ## Drops yearly and half-yearly CPI data leaving only monthly data.
-cpi_monthly_a1 <- cpi_full %>% filter(!((PERIOD == "M13")|(PERIOD == "S01")|(PERIOD == "S02")))
+cpi_monthly <- cpi_full %>% filter(!((PERIOD == "M13")|(PERIOD == "S01")|(PERIOD == "S02")))
 rm(cpi_full)
 
-## Adds a proper date column for CPI data and drops strange year/period columns
-cpi_monthly <- bind_cols((tbill_monthly %>% select(DATE)), cpi_monthly_a1)
-rm(cpi_monthly_a1)
+## Adds a proper date column for CPI data and drops strange year/period/month columns
+cpi_monthly <- add_column(cpi_monthly, 
+           DATE = seq(from = as.Date("2003-01-01"), to = as.Date("2016-12-31"), by = 'month'),
+           .before=1)
 cpi_monthly$YEAR <- NULL
 cpi_monthly$PERIOD <- NULL
 
@@ -195,35 +164,12 @@ tbill_daily$RATE_EFF_30 <- (lead(tbill_daily$INDEX_TB, n=30L) -  tbill_daily$IND
 sprintf("Step %i: T-Bill Index Calculation", step)
 step <- step+1
 ### ======================================== ###
-###   Stock Return Calculation
+###   Stock Index Calculation
 ### ======================================== ###
-## This section creates stock returns that are equivalent to t-bill bank discount rates,
-## that is, they represent a percentage return over a 360-day stock investment.
-
+## This section ... <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ## Creates a daily stock index using "adjusted closing" prices. Base Period: "2003-01-01"
 stocks_daily$INDEX_ST <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2003-01-01"])
-
-## Calculates stock returns for a 360-days investment using index.
-
-stocks_daily$STOCK_RETURN_360 <- stocks_daily$INDEX_ST - lag(stocks_daily$INDEX_ST, n=360L)
-stock_returns_daily <- na.omit(stocks_daily %>% select(DATE,STOCK_RETURN_360))
-
-
-## Analogously to weekly/monthly tbill rates, let's populate monthly/weekly stock data
-## Start by taking weekly/monthly stock returns dates for which we have t-bill rates
-
-stocks_weekly_dates <- tbill_weekly %>% select(DATE)
-stocks_monthly_dates <- tbill_monthly %>% select(DATE)
-
-
-# Adds corresponding stock data to their dates
-
-stock_returns_weekly <- na.omit(left_join(stocks_weekly_dates,stock_returns_daily))
-stock_returns_monthly <- na.omit(left_join(stocks_monthly_dates,stock_returns_daily))
-
-rm(stocks_monthly_dates,stocks_weekly_dates)
-
 
 sprintf("Step %i: Finished Stock Return Calculation", step)
 step <- step+1
