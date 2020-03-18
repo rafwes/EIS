@@ -126,7 +126,6 @@ step <- step+1
 ## After this section we shall have saved all raw data into
 ## coherent standardized dataframes and dropped unneeded dataframes.
 
-
 ## Drops all stock data columns except "Date" and "Adjusted Close"
 raw_stocks_daily_close <- raw_stock_prices %>% select(Date,Adj.Close)
 rm(raw_stock_prices)
@@ -168,7 +167,6 @@ cpi_monthly$PERIOD <- NULL
 
 sprintf("Step %i: Finished Data Sanitation", step)
 step <- step+1
-
 ### ======================================== ###
 ###   T-Bill Index Calculation
 ### ======================================== ###
@@ -180,18 +178,18 @@ step <- step+1
 tbill_daily$RATE_1 <- (tbill_daily$RATE_360)/360
 
 # Sets up a new index column and starts index with 100 on "2003-01-01".
-tbill_daily$INDEX <- NA
-tbill_daily$INDEX[1] <- 100
+tbill_daily$INDEX_TB <- NA
+tbill_daily$INDEX_TB[stocks_daily$DATE == "2003-01-01"] <- 100
 
 # Creates index for t-bills based on daily rates.
-datapoints <- length(tbill_daily$INDEX)
+datapoints <- length(tbill_daily$INDEX_TB)
 for(i in 1:(datapoints-1)) {
-  tbill_daily$INDEX[i+1] <- (tbill_daily$INDEX[i] * (1+tbill_daily$RATE_1[i]/100))
+  tbill_daily$INDEX_TB[i+1] <- (tbill_daily$INDEX_TB[i] * (1+tbill_daily$RATE_1[i]/100))
 }
 
 # Creates effective 360-day and 30-day rates of return based on t-bill index
-tbill_daily$RATE_EFF_360 <- (lead(tbill_daily$INDEX, n=360L) -  tbill_daily$INDEX)
-tbill_daily$RATE_EFF_30 <- (lead(tbill_daily$INDEX, n=30L) -  tbill_daily$INDEX)
+tbill_daily$RATE_EFF_360 <- (lead(tbill_daily$INDEX_TB, n=360L) -  tbill_daily$INDEX_TB)
+tbill_daily$RATE_EFF_30 <- (lead(tbill_daily$INDEX_TB, n=30L) -  tbill_daily$INDEX_TB)
 
 sprintf("Step %i: T-Bill Index Calculation", step)
 step <- step+1
@@ -202,9 +200,9 @@ step <- step+1
 ## that is, they represent a percentage return over a 360-day stock investment.
 
 
-## Creates a daily stock index using "adjusted closing" prices. Base Period: "2004-01-01"
+## Creates a daily stock index using "adjusted closing" prices. Base Period: "2003-01-01"
 
-stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2004-01-01"])
+stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2003-01-01"])
 
 
 ## Calculates stock returns for a 360-days investment using index.
