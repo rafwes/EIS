@@ -127,55 +127,44 @@ step <- step+1
 ## coherent standardized dataframes and dropped unneeded dataframes.
 
 
+## Drops all stock data columns except "Date" and "Adjusted Close"
+raw_stocks_daily_close <- raw_stock_prices %>% select(Date,Adj.Close)
+rm(raw_stock_prices)
+colnames(raw_stocks_daily_close) <- c("DATE","CLOSE")
+
+## Creates missing stock prices dates (weekends and holidays) with last available data from column CLOSE
+stocks_daily <- raw_stocks_daily_close %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(CLOSE)
+rm(raw_stocks_daily_close)
+
 ## Creates missing daily t-bill rate with last available data from column RATE_360 
 tbill_daily <- raw_tbill_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(RATE_360)
-
+rm(raw_tbill_daily)
 
 # Renaming weekly/monthly tbill dataframes since no sanitization is needed.
-
 tbill_monthly <- raw_tbill_monthly
 tbill_weekly <- raw_tbill_weekly
 rm(raw_tbill_monthly,raw_tbill_weekly)
 
-
 ## Drop SERIES column, we already differentiate CPI region using column names.
-
 raw_cpi_northeast$SERIES <- NULL
 raw_cpi_south$SERIES <- NULL
 raw_cpi_midwest$SERIES <- NULL
 raw_cpi_west$SERIES <- NULL
 
-
 ## Aggregates CPI regional data into a single table.
-
 cpi_full <- left_join(raw_cpi_northeast, raw_cpi_south) %>% left_join(., raw_cpi_midwest) %>% left_join(., raw_cpi_west)
-
 rm(raw_cpi_northeast,raw_cpi_midwest,raw_cpi_south,raw_cpi_west)
 
-
 ## Drops yearly and half-yearly CPI data leaving only monthly data.
-
 cpi_monthly_a1 <- cpi_full %>% filter(!((PERIOD == "M13")|(PERIOD == "S01")|(PERIOD == "S02")))
 rm(cpi_full)
 
-
 ## Adds a proper date column for CPI data and drops strange year/period columns
-
 cpi_monthly <- bind_cols((tbill_monthly %>% select(DATE)), cpi_monthly_a1)
 rm(cpi_monthly_a1)
 cpi_monthly$YEAR <- NULL
 cpi_monthly$PERIOD <- NULL
 
-
-## Drops all stock data columns except "Date" and "Adjusted Close"
-
-stocks_daily <- raw_stock_prices %>% select(Date,Adj.Close)
-rm(raw_stock_prices)
-colnames(stocks_daily) <- c("DATE","CLOSE")
-
-
-## Creates missing stock prices dates (weekends and holidays) with last available data from column CLOSE
-stocks_daily <- stocks_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(CLOSE)
 
 sprintf("Step %i: Finished Data Sanitation", step)
 step <- step+1
