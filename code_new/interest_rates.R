@@ -170,6 +170,30 @@ sprintf("Step %i: Finished Data Sanitation", step)
 step <- step+1
 
 ### ======================================== ###
+###   T-Bill Index Calculation
+### ======================================== ###
+## Since each dataset for the tbill rates are based on a 360-day return, this section
+## will approximate this rate to a overnight rate and create a bond index.
+## A similar index for stock prices will be created in later sections.
+
+# Approximates daily overnight rates in (percent) -- See Supplementary Info for details.
+tbill_daily$RATE_1 <- (tbill_daily$RATE_360)/360
+
+# Sets up a new index column and starts index with 100 on "2003-01-01".
+tbill_daily$INDEX <- NA
+tbill_daily$INDEX[1] <- 100
+
+# Creates index for t-bills based on daily rates.
+datapoints = length(tbill_daily$INDEX)
+for(i in 1:(datapoints-1)) {
+  tbill_daily$INDEX[i+1] <- (tbill_daily$INDEX[i] * (1+tbill_daily$RATE_1[i]/100))
+}
+
+
+
+sprintf("Step %i: T-Bill Index Calculation", step)
+step <- step+1
+### ======================================== ###
 ###   Stock Return Calculation
 ### ======================================== ###
 ## This section creates stock returns that are equivalent to t-bill bank discount rates,
