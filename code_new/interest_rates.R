@@ -75,13 +75,13 @@ raw_cpi_northeast = read.csv('data_raw/bls_cpi_northeast.csv',
                              col.names=c(c_names,"CPI_NE"), 
                              colClasses=c_classes)
 
-raw_cpi_south = read.csv('data_raw/bls_cpi_south.csv',
-                          col.names=c(c_names,"CPI_SO"), 
-                          colClasses=c_classes)
-
 raw_cpi_midwest = read.csv('data_raw/bls_cpi_midwest.csv',
                            col.names=c(c_names,"CPI_MW"), 
                            colClasses=c_classes)
+
+raw_cpi_south = read.csv('data_raw/bls_cpi_south.csv',
+                         col.names=c(c_names,"CPI_SO"), 
+                         colClasses=c_classes)
 
 raw_cpi_west = read.csv('data_raw/bls_cpi_west.csv',
                         col.names=c(c_names,"CPI_WE"), 
@@ -164,18 +164,25 @@ tbill_daily$RATE_EFF_30 <- (lead(tbill_daily$INDEX_TB, n=30L) -  tbill_daily$IND
 sprintf("Step %i: T-Bill Index Calculation", step)
 step <- step+1
 ### ======================================== ###
-###   Stock Index Calculation
+###   Stock and CPI Index Calculation
 ### ======================================== ###
-## This section ... <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+## This section creates CPI and Stock indexes.
 
 ## Creates a daily stock index using "adjusted closing" prices. Base Period: "2003-01-01"
 stocks_daily$INDEX_ST <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2003-01-01"])
 
-sprintf("Step %i: Finished Stock Return Calculation", step)
+## Creates a monthly CPI index per region. Base Period: "2003-01-01"
+cpi_monthly$INDEX_CPI_NE <- 100*(cpi_monthly$CPI_NE / cpi_monthly$CPI_NE[cpi_monthly$DATE == "2003-01-01"])
+cpi_monthly$INDEX_CPI_MW <- 100*(cpi_monthly$CPI_MW / cpi_monthly$CPI_MW[cpi_monthly$DATE == "2003-01-01"])
+cpi_monthly$INDEX_CPI_SO <- 100*(cpi_monthly$CPI_SO / cpi_monthly$CPI_SO[cpi_monthly$DATE == "2003-01-01"])
+cpi_monthly$INDEX_CPI_WE <- 100*(cpi_monthly$CPI_WE / cpi_monthly$CPI_WE[cpi_monthly$DATE == "2003-01-01"])
+
+
+sprintf("Step %i: Finished Stock and CPI Index Calculation", step)
 step <- step+1
 
 ### ======================================== ###
-###   
+### 
 ### ======================================== ###
 
 
