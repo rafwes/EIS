@@ -165,7 +165,7 @@ cpi_monthly$YEAR <- NULL
 cpi_monthly$PERIOD <- NULL
 
 
-sprintf("Step %i: Finished Data Sanitation", step)
+sprintf("Step %i: Finished Data Sanitization", step)
 step <- step+1
 ### ======================================== ###
 ###   T-Bill Index Calculation
@@ -186,6 +186,7 @@ datapoints <- length(tbill_daily$INDEX_TB)
 for(i in 1:(datapoints-1)) {
   tbill_daily$INDEX_TB[i+1] <- (tbill_daily$INDEX_TB[i] * (1+tbill_daily$RATE_1[i]/100))
 }
+rm(i,datapoints)
 
 # Creates effective 360-day and 30-day rates of return based on t-bill index
 tbill_daily$RATE_EFF_360 <- (lead(tbill_daily$INDEX_TB, n=360L) -  tbill_daily$INDEX_TB)
@@ -201,13 +202,11 @@ step <- step+1
 
 
 ## Creates a daily stock index using "adjusted closing" prices. Base Period: "2003-01-01"
-
-stocks_daily$STOCK_INDEX <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2003-01-01"])
-
+stocks_daily$INDEX_ST <- 100*(stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2003-01-01"])
 
 ## Calculates stock returns for a 360-days investment using index.
 
-stocks_daily$STOCK_RETURN_360 <- stocks_daily$STOCK_INDEX - lag(stocks_daily$STOCK_INDEX, n=360L)
+stocks_daily$STOCK_RETURN_360 <- stocks_daily$INDEX_ST - lag(stocks_daily$INDEX_ST, n=360L)
 stock_returns_daily <- na.omit(stocks_daily %>% select(DATE,STOCK_RETURN_360))
 
 
@@ -245,7 +244,7 @@ class(cpi_monthly$DATE)
 class(cpi_monthly$CPI_NORTHEAST)
 class(stocks_monthly$DATE)
 class(stocks_monthly$CLOSE)
-class(stocks_monthly$STOCK_INDEX)
+class(stocks_monthly$INDEX_ST)
 class(tbill_monthly$DATE)
 class(tbill_monthly$TB4WK)
 
