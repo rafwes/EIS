@@ -184,12 +184,12 @@ tbill_daily$INDEX <- NA
 tbill_daily$INDEX[1] <- 100
 
 # Creates index for t-bills based on daily rates.
-datapoints = length(tbill_daily$INDEX)
+datapoints <- length(tbill_daily$INDEX)
 for(i in 1:(datapoints-1)) {
   tbill_daily$INDEX[i+1] <- (tbill_daily$INDEX[i] * (1+tbill_daily$RATE_1[i]/100))
 }
 
-
+tbill_daily$RATE_EFF_360 <- (lead(tbill_daily$INDEX, n=360L) -  tbill_daily$INDEX)
 
 sprintf("Step %i: T-Bill Index Calculation", step)
 step <- step+1
