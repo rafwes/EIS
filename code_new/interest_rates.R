@@ -19,10 +19,27 @@ step=as.integer(1)
 ###   Raw Data Import
 ### ======================================== ###
 
+
+## Imports Daily T-Bill Rates from FRED
+## Description: 4-Week Treasury Bill: Secondary Market Rate (DTB4WK)
+## Frequency: Daily -- Discount Basis*
+## Unit: Percent, Not Seasonally Adjusted 
+## Yields in percent per annum
+## Dates: January 2003 - December 2016
+## Source: https://fred.stlouisfed.org/series/DTB4WK
+## Primary Source: Board of Governors of the Federal Reserve System (US)
+## Retrival Date: March 17, 2020
+
+raw_tbill_daily = read.csv('data_raw/fred_tbill_rates_daily.csv',
+                           col.names=c("DATE","RATE_360"),
+                           colClasses=c("Date","numeric"),
+                           na.strings=c("NA","."))
+
 ## Imports Weekly T-Bill Rates from FRED
 ## Description: 4-Week Treasury Bill: Secondary Market Rate (WTB4WK)
-## Frequency: Weekly, Ending Friday -- Averages of business days -- Bank Discount*
+## Frequency: Weekly, Ending Friday -- Averages of business days -- Discount Basis*
 ## Unit: Percent, Not Seasonally Adjusted 
+## Yields in percent per annum
 ## Dates: January 2003 - December 2016
 ## Source: https://fred.stlouisfed.org/series/WTB4WK
 ## Primary Source: Board of Governors of the Federal Reserve System (US)
@@ -34,8 +51,9 @@ raw_tbill_weekly = read.csv('data_raw/fred_tbill_rates_weekly.csv',
 
 ## Imports Monthly T-Bill Rates from FRED
 ## Description: 4-Week Treasury Bill: Secondary Market Rate (TB4WK)
-## Frequency: Monthly -- Averages of business days -- Bank Discount*
-## Unit: Percent, Not Seasonally Adjusted 
+## Frequency: Monthly -- Averages of business days -- Discount Basis*
+## Unit: Percent, Not Seasonally Adjusted
+## Yields in percent per annum
 ## Dates: January 2003 - December 2016
 ## Source: https://fred.stlouisfed.org/series/TB4WK
 ## Primary Source: Board of Governors of the Federal Reserve System (US)
@@ -108,7 +126,12 @@ step <- step+1
 ## After this section we shall have saved all raw data into
 ## coherent standardized dataframes and dropped unneeded dataframes.
 
-# Renaming tbill dataframes since no sanitization is needed.
+
+## Creates missing daily t-bill rate with last available data from column RATE_360 
+tbill_daily <- raw_tbill_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(RATE_360)
+
+
+# Renaming weekly/monthly tbill dataframes since no sanitization is needed.
 
 tbill_monthly <- raw_tbill_monthly
 tbill_weekly <- raw_tbill_weekly
@@ -151,7 +174,7 @@ rm(raw_stock_prices)
 colnames(stocks_daily) <- c("DATE","CLOSE")
 
 
-## Fills missing stock prices dates (weekends and holidays) with last available CLOSE data
+## Creates missing stock prices dates (weekends and holidays) with last available data from column CLOSE
 stocks_daily <- stocks_daily %>% complete(DATE = seq.Date(min(DATE), max(DATE), by="day")) %>% fill(CLOSE)
 
 sprintf("Step %i: Finished Data Sanitation", step)
