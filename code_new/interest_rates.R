@@ -6,9 +6,6 @@ rm(list=ls())
 
 library(tidyverse)
 library(zoo)
-#library(dplyr)
-#library(tidyr)
-#library(lubridate)
 
 #getwd()
 #setwd()
@@ -19,7 +16,6 @@ step=as.integer(1)
 ### ======================================== ###
 ###   Raw Data Import
 ### ======================================== ###
-
 
 ## Imports Daily T-Bill Rates from FRED
 ## Description: 4-Week Treasury Bill: Secondary Market Rate (DTB4WK)
@@ -144,21 +140,21 @@ step <- step+1
 ## will approximate this rate to a overnight rate and create a bond index.
 ## A similar index for stock prices will be created in later sections.
 
-# Approximates daily overnight rates in (percent) -- See Supplementary Info for details.
+## Approximates daily overnight rates in (percent) -- See Supplementary Info for details.
 tbill_daily$RATE_1 <- (tbill_daily$RATE_360)/360
 
-# Sets up a new index column and starts index with 100 on "2003-01-01".
+## Sets up a new index column and starts index with 100 on "2003-01-01".
 tbill_daily$INDEX_TB <- NA
 tbill_daily$INDEX_TB[stocks_daily$DATE == "2003-01-01"] <- 100
 
-# Creates index for t-bills based on daily rates.
+## Creates index for t-bills based on daily rates.
 datapoints <- length(tbill_daily$INDEX_TB)
 for(i in 1:(datapoints-1)) {
   tbill_daily$INDEX_TB[i+1] <- (tbill_daily$INDEX_TB[i] * (1+tbill_daily$RATE_1[i]/100))
 }
 rm(i,datapoints)
 
-# Creates effective 360-day and 30-day rates of return based on t-bill index
+## Creates effective 360-day and 30-day rates of return based on t-bill index
 tbill_daily$RATE_EFF_360 <- (lead(tbill_daily$INDEX_TB, n=360L) -  tbill_daily$INDEX_TB)
 tbill_daily$RATE_EFF_30 <- (lead(tbill_daily$INDEX_TB, n=30L) -  tbill_daily$INDEX_TB)
 
@@ -185,6 +181,7 @@ step <- step+1
 ### ======================================== ###
 ### Index Deflation
 ### ======================================== ###
+## <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 index_table_nocpi <- left_join(tbill_daily %>% select(DATE,INDEX_TB),
                                stocks_daily %>% select(DATE,INDEX_ST))
@@ -192,12 +189,12 @@ index_table_monthcpi <- left_join(index_table_nocpi,
                                   cpi_monthly %>% select(DATE,INDEX_CPI_NE))
 rm(index_table_nocpi)
 
-# Interpolates CPI index linearly to create daily CPI index, 
-# since we only have data for the first day of the month.
+## Interpolates CPI index linearly to create daily CPI index, 
+## since we only have data for the first day of the month.
 index_table <- index_table_monthcpi %>% mutate(INDEX_CPI_NE_I=na.approx(INDEX_CPI_NE, na.rm=FALSE))
 rm(index_table_monthcpi)
 
-# Deflating T-Bills and Stock Indexes
+## Deflating T-Bills and Stock Indexes
 index_table <- index_table %>% mutate(INDEX_TB_DEF_NE = 100*INDEX_TB/INDEX_CPI_NE_I)
 index_table <- index_table %>% mutate(INDEX_ST_DEF_NE = 100*INDEX_ST/INDEX_CPI_NE_I)
 
@@ -205,19 +202,36 @@ index_table <- index_table %>% mutate(INDEX_ST_DEF_NE = 100*INDEX_ST/INDEX_CPI_N
 sprintf("Step %i: Index Deflation", step)
 step <- step+1
 ### ======================================== ###
-### blablabla
+### Real Return Rates
 ### ======================================== ###
+## >><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+## Real stock returns for 30 days
+real_rates <- index_table %>% select(DATE,INDEX_ST_DEF_NE) %>% mutate(RATE_DEF_30=lead(INDEX_ST_DEF_NE,n=30)-INDEX_ST_DEF_NE)
+#real_rates$INDEX_ST_DEF_NE <- NULL
 
 
-sprintf("Step %i: Finished blablabla", step)
+sprintf("Step %i: Finished calculating Real Return Rates", step)
 step <- step+1
-### ======================================== ###
-### blablabla
-### ======================================== ###
+
+
 
 ############# garbage bin
 if(FALSE) {
 
+  ### ======================================== ###
+  ### blablabla
+  ### ======================================== ###
+  
+  
+  sprintf("Step %i: blablabla", step)
+  step <- step+1
+  ### ======================================== ###
+  ### blablabla
+  ### ======================================== ###
+  
+  
+  
 week(raw_tbill_monthly$DATE)
 all.equal(A,stocks_weekly_dates)
 class(cpi_monthly$DATE)
