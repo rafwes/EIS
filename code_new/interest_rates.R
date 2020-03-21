@@ -211,7 +211,7 @@ tbill_daily$RATE_EFF_360 <-
   lead(tbill_daily$INDEX_TB, n=360L) - tbill_daily$INDEX_TB
 
 tbill_daily$RATE_EFF_28 <- 
-  lead(tbill_daily$INDEX_TB, n=30L) - tbill_daily$INDEX_TB
+  lead(tbill_daily$INDEX_TB, n=28L) - tbill_daily$INDEX_TB
 
 sprintf("Step %i: T-Bill Index Calculation", step)
 step <- step + 1
@@ -314,14 +314,14 @@ step <- step + 1
 real_daily_rates_28d <- 
   index_table %>% 
   transmute(DATE,
-            RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE,n=28) - INDEX_TB_DEF_NE,
-            RATE_TB_DEF_MW_28 = lead(INDEX_TB_DEF_MW,n=28) - INDEX_TB_DEF_MW,
-            RATE_TB_DEF_SO_28 = lead(INDEX_TB_DEF_SO,n=28) - INDEX_TB_DEF_SO,
-            RATE_TB_DEF_WE_28 = lead(INDEX_TB_DEF_WE,n=28) - INDEX_TB_DEF_WE,
-            RATE_ST_DEF_NE_28 = lead(INDEX_ST_DEF_NE,n=28) - INDEX_ST_DEF_NE,
-            RATE_ST_DEF_MW_28 = lead(INDEX_ST_DEF_MW,n=28) - INDEX_ST_DEF_MW,
-            RATE_ST_DEF_SO_28 = lead(INDEX_ST_DEF_SO,n=28) - INDEX_ST_DEF_SO,
-            RATE_ST_DEF_WE_28 = lead(INDEX_ST_DEF_WE,n=28) - INDEX_ST_DEF_WE)
+            RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE,n=28L) - INDEX_TB_DEF_NE,
+            RATE_TB_DEF_MW_28 = lead(INDEX_TB_DEF_MW,n=28L) - INDEX_TB_DEF_MW,
+            RATE_TB_DEF_SO_28 = lead(INDEX_TB_DEF_SO,n=28L) - INDEX_TB_DEF_SO,
+            RATE_TB_DEF_WE_28 = lead(INDEX_TB_DEF_WE,n=28L) - INDEX_TB_DEF_WE,
+            RATE_ST_DEF_NE_28 = lead(INDEX_ST_DEF_NE,n=28L) - INDEX_ST_DEF_NE,
+            RATE_ST_DEF_MW_28 = lead(INDEX_ST_DEF_MW,n=28L) - INDEX_ST_DEF_MW,
+            RATE_ST_DEF_SO_28 = lead(INDEX_ST_DEF_SO,n=28L) - INDEX_ST_DEF_SO,
+            RATE_ST_DEF_WE_28 = lead(INDEX_ST_DEF_WE,n=28L) - INDEX_ST_DEF_WE)
 
 sprintf("Step %i: Finished calculating Real Return Rates", step)
 step <- step + 1
