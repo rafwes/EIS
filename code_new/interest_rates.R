@@ -142,9 +142,16 @@ raw_cpi_midwest$SERIES <- NULL
 raw_cpi_west$SERIES <- NULL
 
 ## Aggregates CPI regional data into a single table.
-cpi_full <- left_join(raw_cpi_northeast, raw_cpi_south) %>% 
-            left_join(., raw_cpi_midwest) %>% 
-            left_join(., raw_cpi_west)
+cpi_full <- 
+  left_join(raw_cpi_northeast, 
+            raw_cpi_south,
+            by = c("YEAR", "PERIOD")) %>%
+  left_join(., 
+            raw_cpi_midwest,
+            by = c("YEAR", "PERIOD")) %>% 
+  left_join(., 
+            raw_cpi_west,
+            by = c("YEAR", "PERIOD"))
 
 rm(raw_cpi_northeast,
    raw_cpi_midwest,
@@ -203,7 +210,7 @@ rm(i,datapoints)
 tbill_daily$RATE_EFF_360 <- 
   lead(tbill_daily$INDEX_TB, n=360L) - tbill_daily$INDEX_TB
 
-tbill_daily$RATE_EFF_30 <- 
+tbill_daily$RATE_EFF_28 <- 
   lead(tbill_daily$INDEX_TB, n=30L) - tbill_daily$INDEX_TB
 
 sprintf("Step %i: T-Bill Index Calculation", step)
@@ -239,35 +246,61 @@ step <- step+1
 ### ======================================== ###
 ## <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+
+## Selects only indexes for new table
 index_table_nocpi <- 
   left_join(tbill_daily %>% 
               select(DATE, INDEX_TB), 
             stocks_daily %>% 
-              select(DATE, INDEX_ST))
+              select(DATE, INDEX_ST),
+            by = "DATE")
 
+## Matches monthly CPI indexes to the first of month
 index_table_monthcpi <-
   left_join(index_table_nocpi,
             cpi_monthly %>% 
-              select(DATE, INDEX_CPI_NE))
+              select(DATE, 
+                     INDEX_CPI_NE,
+                     INDEX_CPI_MW,
+                     INDEX_CPI_SO,
+                     INDEX_CPI_WE),
+            by = "DATE")
 
 rm(index_table_nocpi)
+
+
 
 ## Interpolates CPI index linearly to create daily CPI index, 
 ## since we only have data for the first day of the month.
 index_table <-
   index_table_monthcpi %>%
-  mutate(INDEX_CPI_NE_I = na.approx(INDEX_CPI_NE, 
-                                    na.rm=FALSE))
+  mutate(INDEX_CPI_NE = na.approx(INDEX_CPI_NE,
+                                  na.rm=FALSE),
+         INDEX_CPI_MW = na.approx(INDEX_CPI_MW,
+                                  na.rm=FALSE),
+         INDEX_CPI_SO = na.approx(INDEX_CPI_SO,
+                                  na.rm=FALSE),
+         INDEX_CPI_WE = na.approx(INDEX_CPI_WE,
+                                  na.rm=FALSE))
+
 rm(index_table_monthcpi)
+
+## Primitives not needed anymore and can be dropped
+rm(cpi_monthly,
+   stocks_daily,
+   tbill_daily)
 
 ## Deflates T-Bills and Stock Indexes
 index_table <- 
   index_table %>% 
-  mutate(INDEX_TB_DEF_NE = 100 * INDEX_TB / INDEX_CPI_NE_I)
-
-index_table <- 
-  index_table %>% 
-  mutate(INDEX_ST_DEF_NE = 100 * INDEX_ST / INDEX_CPI_NE_I)
+  mutate(INDEX_TB_DEF_NE = 100 * INDEX_TB / INDEX_CPI_NE,
+         INDEX_TB_DEF_MW = 100 * INDEX_TB / INDEX_CPI_MW,
+         INDEX_TB_DEF_SO = 100 * INDEX_TB / INDEX_CPI_SO,
+         INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE,
+         INDEX_ST_DEF_NE = 100 * INDEX_ST / INDEX_CPI_NE,
+         INDEX_ST_DEF_MW = 100 * INDEX_ST / INDEX_CPI_MW,
+         INDEX_ST_DEF_SO = 100 * INDEX_ST / INDEX_CPI_SO,
+         INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE)
 
 
 sprintf("Step %i: Index Deflation", step)
@@ -277,17 +310,23 @@ step <- step + 1
 ### ======================================== ###
 ## >><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-## Real stock returns for 30 days
-real_rates <- 
+## Real tbill/stock returns over 28 days
+real_daily_rates_28d <- 
   index_table %>% 
-  select(DATE, INDEX_ST_DEF_NE) %>% 
-  mutate(RATE_DEF_30 = lead(INDEX_ST_DEF_NE,n=30) - INDEX_ST_DEF_NE)
-
-#real_rates$INDEX_ST_DEF_NE <- NULL
-
+  transmute(DATE,
+            RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE,n=30) - INDEX_TB_DEF_NE,
+            RATE_TB_DEF_MW_28 = lead(INDEX_TB_DEF_MW,n=30) - INDEX_TB_DEF_MW,
+            RATE_TB_DEF_SO_28 = lead(INDEX_TB_DEF_SO,n=30) - INDEX_TB_DEF_SO,
+            RATE_TB_DEF_WE_28 = lead(INDEX_TB_DEF_WE,n=30) - INDEX_TB_DEF_WE,
+            RATE_ST_DEF_NE_28 = lead(INDEX_ST_DEF_NE,n=30) - INDEX_ST_DEF_NE,
+            RATE_ST_DEF_MW_28 = lead(INDEX_ST_DEF_MW,n=30) - INDEX_ST_DEF_MW,
+            RATE_ST_DEF_SO_28 = lead(INDEX_ST_DEF_SO,n=30) - INDEX_ST_DEF_SO,
+            RATE_ST_DEF_WE_28 = lead(INDEX_ST_DEF_WE,n=30) - INDEX_ST_DEF_WE)
 
 sprintf("Step %i: Finished calculating Real Return Rates", step)
 step <- step + 1
+
+
 
 
 
