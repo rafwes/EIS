@@ -61,6 +61,7 @@ head(retailers)
 # Join retailer data to trips data
 trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
+
 head(trips)
 colnames(trips)
 head(trips$channel_type)
