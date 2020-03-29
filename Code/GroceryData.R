@@ -18,7 +18,7 @@ retailersCols <- c('retailer_code', 'channel_type')
 tripsPanelistsCols <- unique(c(tripsCols, panelistsCols))
 
 # Create empty matrix
-tripsPanelists <- setNames(data.frame(matrix(ncol = 3, nrow = 0)), tripsPanelistsCols)
+tripsPanelists <- setNames(data.frame(matrix(ncol = 23, nrow = 0)), tripsPanelistsCols)
 
 # Loop through all the years
 for (ii in length(years)) {
