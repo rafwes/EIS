@@ -43,7 +43,8 @@ for (ii in length(years)) {
   head(tripsPanelistsTemp)
   
   # Arrange data as planned
-  tripsPanelistsTemp <- select(tripsPanelistsTemp, tripsPanelistsCols)
+  tripsPanelistsTemp <- tripsPanelistsTemp %>%
+    select(tripsPanelistsCols)
   head(tripsPanelistsTemp)
   
   # Bind trips data together
@@ -61,10 +62,13 @@ head(retailers)
 trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
 head(trips)
+colnames(trips)
+head(trips$channel_type)
 unique(trips$channel_type)
 
 # Restrict for grocery purchases
-GroceryTrips <- filter(trips, channel_type == 'Grocery')
+GroceryTrips <- trips %>%
+  filter(channel_type == 'Grocery')
 print("GroceryTrips")
 # How does it look?
 head(GroceryTrips)
