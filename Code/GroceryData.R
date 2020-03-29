@@ -25,34 +25,42 @@ for (ii in length(years)) {
   
   # Select year
   year <- years[ii]
+  print(year)
   
   # Get panelists file
   panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
   panelistsTemp <- read_tsv(panelistsFileName, col_names=panelistsCols)
+  head(panelistsTemp)
   
   # Get trips file
   tripsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/trips_", year, ".tsv"))
   tripsTemp <- read_tsv(tripsFileName, col_names=tripsCols)
+  head(tripsTemp)
   
   # Join trips and panelists together
   tripsPanelistsTemp <- tripsTemp %>%
     left_join(panelistsTemp, by=c('household_code'='household_code', 'panel_year'='panel_year'))
+  head(tripsPanelistsTemp)
   
   # Arrange data as planned
   tripsPanelistsTemp <- select(tripsPanelistsTemp, tripsPanelistsCols)
+  head(tripsPanelistsTemp)
   
   # Bind trips data together
   tripsPanelists <- rbind(tripsPanelists, tripsPanelistsTemp)
+  head(tripsPanelists)
   
 }
 
 # Get retailer data
 retailersFileName <- file.path(base.path, paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
 retailers <- read_tsv(retailersFileName, col_names=retailersCols)
+head(retailers)
 
 # Join retailer data to trips data
 trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
+head(trips)
 
 # Restrict for grocery purchases
 GroceryTrips <- trips %>%
