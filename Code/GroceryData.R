@@ -61,11 +61,11 @@ head(retailers)
 trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
 head(trips)
+unique(trips$channel_type)
 
 # Restrict for grocery purchases
-GroceryTrips <- trips %>%
-  filter(channel_type == 'Grocery')
-
+GroceryTrips <- filter(trips, channel_type == 'Grocery')
+print("GroceryTrips")
 # How does it look?
 head(GroceryTrips)
 
