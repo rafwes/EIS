@@ -28,7 +28,7 @@ for (ii in length(years)) {
   
   # Get panelists file
   panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
-  panelistsTemp <- read_tsv(paneliststemp, col_names=panelistsCols)
+  panelistsTemp <- read_tsv(panelistsFileName, col_names=panelistsCols)
   
   # Get trips file
   tripsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/trips_", year, ".tsv"))
