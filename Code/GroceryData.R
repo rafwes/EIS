@@ -6,7 +6,6 @@ base.path <- '/extra/agalvao/eis_nielsen'
 
 # We have data from 2004 to 2017
 years <- seq(2004, 2017)
-years <- seq(2004, 2005)
 
 # These are the columns we want to return from each dataset
 panelistsCols = c('Household_Cd', 'Panel_Year', 'Projection_Factor', 'Projection_Factor_Magnet', 'Household_Income', 'Household_Size', 'Type_Of_Residence', 'Male_Head_Age', 'Female_Head_Age', 'Male_Head_Education', 'Female_Head_Education', 'Male_Head_Occupation', 'Female_Head_Occupation', 'Male_Head_Employment', 'Female_Head_Employment', 'Marital_Status', 'Race', 'Hispanic_Origin', 'Fips_State_Desc')
@@ -22,18 +21,13 @@ tripsPanelistsCols <- unique(c(tripsCols, panelistsColsNew))
 # Create empty matrix
 tripsPanelists <- setNames(data.frame(matrix(ncol = length(tripsPanelistsCols), nrow = 0)), tripsPanelistsCols)
 
-#year <- 2004
-#panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
-#panelistsTemp <- read_tsv(panelistsFileName)
-#head(panelistsTemp)
-
 # Loop through all the years
 for (ii in length(years)) {
   
   # Select year
   year <- years[ii]
   
-  # Get panelists file
+  # Get panelists file and select columns
   panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
   panelistsTemp <- read_tsv(panelistsFileName) %>%
     select(panelistsCols)
@@ -41,7 +35,7 @@ for (ii in length(years)) {
   # Rename column names
   colnames(panelistsTemp) <- panelistsColsNew
   
-  # Get trips file
+  # Get trips file and select columns
   tripsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/trips_", year, ".tsv"))
   tripsTemp <- read_tsv(tripsFileName) %>%
     select(tripsCols)
@@ -59,7 +53,7 @@ for (ii in length(years)) {
   
 }
 
-# Get retailer data
+# Get retailer data and select columns
 retailersFileName <- file.path(base.path, paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
 retailers <- read_tsv(retailersFileName) %>%
   select(retailersCols)
@@ -68,14 +62,9 @@ retailers <- read_tsv(retailersFileName) %>%
 trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
 
-print("Why are these NA??")
-head(trips$channel_type)
-unique(trips$channel_type)
-
 # Restrict for grocery purchases
 GroceryTrips <- trips %>%
   filter(channel_type == 'Grocery')
-print("GroceryTrips")
 
 # How does it look?
 head(GroceryTrips)
