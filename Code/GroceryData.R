@@ -25,54 +25,51 @@ for (ii in length(years)) {
   
   # Select year
   year <- years[ii]
-  print(year)
   
   # Get panelists file
   panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
-  panelistsTemp <- read_tsv(panelistsFileName, col_names=panelistsCols)
-  head(panelistsTemp)
+  panelistsTemp <- read_tsv(panelistsFileName) %>%
+    select(panelistsCols)
   
   # Get trips file
   tripsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/trips_", year, ".tsv"))
-  tripsTemp <- read_tsv(tripsFileName, col_names=tripsCols)
-  head(tripsTemp)
+  tripsTemp <- read_tsv(tripsFileName) %>%
+    select(tripsCols)
   
   # Join trips and panelists together
   tripsPanelistsTemp <- tripsTemp %>%
     left_join(panelistsTemp, by=c('household_code'='household_code', 'panel_year'='panel_year'))
-  head(tripsPanelistsTemp)
   
   # Arrange data as planned
   tripsPanelistsTemp <- tripsPanelistsTemp %>%
     select(tripsPanelistsCols)
-  head(tripsPanelistsTemp)
   
   # Bind trips data together
   tripsPanelists <- rbind(tripsPanelists, tripsPanelistsTemp)
-  head(tripsPanelists)
   
 }
 
 # Get retailer data
 retailersFileName <- file.path(base.path, paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
-retailers <- read_tsv(retailersFileName, col_names=retailersCols)
-head(retailers)
+retailers <- read_tsv(retailersFileName) %>%
+  select(retailersCols)
 
 # Join retailer data to trips data
 trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
 
-head(trips)
-colnames(trips)
+print("Why are these NA??")
 head(trips$channel_type)
 unique(trips$channel_type)
 
 # Restrict for grocery purchases
-GroceryTrips <- data.frame(trips) %>%
-  dplyr::filter(channel_type == 'Grocery')
+GroceryTrips <- trips %>%
+  filter(channel_type == 'Grocery')
 print("GroceryTrips")
+
 # How does it look?
 head(GroceryTrips)
+nrow(GroceryTrips)
 
 # Write to file
 groceryFileName <- file.path(base.path, "Datasets/GroceryTrips.csv")
