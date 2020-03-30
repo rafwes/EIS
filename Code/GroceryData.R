@@ -69,7 +69,7 @@ unique(trips$channel_type)
 
 # Restrict for grocery purchases
 GroceryTrips <- data.frame(trips) %>%
-  filter(channel_type == 'Grocery')
+  dplyr::filter(channel_type == 'Grocery')
 print("GroceryTrips")
 # How does it look?
 head(GroceryTrips)
