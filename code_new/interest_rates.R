@@ -312,24 +312,25 @@ step <- step + 1
 ## We are interested on stock/t-bill real returns over a specific
 ## period of time. Lets calculate them with the deflated indexes.
 
-## Real tbill/stock returns over 28 days
-rates_real_daily_28d <- 
+## Sets the number of days over which returns will be calculated
+window_return <- 28L
+
+## Real tbill/stock returns calculation
+rates_real <- 
   index_table %>% 
   transmute(DATE,
-            RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE,n=28L) - INDEX_TB_DEF_NE,
-            RATE_ST_DEF_NE_28 = lead(INDEX_ST_DEF_NE,n=28L) - INDEX_ST_DEF_NE,
-            RATE_TB_DEF_MW_28 = lead(INDEX_TB_DEF_MW,n=28L) - INDEX_TB_DEF_MW,
-            RATE_ST_DEF_MW_28 = lead(INDEX_ST_DEF_MW,n=28L) - INDEX_ST_DEF_MW,
-            RATE_TB_DEF_SO_28 = lead(INDEX_TB_DEF_SO,n=28L) - INDEX_TB_DEF_SO,
-            RATE_ST_DEF_SO_28 = lead(INDEX_ST_DEF_SO,n=28L) - INDEX_ST_DEF_SO,
-            RATE_TB_DEF_WE_28 = lead(INDEX_TB_DEF_WE,n=28L) - INDEX_TB_DEF_WE,
-            RATE_ST_DEF_WE_28 = lead(INDEX_ST_DEF_WE,n=28L) - INDEX_ST_DEF_WE)
+            RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE, n = window_return) - INDEX_TB_DEF_NE,
+            RATE_ST_DEF_NE_28 = lead(INDEX_ST_DEF_NE, n = window_return) - INDEX_ST_DEF_NE,
+            RATE_TB_DEF_MW_28 = lead(INDEX_TB_DEF_MW, n = window_return) - INDEX_TB_DEF_MW,
+            RATE_ST_DEF_MW_28 = lead(INDEX_ST_DEF_MW, n = window_return) - INDEX_ST_DEF_MW,
+            RATE_TB_DEF_SO_28 = lead(INDEX_TB_DEF_SO, n = window_return) - INDEX_TB_DEF_SO,
+            RATE_ST_DEF_SO_28 = lead(INDEX_ST_DEF_SO, n = window_return) - INDEX_ST_DEF_SO,
+            RATE_TB_DEF_WE_28 = lead(INDEX_TB_DEF_WE, n = window_return) - INDEX_TB_DEF_WE,
+            RATE_ST_DEF_WE_28 = lead(INDEX_ST_DEF_WE, n = window_return) - INDEX_ST_DEF_WE)
 
 
 sprintf("Step %i: Finished calculating Real Return Rates", step)
 step <- step + 1
-
-
 
 
 
