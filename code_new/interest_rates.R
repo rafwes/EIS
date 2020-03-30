@@ -48,7 +48,7 @@ raw_tbill_daily <-
 
 raw_stock_prices <-
   read.csv("data_raw/yahoo_sp500_stockprices_daily.csv",
-           colClasses=c("Date", rep("numeric", 6)))
+           colClasses = c("Date", rep("numeric", 6)))
 
 
 ## Imports CPI Monthly Data
@@ -189,12 +189,16 @@ step <- step + 1
 ## A similar index for stock prices will be created in later sections.
 
 ## Approximates daily overnight rates in (percent) -- See Supplementary Info for details.
-tbill_daily$RATE_1 <- 
-  (tbill_daily$RATE_360 / 360)
+tbill_daily <- 
+  tbill_daily %>% 
+  mutate(RATE_1 = RATE_360 / 360)
 
-## Sets up a new index column and starts index with 100 on "2003-01-01".
+## Sets up a new index variable and starts index with 100 on "2003-01-01".
 tbill_daily$INDEX_TB <- NA
-tbill_daily$INDEX_TB[stocks_daily$DATE == "2003-01-01"] <- 100
+
+tbill_daily <- 
+  tbill_daily %>% 
+  mutate(INDEX_TB = replace(INDEX_TB, DATE=="2003-01-01", 100))
 
 ## Creates index for t-bills based on daily rates.
 datapoints <- length(tbill_daily$INDEX_TB)
@@ -204,7 +208,7 @@ for(i in 1:(datapoints-1)) {
     tbill_daily$INDEX_TB[i] * (1 + tbill_daily$RATE_1[i] / 100)
 }
 
-rm(i,datapoints)
+rm(i, datapoints)
 
 ## Creates effective 360-day and 30-day rates of return based on t-bill index
 tbill_daily$RATE_EFF_360 <- 
@@ -311,7 +315,7 @@ step <- step + 1
 ## >><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ## Real tbill/stock returns over 28 days
-real_daily_rates_28d <- 
+rates_real_daily_28d <- 
   index_table %>% 
   transmute(DATE,
             RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE,n=28L) - INDEX_TB_DEF_NE,
@@ -328,8 +332,6 @@ step <- step + 1
 
 
 
-
-
 ############# garbage bin
 if(FALSE) {
 
@@ -343,6 +345,89 @@ if(FALSE) {
   ### ======================================== ###
   ### blablabla
   ### ======================================== ###
+  
+  
+  
+  ### Run Some Sanity checks
+  
+  rates_nominal_daily_1d <- 
+    index_table %>% 
+    transmute(DATE,
+              RATE_TB_1 = lead(INDEX_TB,n=1L) - INDEX_TB,
+              RATE_ST_1 = lead(INDEX_ST,n=1L) - INDEX_ST)
+  
+  rates_nominal_daily_28d <- 
+    index_table %>% 
+    transmute(DATE,
+              RATE_TB_28 = lead(INDEX_TB,n=28L) - INDEX_TB,
+              RATE_ST_28 = lead(INDEX_ST,n=28L) - INDEX_ST)
+  
+  
+  rates_nominal_daily_360d <- 
+    index_table %>% 
+    transmute(DATE,
+              RATE_TB_360 = lead(INDEX_TB,n=360L) - INDEX_TB,
+              RATE_ST_360 = lead(INDEX_ST,n=360L) - INDEX_ST)
+  
+  rates_real_daily_360d <- 
+    index_table %>% 
+    transmute(DATE,
+              RATE_TB_DEF_NE_360 = lead(INDEX_TB_DEF_NE,n=360L) - INDEX_TB_DEF_NE,
+              RATE_TB_DEF_MW_360 = lead(INDEX_TB_DEF_MW,n=360L) - INDEX_TB_DEF_MW,
+              RATE_TB_DEF_SO_360 = lead(INDEX_TB_DEF_SO,n=360L) - INDEX_TB_DEF_SO,
+              RATE_TB_DEF_WE_360 = lead(INDEX_TB_DEF_WE,n=360L) - INDEX_TB_DEF_WE,
+              RATE_ST_DEF_NE_360 = lead(INDEX_ST_DEF_NE,n=360L) - INDEX_ST_DEF_NE,
+              RATE_ST_DEF_MW_360 = lead(INDEX_ST_DEF_MW,n=360L) - INDEX_ST_DEF_MW,
+              RATE_ST_DEF_SO_360 = lead(INDEX_ST_DEF_SO,n=360L) - INDEX_ST_DEF_SO,
+              RATE_ST_DEF_WE_360 = lead(INDEX_ST_DEF_WE,n=360L) - INDEX_ST_DEF_WE)
+  
+  rates_real_daily_1d <- 
+    index_table %>% 
+    transmute(DATE,
+              RATE_TB_DEF_NE_1 = lead(INDEX_TB_DEF_NE,n=1L) - INDEX_TB_DEF_NE,
+              RATE_ST_DEF_MW_1 = lead(INDEX_ST_DEF_NE,n=1L) - INDEX_ST_DEF_MW)
+  
+  
+  ggplot(data=rates_nominal_daily_360d, aes(x = DATE, y = RATE_TB_360)) + 
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_real_daily_28d, aes(x = DATE, y = RATE_TB_DEF_NE_28)) + geom_line() +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_real_daily_360d, aes(x = DATE, y = RATE_TB_DEF_NE_360)) + geom_line() +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_nominal_daily_28d, aes(x = DATE, y = RATE_TB_28)) +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_nominal_daily_1d, aes(x = DATE, y = RATE_TB_1)) +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_real_daily_1d, aes(x = DATE, y = RATE_TB_DEF_NE_1)) +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_nominal_daily_360d, aes(x = DATE, y = RATE_TB_360)) + 
+    geom_line(size = 1) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y",
+                 limits = as.Date(c('2007-06-01','2008-06-01')))
+  
+  ggplot(data=rates_real_daily_360d, aes(x = DATE, y = RATE_ST_DEF_NE_360)) +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  ggplot(data=rates_real_daily_28d, aes(x = DATE, y = RATE_ST_DEF_NE_28)) +
+    geom_line() +
+    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
+  
+  
+  
   
   
   
