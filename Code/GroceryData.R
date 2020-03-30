@@ -20,6 +20,11 @@ tripsPanelistsCols <- unique(c(tripsCols, panelistsCols))
 # Create empty matrix
 tripsPanelists <- setNames(data.frame(matrix(ncol = 23, nrow = 0)), tripsPanelistsCols)
 
+year <- 2004
+panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
+panelistsTemp <- read_tsv(panelistsFileName)
+head(panelistsTemp)
+
 # Loop through all the years
 for (ii in length(years)) {
   
