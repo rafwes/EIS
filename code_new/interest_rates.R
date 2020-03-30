@@ -319,19 +319,43 @@ window_return <- 28L
 rates_real <- 
   index_table %>% 
   transmute(DATE,
-            RATE_TB_DEF_NE_28 = lead(INDEX_TB_DEF_NE, n = window_return) - INDEX_TB_DEF_NE,
-            RATE_ST_DEF_NE_28 = lead(INDEX_ST_DEF_NE, n = window_return) - INDEX_ST_DEF_NE,
-            RATE_TB_DEF_MW_28 = lead(INDEX_TB_DEF_MW, n = window_return) - INDEX_TB_DEF_MW,
-            RATE_ST_DEF_MW_28 = lead(INDEX_ST_DEF_MW, n = window_return) - INDEX_ST_DEF_MW,
-            RATE_TB_DEF_SO_28 = lead(INDEX_TB_DEF_SO, n = window_return) - INDEX_TB_DEF_SO,
-            RATE_ST_DEF_SO_28 = lead(INDEX_ST_DEF_SO, n = window_return) - INDEX_ST_DEF_SO,
-            RATE_TB_DEF_WE_28 = lead(INDEX_TB_DEF_WE, n = window_return) - INDEX_TB_DEF_WE,
-            RATE_ST_DEF_WE_28 = lead(INDEX_ST_DEF_WE, n = window_return) - INDEX_ST_DEF_WE)
+            RATE_TB_REAL_NE = lead(INDEX_TB_DEF_NE, n = window_return) - INDEX_TB_DEF_NE,
+            RATE_ST_REAL_NE = lead(INDEX_ST_DEF_NE, n = window_return) - INDEX_ST_DEF_NE,
+            RATE_TB_REAL_MW = lead(INDEX_TB_DEF_MW, n = window_return) - INDEX_TB_DEF_MW,
+            RATE_ST_REAL_MW = lead(INDEX_ST_DEF_MW, n = window_return) - INDEX_ST_DEF_MW,
+            RATE_TB_REAL_SO = lead(INDEX_TB_DEF_SO, n = window_return) - INDEX_TB_DEF_SO,
+            RATE_ST_REAL_SO = lead(INDEX_ST_DEF_SO, n = window_return) - INDEX_ST_DEF_SO,
+            RATE_TB_REAL_WE = lead(INDEX_TB_DEF_WE, n = window_return) - INDEX_TB_DEF_WE,
+            RATE_ST_REAL_WE = lead(INDEX_ST_DEF_WE, n = window_return) - INDEX_ST_DEF_WE)
 
 
 sprintf("Step %i: Finished calculating Real Return Rates", step)
 step <- step + 1
 
+### ======================================== ###
+### Smoothing Return Rates
+### ======================================== ###
+## Rates, specially stock returns, can be quite noisy due to market
+## fluctuations and crisis in the short term. This section will 
+## smooth the rates by applying moving averages.
+
+window_smoothing <- 2L
+
+rates_real_smooth <- 
+  rates_real %>% 
+  transmute(DATE,
+            RATE_TB_REAL_MW,
+            RATE_TB_REAL_MW_SMOOTH = rollapply(RATE_TB_REAL_MW,
+                                            window_smoothing,
+                                            mean,
+                                            partial = TRUE,
+                                            align = "left"),
+            RATE_ST_REAL_MW,
+            RATE_ST_REAL_MW_SMOOTH = rollapply(RATE_ST_REAL_MW,
+                                            window_smoothing,
+                                            mean,
+                                            partial = TRUE,
+                                            align = "left"))
 
 
 ############# garbage bin
