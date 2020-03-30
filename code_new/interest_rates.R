@@ -5,6 +5,7 @@ rm(list=ls())
 
 library(tidyverse)
 library(zoo)
+library(reshape2)
 
 #getwd()
 #setwd()
@@ -339,7 +340,7 @@ step <- step + 1
 ## fluctuations and crisis in the short term. This section will 
 ## smooth the rates by applying moving averages.
 
-window_smoothing <- 2L
+window_smoothing <- 7L
 
 rates_real_smooth <- 
   rates_real %>% 
@@ -349,13 +350,69 @@ rates_real_smooth <-
                                             window_smoothing,
                                             mean,
                                             partial = TRUE,
-                                            align = "left"),
+                                            align = "center"),
             RATE_ST_REAL_MW,
             RATE_ST_REAL_MW_SMOOTH = rollapply(RATE_ST_REAL_MW,
                                             window_smoothing,
                                             mean,
                                             partial = TRUE,
-                                            align = "left"))
+                                            align = "center"))
+
+long_curve <- melt(rates_real_smooth %>% 
+                  select(DATE,
+                         RATE_ST_REAL_MW,
+                         RATE_ST_REAL_MW_SMOOTH),
+                  id = "DATE")
+
+
+long_points <- melt(rates_real_smooth %>%
+                      select(DATE, RATE_ST_REAL_MW_SMOOTH) %>%
+                      filter(row_number() %% 28 == 1),
+                    id = "DATE")
+
+
+ggplot() + 
+  geom_line(data = long_curve,
+            aes(x = DATE, 
+                y = value, 
+                colour = variable)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y") +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c(RATE_ST_REAL_MW = "gray", 
+                                RATE_ST_REAL_MW_SMOOTH = "darkgreen")) + 
+  geom_point(data = long_points,
+             aes(x = DATE,
+                 y = value,
+                 color = variable))
+
+
+long_curve_cut <- long_curve %>% 
+                  filter(between(DATE,
+                                 as.Date("2008-01-01"), 
+                                 as.Date("2010-01-01")))
+
+
+long_points_cut <- long_points %>% 
+                   filter(between(DATE,
+                                  as.Date("2008-01-01"), 
+                                  as.Date("2010-01-01")))
+
+ggplot() + 
+  geom_line(data = long_curve_cut,
+            aes(x = DATE, 
+                y = value, 
+                colour = variable)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y") +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c(RATE_ST_REAL_MW = "gray", 
+                                RATE_ST_REAL_MW_SMOOTH = "darkgreen")) + 
+  geom_point(data = long_points_cut,
+             aes(x = DATE,
+                 y = value,
+                 color = variable))
+
 
 
 ############# garbage bin
