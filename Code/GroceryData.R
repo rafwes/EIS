@@ -17,10 +17,10 @@ tripsCols <- c('trip_code_uc', 'household_code', 'retailer_code', 'purchase_date
 
 retailersCols <- c('retailer_code', 'channel_type')
 
-tripsPanelistsCols <- unique(c(tripsCols, panelistsCols))
+tripsPanelistsCols <- unique(c(tripsCols, panelistsColsNew))
 
 # Create empty matrix
-tripsPanelists <- setNames(data.frame(matrix(ncol = 23, nrow = 0)), tripsPanelistsCols)
+tripsPanelists <- setNames(data.frame(matrix(ncol = length(tripsPanelistsCols), nrow = 0)), tripsPanelistsCols)
 
 #year <- 2004
 #panelistsFileName <- file.path(base.path, paste0('nielsen_extracts/HMS/', year, "/Annual_Files/panelists_", year, ".tsv"))
