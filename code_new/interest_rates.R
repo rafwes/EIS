@@ -193,12 +193,15 @@ tbill_daily <-
   tbill_daily %>% 
   mutate(RATE_1 = RATE_360 / 360)
 
-## Sets up a new index variable and starts index with 100 on "2003-01-01".
+## Index calculations below shall follow a single base date.
+base_date <- "2003-01-01"
+
+## Sets up a new index variable and starts index with 100 on base date.
 tbill_daily$INDEX_TB <- NA
 
 tbill_daily <- 
   tbill_daily %>% 
-  mutate(INDEX_TB = replace(INDEX_TB, DATE=="2003-01-01", 100))
+  mutate(INDEX_TB = replace(INDEX_TB, DATE == base_date, 100))
 
 ## Creates index for t-bills based on daily rates.
 datapoints <- length(tbill_daily$INDEX_TB)
@@ -218,21 +221,26 @@ step <- step + 1
 ## This section creates CPI and Stock indexes.
 
 ## Creates a daily stock index using "adjusted closing" prices. Base Period: "2003-01-01"
-stocks_daily$INDEX_ST <- 
-  100 * (stocks_daily$CLOSE / stocks_daily$CLOSE[stocks_daily$DATE == "2003-01-01"])
+stocks_daily <- 
+  stocks_daily %>% 
+  mutate(INDEX_ST = 100 * CLOSE / CLOSE[DATE == base_date])
+
 
 ## Creates a monthly CPI index per region. Base Period: "2003-01-01"
 cpi_monthly$INDEX_CPI_NE <- 
-  100 * (cpi_monthly$CPI_NE / cpi_monthly$CPI_NE[cpi_monthly$DATE == "2003-01-01"])
+  100 * (cpi_monthly$CPI_NE / cpi_monthly$CPI_NE[cpi_monthly$DATE == base_date])
 
 cpi_monthly$INDEX_CPI_MW <- 
-  100 * (cpi_monthly$CPI_MW / cpi_monthly$CPI_MW[cpi_monthly$DATE == "2003-01-01"])
+  100 * (cpi_monthly$CPI_MW / cpi_monthly$CPI_MW[cpi_monthly$DATE == base_date])
 
 cpi_monthly$INDEX_CPI_SO <- 
-  100 * (cpi_monthly$CPI_SO / cpi_monthly$CPI_SO[cpi_monthly$DATE == "2003-01-01"])
+  100 * (cpi_monthly$CPI_SO / cpi_monthly$CPI_SO[cpi_monthly$DATE == base_date])
 
 cpi_monthly$INDEX_CPI_WE <- 
-  100 * (cpi_monthly$CPI_WE / cpi_monthly$CPI_WE[cpi_monthly$DATE == "2003-01-01"])
+  100 * (cpi_monthly$CPI_WE / cpi_monthly$CPI_WE[cpi_monthly$DATE == base_date])
+
+
+
 
 
 sprintf("Step %i: Finished Stock and CPI Index Calculation", step)
