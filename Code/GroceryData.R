@@ -82,8 +82,9 @@ Consumption <- tripsGrocery %>%
   ungroup()
 
 GroceryTrips <- tripsGrocery %>%
+  select(groceryTripsIndex) %>%
   left_join(Consumption, by=c("household_code", "purchase_date", "panel_year")) %>%
-  select(groceryTripsIndex)
+  select(groceryTripsCols)
 
 # How does it look?
 head(GroceryTrips)
