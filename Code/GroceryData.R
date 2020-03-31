@@ -18,6 +18,10 @@ retailersCols <- c('retailer_code', 'channel_type')
 
 tripsPanelistsCols <- unique(c(tripsCols, panelistsColsNew))
 
+groceryTripsIndex <- c('household_code', 'purchase_date', 'panel_year', 'projection_factor', 'projection_factor_magnet', 'household_income', 'household_size', 'type_of_residence', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'male_head_occupation', 'female_head_occupation', 'male_head_employment', 'female_head_employment', 'marital_status', 'race', 'hispanic_origin', 'fips_state_descr')
+
+groceryTripsCols <- c('household_code', 'purchase_date', 'panel_year', 'total_spent', 'projection_factor', 'projection_factor_magnet', 'household_income', 'household_size', 'type_of_residence', 'male_head_age', 'female_head_age', 'male_head_education', 'female_head_education', 'male_head_occupation', 'female_head_occupation', 'male_head_employment', 'female_head_employment', 'marital_status', 'race', 'hispanic_origin', 'fips_state_descr')
+
 # Create empty matrix
 tripsPanelists <- setNames(data.frame(matrix(ncol = length(tripsPanelistsCols), nrow = 0)), tripsPanelistsCols)
 
@@ -63,8 +67,23 @@ trips <- tripsPanelists %>%
   left_join(retailers, by='retailer_code')
 
 # Restrict for grocery purchases
-GroceryTrips <- trips %>%
+tripsGrocery <- trips %>%
   filter(channel_type == 'Grocery')
+
+# How does it look?
+head(tripsGrocery)
+nrow(tripsGrocery)
+
+# Aggregate from trip level to daily level
+Consumption <- tripsGrocery %>%
+  select(household_code, purchase_date, panel_year, total_spent) %>%
+  group_by(household_code, panel_year, purchase_date) %>%
+  summarise(total_spent = sum(total_spent)) %>%
+  ungroup()
+
+GroceryTrips <- tripsGrocery %>%
+  left_join(Consumption, by=c("household_code", "purchase_date", "panel_year")) %>%
+  select(groceryTripsIndex)
 
 # How does it look?
 head(GroceryTrips)
