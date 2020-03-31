@@ -81,9 +81,12 @@ Consumption <- tripsGrocery %>%
   summarise(total_spent = sum(total_spent)) %>%
   ungroup()
 
-GroceryTrips <- tripsGrocery %>%
+GroceryConst <- tripsGrocery %>%
   select(groceryTripsIndex) %>%
-  left_join(Consumption, by=c("household_code", "purchase_date", "panel_year")) %>%
+  distinct()
+
+GroceryTrips <- Consumption %>%
+  left_join(GroceryConst, by=c("household_code", "purchase_date", "panel_year")) %>%
   select(groceryTripsCols)
 
 # How does it look?
