@@ -340,7 +340,8 @@ step <- step + 1
 ## fluctuations and crisis in the short term. This section will 
 ## smooth the rates by applying moving averages.
 
-window_smoothing <- 7L
+window_smoothing <- 5L
+spacing <- 7L
 
 rates_real_smooth <- 
   rates_real %>% 
@@ -367,7 +368,7 @@ long_curve <- melt(rates_real_smooth %>%
 
 long_points <- melt(rates_real_smooth %>%
                       select(DATE, RATE_ST_REAL_MW_SMOOTH) %>%
-                      filter(row_number() %% 28 == 1),
+                      filter(row_number() %% spacing == 1),
                     id = "DATE")
 
 
@@ -413,7 +414,85 @@ ggplot() +
                  y = value,
                  color = variable))
 
+rm(long_curve,long_curve_cut,long_points,long_points_cut)
 
+## Redo for TBills
+
+window_smoothing <- 28L
+spacing <- 28L
+
+rates_real_smooth <- 
+  rates_real %>% 
+  transmute(DATE,
+            RATE_TB_REAL_MW,
+            RATE_TB_REAL_MW_SMOOTH = rollapply(RATE_TB_REAL_MW,
+                                               window_smoothing,
+                                               mean,
+                                               partial = TRUE,
+                                               align = "center"),
+            RATE_ST_REAL_MW,
+            RATE_ST_REAL_MW_SMOOTH = rollapply(RATE_ST_REAL_MW,
+                                               window_smoothing,
+                                               mean,
+                                               partial = TRUE,
+                                               align = "center"))
+
+long_curve <- melt(rates_real_smooth %>% 
+                     select(DATE,
+                            RATE_TB_REAL_MW,
+                            RATE_TB_REAL_MW_SMOOTH),
+                   id = "DATE")
+
+
+long_points <- melt(rates_real_smooth %>%
+                      select(DATE, RATE_TB_REAL_MW_SMOOTH) %>%
+                      filter(row_number() %% spacing == 1),
+                    id = "DATE")
+
+
+ggplot() + 
+  geom_line(data = long_curve,
+            aes(x = DATE, 
+                y = value, 
+                colour = variable)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y") +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c(RATE_TB_REAL_MW = "gray", 
+                                RATE_TB_REAL_MW_SMOOTH = "darkgreen")) + 
+  geom_point(data = long_points,
+             aes(x = DATE,
+                 y = value,
+                 color = variable))
+
+
+long_curve_cut <- long_curve %>% 
+  filter(between(DATE,
+                 as.Date("2008-01-01"), 
+                 as.Date("2010-01-01")))
+
+
+long_points_cut <- long_points %>% 
+  filter(between(DATE,
+                 as.Date("2008-01-01"), 
+                 as.Date("2010-01-01")))
+
+ggplot() + 
+  geom_line(data = long_curve_cut,
+            aes(x = DATE, 
+                y = value, 
+                colour = variable)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y") +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c(RATE_TB_REAL_MW = "gray", 
+                                RATE_TB_REAL_MW_SMOOTH = "darkgreen")) + 
+  geom_point(data = long_points_cut,
+             aes(x = DATE,
+                 y = value,
+                 color = variable))
+
+rm(long_curve,long_curve_cut,long_points,long_points_cut)
 
 ############# garbage bin
 if(FALSE) {
@@ -428,6 +507,12 @@ if(FALSE) {
   ### ======================================== ###
   ### blablabla
   ### ======================================== ###
+  
+  
+  
+  
+  
+  
   
   
   
