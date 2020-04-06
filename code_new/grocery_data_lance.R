@@ -173,8 +173,7 @@ for (ii in length(years)) {
               by=c('household_code'='household_code', 
                    'panel_year'='panel_year')) %>%
     select(tripsPanelistsCols)
-    # Arrange data as desired
-  
+
   # Bind data together from previous years
   tripsPanelists <- 
     rbind(tripsPanelists, 
@@ -198,7 +197,8 @@ retailers <-
 # Join retailer data to trips data
 trips <- 
   tripsPanelists %>% 
-  left_join(retailers, by='retailer_code')
+  left_join(retailers, 
+            by='retailer_code')
 
 # Restrict for grocery purchases
 onlyGroceryTrips <- 
