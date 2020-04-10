@@ -7,6 +7,7 @@ base.path <- '/extra/agalvao/eis_nielsen'
 # We have data from 2004 to 2017
 years <- seq(2004, 2016)
 
+# Initialize variable
 households <- NULL
 
 for (i in length(years)) {
@@ -39,21 +40,22 @@ for (i in length(years)) {
 ## Control what is sampled
 set.seed(1)
 
-class(households)
 glimpse(households)
-length(households)
+length(unique(households))
+
+# Select which households we will track
+households_sample <- 
+  unique(households) %>% 
+  sample(15)
+
+# check it out
+households_sample
 
 
 ############# garbage bin
 if(FALSE) {
   
-  ## Select which households we will track
-  households_sample <- 
-    unique(households) %>% 
-    sample(15)
-  
-  ## check it out
-  households_sample
+
   
   
   # Columns to use from the Panelists data
