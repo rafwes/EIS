@@ -30,7 +30,7 @@ for (i in length(years)) {
     unlist() %>% 
     as.numeric()
   
-  lenght(households_temp)
+  length(households_temp)
   
   # Bind data together from previous years
 
