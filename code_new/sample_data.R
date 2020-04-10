@@ -31,6 +31,8 @@ for (i in length(years)) {
     as.numeric()
   
   print(length(households_temp))
+  # show progress, not only final result
+  flush.console()
   
   # Bind data together from previous years
 
