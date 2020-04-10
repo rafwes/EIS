@@ -11,7 +11,7 @@ years <- seq(2004, 2017)
 ### These are the columns we want to return from each dataset
 
 # Columns to use from the Panelists data
-panelistsCols <-  
+panelists_cols <-  
   c('Household_Cd', 
     'Panel_Year', 
     'Projection_Factor', 
@@ -33,7 +33,7 @@ panelistsCols <-
     'Fips_State_Desc')
 
 # Columns to rename the panelists data for consistency
-panelistsColsNew <- 
+panelists_cols_new <- 
   c('household_code', 
     'panel_year', 
     'projection_factor', 
@@ -55,7 +55,7 @@ panelistsColsNew <-
     'fips_state_descr')
 
 # Columns to use from the Trips data
-tripsCols <- 
+trips_cols <- 
   c('trip_code_uc', 
     'household_code', 
     'retailer_code', 
@@ -64,15 +64,15 @@ tripsCols <-
     'total_spent')
 
 # Columns to use from the Retailer data
-retailersCols <- 
+retailers_cols <- 
   c('retailer_code', 
     'channel_type')
 
 # Columns to use when combining Trips and Panelists
-tripsPanelistsCols <- unique(c(tripsCols, panelistsColsNew))
+trips_panelists_cols <- unique(c(trips_cols, panelists_cols_new))
 
 # Columns to pull out while aggregating over total_spent
-groceryTripsIndex <- 
+grocery_trips_index <- 
   c('household_code', 
     'purchase_date', 
     'panel_year', 
@@ -95,7 +95,7 @@ groceryTripsIndex <-
     'fips_state_descr')
 
 # Final dataset columns
-groceryTripsCols <- 
+grocery_trips_cols <- 
   c('household_code', 
     'purchase_date', 
     'panel_year', 
@@ -122,21 +122,21 @@ groceryTripsCols <-
 ### Pull in raw data
 
 # Create empty matrix
-tripsPanelists <- 
-  setNames(data.frame(matrix(ncol = length(tripsPanelistsCols),
+trips_panelists <- 
+  setNames(data.frame(matrix(ncol = length(trips_panelists_cols),
                              nrow = 0)),
-           tripsPanelistsCols)
+           trips_panelists_cols)
 
 # Loop through all the years to pull in the data
 # The data is in separate sub-folders for each year
-for (ii in length(years)) {
+for (i in length(years)) {
   
   # Select year
-  year <- years[ii]
+  year <- years[i]
   
   # Get panelists file and select columns
   # This file contains household characteristics
-  panelistsFileName <- 
+  panelists_filename <- 
     file.path(base.path, 
               paste0('nielsen_extracts/HMS/', 
                      year, 
@@ -144,17 +144,17 @@ for (ii in length(years)) {
                      year, 
                      ".tsv"))
   
-  panelistsTemp <- 
-    read_tsv(panelistsFileName) %>% 
-    select(panelistsCols)
+  panelists_temp <- 
+    read_tsv(panelists_filename) %>% 
+    select(panelists_cols)
   
   # Rename column names for consistency
-  colnames(panelistsTemp) <- panelistsColsNew
+  colnames(panelists_temp) <- panelists_cols_new
   
   # Get trips file and select columns
   # This file contains the total amount spent per trip
   # There may be multiple trips per day
-  tripsFileName <- 
+  trips_filename <- 
     file.path(base.path, 
               paste0('nielsen_extracts/HMS/', 
                      year, 
@@ -162,22 +162,22 @@ for (ii in length(years)) {
                      year, 
                      ".tsv"))
   
-  tripsTemp <- 
-    read_tsv(tripsFileName) %>% 
-    select(tripsCols)
+  trips_temp <- 
+    read_tsv(trips_filename) %>% 
+    select(trips_cols)
   
   # Join trips and panelists together
-  tripsPanelistsTemp <- 
-    tripsTemp %>%
-    left_join(panelistsTemp, 
+  trips_panelists_temp <- 
+    trips_temp %>%
+    left_join(panelists_temp, 
               by=c('household_code'='household_code', 
                    'panel_year'='panel_year')) %>%
-    select(tripsPanelistsCols)
+    select(trips_panelists_cols)
 
   # Bind data together from previous years
-  tripsPanelists <- 
-    rbind(tripsPanelists, 
-          tripsPanelistsTemp)
+  trips_panelists <- 
+    rbind(trips_panelists, 
+          trips_panelists_temp)
 }
 
 
@@ -186,17 +186,17 @@ for (ii in length(years)) {
 
 # Get retailer data and select columns
 # The retailer data is necessary to filter by grocery stores
-retailersFileName <- 
+retailers_filename <- 
   file.path(base.path, 
             paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
 
 retailers <- 
-  read_tsv(retailersFileName) %>% 
-  select(retailersCols)
+  read_tsv(retailers_filename) %>% 
+  select(retailers_cols)
 
 # Join retailer data to trips data
 trips <- 
-  tripsPanelists %>% 
+  trips_panelists %>% 
   left_join(retailers, 
             by='retailer_code')
 
@@ -223,7 +223,7 @@ Consumption <-
 # Pull out the household characteristics that don't change over the year
 groceryConst <- 
   onlyGroceryTrips %>%
-  select(groceryTripsIndex) %>%
+  select(grocery_trips_index) %>%
   distinct()
 
 # Join the household characteristics back to the aggregated daily consumption
@@ -233,7 +233,7 @@ GroceryTrips <-
             by=c("household_code", 
                  "purchase_date", 
                  "panel_year")) %>%
-  select(groceryTripsCols)
+  select(grocery_trips_cols)
 
 # How does it look?
 head(GroceryTrips)
