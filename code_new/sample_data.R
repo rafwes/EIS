@@ -30,15 +30,18 @@ for (i in length(years)) {
     unlist() %>% 
     as.numeric()
   
-  print(length(households_temp))
-  # show progress, not only final result
-  flush.console()
+
   
   # Bind data together from previous years
 
   households <- 
     c(households,
       households_temp)
+  
+  print(i)
+  print(length(households_temp))
+  # show progress, not only final result
+  flush.console()
 }
 
 ## Control what is sampled
