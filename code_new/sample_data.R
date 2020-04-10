@@ -5,7 +5,7 @@ library(tidyverse)
 base.path <- '/extra/agalvao/eis_nielsen'
 
 # We have data from 2004 to 2017
-years <- seq(2004, 2017)
+years <- seq(2004, 2016)
 
 
 for (i in length(years)) {
