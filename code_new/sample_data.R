@@ -25,7 +25,8 @@ for (i in length(years)) {
   
   households_temp <- 
     read_tsv(panelists_filename) %>% 
-    select('Household_Cd')
+    select('Household_Cd') %>% 
+    as.numeric()
   
   # Bind data together from previous years
 
