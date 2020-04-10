@@ -129,7 +129,7 @@ trips_panelists <-
 
 # Loop through all the years to pull in the data
 # The data is in separate sub-folders for each year
-for (i in length(years)) {
+for (i in 1:length(years)) {
   
   # Select year
   year <- years[i]

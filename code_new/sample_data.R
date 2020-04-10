@@ -10,7 +10,7 @@ years <- seq(2004, 2016)
 # Initialize variable
 households <- NULL
 
-for (i in length(years)) {
+for (i in 1:length(years)) {
   
   # Select year
   year <- years[i]
@@ -41,7 +41,7 @@ for (i in length(years)) {
   print(i)
   print(length(households_temp))
   # show progress, not only final result
-  flush.console()
+  #flush.console()
 }
 
 ## Control what is sampled
@@ -146,7 +146,7 @@ if(FALSE) {
   
   
 
-for (i in length(years)) {
+for (i in 1:length(years)) {
   
   # Select year
   year <- years[i]
