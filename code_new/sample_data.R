@@ -8,6 +8,8 @@ base.path <- '/extra/agalvao/eis_nielsen'
 years <- seq(2004, 2016)
 
 
+households <- NULL
+
 for (i in length(years)) {
   
   # Select year
@@ -27,22 +29,24 @@ for (i in length(years)) {
     select('Household_Cd')
   
   # Bind data together from previous years
+
   households <- 
     rbind(households, 
           households_temp)
 }
 
 
+
 ## Control what is sampled
 set.seed(1)
 
 ## Select which households we will track
-household_sample <- 
+households_sample <- 
   unique(households) %>% 
   sample(15)
 
 ## check it out
-household_sample
+households_sample
 
 
 ############# garbage bin
