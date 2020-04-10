@@ -30,17 +30,17 @@ for (i in length(years)) {
   # Bind data together from previous years
 
   households <- 
-    rbind(households, 
+    c(households, 
           households_temp)
-  
-  head(households_temp)
-  class(households_temp)
 }
 
 ## Control what is sampled
 set.seed(1)
 
-
+head(households)
+class(households)
+glimpse(households)
+nrow(households)
 
 
 ############# garbage bin
