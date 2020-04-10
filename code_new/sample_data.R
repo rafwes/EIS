@@ -25,14 +25,13 @@ for (i in length(years)) {
   
   households_temp <- 
     read_tsv(panelists_filename) %>% 
-    select('Household_Cd') %>% 
-    as.numeric()
+    select('Household_Cd')
   
   # Bind data together from previous years
 
   households <- 
-    c(households, 
-          households_temp)
+    c(households,
+      as.numeric(households_temp))
 }
 
 ## Control what is sampled
