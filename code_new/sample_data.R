@@ -32,9 +32,10 @@ for (i in length(years)) {
   households <- 
     rbind(households, 
           households_temp)
+  
+  head(households_temp)
+  class(households_temp)
 }
-
-head(households)
 
 ## Control what is sampled
 set.seed(1)
