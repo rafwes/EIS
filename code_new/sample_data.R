@@ -37,10 +37,9 @@ for (i in length(years)) {
 ## Control what is sampled
 set.seed(1)
 
-head(households)
 class(households)
 glimpse(households)
-nrow(households)
+length(households)
 
 
 ############# garbage bin
