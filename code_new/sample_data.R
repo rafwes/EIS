@@ -30,6 +30,8 @@ for (i in length(years)) {
     unlist() %>% 
     as.numeric()
   
+  lenght(households_temp)
+  
   # Bind data together from previous years
 
   households <- 
@@ -40,7 +42,7 @@ for (i in length(years)) {
 ## Control what is sampled
 set.seed(1)
 
-glimpse(households)
+length(households)
 length(unique(households))
 
 # Select which households we will track
