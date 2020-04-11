@@ -40,9 +40,10 @@ for (i in 1:length(years)) {
   #print(year)
   #print(length(households_temp))
   
-  sprintf("Year %i has %i panelists", 
-          year, 
-          length(households))
+  # does not work in loop
+  #sprintf("Year %i has %i panelists", 
+  #        year, 
+  #        length(households))
 
 }
 
@@ -105,7 +106,8 @@ for (i in 1:length(years)) {
                      ".tsv"))
   
   write_tsv(panelists_sample, 
-            panelists_sample_filename)
+            panelists_sample_filename,
+            na = "")
   
 }
 
