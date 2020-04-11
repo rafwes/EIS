@@ -40,17 +40,15 @@ for (i in 1:length(years)) {
   
   print(year)
   print(length(households_temp))
-  # show progress, not only final result
-  #flush.console()
+
 }
 
-## Control what is sampled
-set.seed(1)
+sprintf("Households in all panels: %i", length(households))
+sprintf("Unique Households: %i", length(unique(households)))
 
-print("Households in all panels:")
-length(households)
-print("Unique households:")
-length(unique(households))
+
+# Control what is sampled
+set.seed(1)
 
 # Percentage of households to sample
 factor = 0.01
