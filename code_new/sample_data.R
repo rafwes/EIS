@@ -65,18 +65,26 @@ households_sample <-
 print("glimpse(households_sample) :")
 glimpse(households_sample)
 
+
+
 # Create panelist data sample
 for (i in 1:length(years)) {
   
   # Select year
   year <- years[i]
   
-  # This file contains household characteristics
   panelists_filename <- 
     file.path(base.path, 
               paste0('nielsen_extracts/HMS/', 
                      year, 
                      "/Annual_Files/panelists_", 
+                     year, 
+                     ".tsv"))
+  trips_filename <- 
+    file.path(base.path, 
+              paste0('nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files/trips_", 
                      year, 
                      ".tsv"))
   
@@ -85,6 +93,11 @@ for (i in 1:length(years)) {
     read_tsv(panelists_filename,
              col_types = cols(.default = "c")) %>% 
     filter(Household_Cd %in% households_sample)
+  
+  trips_sample <- 
+    read_tsv(trips_filename,
+             col_types = cols(.default = "c")) %>% 
+    filter(household_code %in% households_sample)
   
   panelists_directory <- 
     file.path(base.path, 
@@ -105,10 +118,21 @@ for (i in 1:length(years)) {
                      year, 
                      ".tsv"))
   
+  trips_sample_filename <- 
+    file.path(base.path, 
+              paste0('sample_nielsen/nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files/trips_", 
+                     year, 
+                     ".tsv"))
+  
   write_tsv(panelists_sample, 
             panelists_sample_filename,
             na = "")
   
+  write_tsv(trips_sample, 
+            trips_sample_filename,
+            na = "")
 }
 
 
