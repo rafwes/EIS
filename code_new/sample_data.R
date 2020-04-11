@@ -38,7 +38,7 @@ for (i in 1:length(years)) {
     c(households,
       households_temp)
   
-  print(i)
+  print(year)
   print(length(households_temp))
   # show progress, not only final result
   #flush.console()
@@ -47,16 +47,21 @@ for (i in 1:length(years)) {
 ## Control what is sampled
 set.seed(1)
 
+print("Households in all panels:")
 length(households)
+print("Unique households:")
 length(unique(households))
+
+# Percentage of households to sample
+factor = 0.01
 
 # Select which households we will track
 households_sample <- 
   unique(households) %>% 
-  sample(15)
+  sample(factor * length(unique(households)))
 
 # check it out
-households_sample
+glimpse(households_sample)
 
 
 ############# garbage bin
