@@ -10,6 +10,8 @@ years <- seq(2004, 2016)
 # Initialize variable
 households <- NULL
 
+
+# We need a vector containing all household codes
 for (i in 1:length(years)) {
   
   # Select year
@@ -30,10 +32,7 @@ for (i in 1:length(years)) {
     unlist() %>% 
     as.numeric()
   
-
-  
   # Bind data together from previous years
-
   households <- 
     c(households,
       households_temp)
@@ -43,9 +42,8 @@ for (i in 1:length(years)) {
 
 }
 
-sprintf("Households in all panels: %i", length(households))
-sprintf("Unique Households: %i", length(unique(households)))
-
+sprintf("Total number of households: %i", length(households))
+sprintf("Unique households: %i", length(unique(households)))
 
 # Control what is sampled
 set.seed(1)
@@ -58,8 +56,44 @@ households_sample <-
   unique(households) %>% 
   sample(factor * length(unique(households)))
 
-# check it out
+# Check it out
+print("glimpse(households_sample) :")
 glimpse(households_sample)
+
+# Create panelist data sample
+for (i in 1:length(years)) {
+  
+  # Select year
+  year <- years[i]
+  
+  # This file contains household characteristics
+  panelists_filename <- 
+    file.path(base.path, 
+              paste0('nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files/panelists_", 
+                     year, 
+                     ".tsv"))
+  
+  # Reduces tsv file to samples
+  panelists_sample <- 
+    read_tsv(panelists_filename) %>% 
+    filter("Household_Cd" %in% households_sample)
+
+  # Write to file
+  panelists_sample_filename <- 
+    file.path(base.path, 
+              paste0('sample_nielsen/nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files/panelists_", 
+                     year, 
+                     ".tsv"))
+  
+  write_tsv(panelists_sample, 
+            panelists_sample_filename)
+  
+}
+
 
 
 ############# garbage bin
