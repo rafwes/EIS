@@ -79,7 +79,17 @@ for (i in 1:length(years)) {
   panelists_sample <- 
     read_tsv(panelists_filename) %>% 
     filter("Household_Cd" %in% households_sample)
-
+  
+  panelists_directory <- 
+    file.path(base.path, 
+              paste0('sample_nielsen/nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files"))
+  
+  if (!dir.exists(panelists_directory)) 
+    dir.create(panelists_directory, 
+               recursive = TRUE)
+  
   # Write to file
   panelists_sample_filename <- 
     file.path(base.path, 
