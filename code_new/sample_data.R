@@ -49,7 +49,7 @@ sprintf("Unique households: %i", length(unique(households)))
 set.seed(1)
 
 # Percentage of households to sample
-factor = 0.01
+factor = 0.05
 
 # Select which households we will track
 households_sample <- 
