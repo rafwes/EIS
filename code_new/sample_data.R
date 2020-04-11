@@ -78,7 +78,7 @@ for (i in 1:length(years)) {
   # Reduces tsv file to samples
   panelists_sample <- 
     read_tsv(panelists_filename) %>% 
-    filter("Household_Cd" %in% households_sample)
+    filter(Household_Cd %in% households_sample)
   
   panelists_directory <- 
     file.path(base.path, 
