@@ -37,8 +37,12 @@ for (i in 1:length(years)) {
     c(households,
       households_temp)
   
-  print(year)
-  print(length(households_temp))
+  #print(year)
+  #print(length(households_temp))
+  
+  sprintf("Year %i has %i panelists", 
+          year, 
+          length(households))
 
 }
 
@@ -77,7 +81,8 @@ for (i in 1:length(years)) {
   
   # Reduces tsv file to samples
   panelists_sample <- 
-    read_tsv(panelists_filename) %>% 
+    read_tsv(panelists_filename,
+             col_types = cols(.default = "c")) %>% 
     filter(Household_Cd %in% households_sample)
   
   panelists_directory <- 
@@ -108,8 +113,6 @@ for (i in 1:length(years)) {
 
 ############# garbage bin
 if(FALSE) {
-  
-
   
   
   # Columns to use from the Panelists data
