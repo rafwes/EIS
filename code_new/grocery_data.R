@@ -70,6 +70,9 @@ retailers_cols <-
   c('retailer_code', 
     'channel_type')
 
+
+if (FALSE) {
+
 # Columns to use when combining Trips and Panelists
 trips_panelists_cols <- unique(c(trips_cols, panelists_cols_new))
 
@@ -248,3 +251,6 @@ grocery_filename <-
 
 write_csv(grocery_trips, 
           grocery_filename)
+
+
+}
