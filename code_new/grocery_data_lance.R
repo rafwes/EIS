@@ -1,4 +1,3 @@
-
 library(tidyverse)
 
 base.path <- '/extra/agalvao/eis_nielsen'
@@ -201,17 +200,17 @@ trips <-
             by='retailer_code')
 
 # Restrict for grocery purchases
-onlyGroceryTrips <- 
+only_grocery_trips <- 
   trips %>%
   filter(channel_type == 'Grocery')
 
 # How does it look?
-head(onlyGroceryTrips)
-nrow(onlyGroceryTrips)
+head(only_grocery_trips)
+nrow(only_grocery_trips)
 
 # Aggregate from trip level to daily level
 Consumption <- 
-  onlyGroceryTrips %>%
+  only_grocery_trips %>%
   select(household_code, 
          purchase_date, 
          panel_year, 
@@ -221,28 +220,28 @@ Consumption <-
   ungroup()
 
 # Pull out the household characteristics that don't change over the year
-groceryConst <- 
-  onlyGroceryTrips %>%
+grocery_const <- 
+  only_grocery_trips %>%
   select(grocery_trips_index) %>%
   distinct()
 
 # Join the household characteristics back to the aggregated daily consumption
-GroceryTrips <- 
+grocery_trips <- 
   Consumption %>%
-  left_join(groceryConst, 
+  left_join(grocery_const, 
             by=c("household_code", 
                  "purchase_date", 
                  "panel_year")) %>%
   select(grocery_trips_cols)
 
 # How does it look?
-head(GroceryTrips)
-nrow(GroceryTrips)
+head(grocery_trips)
+nrow(grocery_trips)
 
 # Write to file
-groceryFileName <- 
+grocery_filename <- 
   file.path(base.path, 
-            "Datasets/GroceryTrips.csv")
+            "Datasets/grocery_trips.csv")
 
-write_csv(GroceryTrips, 
-          groceryFileName)
+write_csv(grocery_trips, 
+          grocery_filename)
