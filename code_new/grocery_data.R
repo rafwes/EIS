@@ -2,7 +2,7 @@ rm(list=ls())
 
 library(tidyverse)
 
-#base_path <- '/extra/agalvao/eis_nielsen'
+#base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # We have data from 2004 to 2017
@@ -14,75 +14,81 @@ years <- seq(2004, 2017)
 
 # Columns to use from the Panelists data
 panelists_cols <-  
-  c('Household_Cd', 
-    'Panel_Year', 
-    'Projection_Factor', 
-    'Projection_Factor_Magnet', 
-    'Household_Income', 
-    'Household_Size', 
-    'Type_Of_Residence', 
-    'Male_Head_Age', 
-    'Female_Head_Age', 
-    'Male_Head_Education', 
-    'Female_Head_Education', 
-    'Male_Head_Occupation', 
-    'Female_Head_Occupation', 
-    'Male_Head_Employment', 
-    'Female_Head_Employment', 
-    'Marital_Status', 
-    'Race', 
-    'Hispanic_Origin', 
-    'Fips_State_Desc')
+  c("Household_Cd", 
+    "Panel_Year", 
+    "Projection_Factor", 
+    "Projection_Factor_Magnet", 
+    "Household_Income", 
+    "Household_Size", 
+    "Type_Of_Residence", 
+    "Male_Head_Age", 
+    "Female_Head_Age", 
+    "Male_Head_Education", 
+    "Female_Head_Education", 
+    "Male_Head_Occupation", 
+    "Female_Head_Occupation", 
+    "Male_Head_Employment", 
+    "Female_Head_Employment", 
+    "Marital_Status", 
+    "Race", 
+    "Hispanic_Origin", 
+    "Fips_State_Desc")
 
 # Columns to rename the panelists data for consistency
 panelists_cols_new <- 
-  c('HOUSEHOLD_CODE', 
-    'PANEL_YEAR', 
-    'PROJECTION_FACTOR', 
-    'PROJECTION_FACTOR_MAGNET', 
-    'HOUSEHOLD_INCOME', 
-    'HOUSEHOLD_SIZE', 
-    'TYPE_OF_RESIDENCE', 
-    'MALE_HEAD_AGE', 
-    'FEMALE_HEAD_AGE', 
-    'MALE_HEAD_EDUCATION', 
-    'FEMALE_HEAD_EDUCATION', 
-    'MALE_HEAD_OCCUPATION', 
-    'FEMALE_HEAD_OCCUPATION', 
-    'MALE_HEAD_EMPLOYMENT', 
-    'FEMALE_HEAD_EMPLOYMENT', 
-    'MARITAL_STATUS', 
-    'RACE', 
-    'HISPANIC_ORIGIN', 
-    'FIPS_STATE_DESCR')
+  c("HOUSEHOLD_CODE", 
+    "PANEL_YEAR", 
+    "PROJECTION_FACTOR", 
+    "PROJECTION_FACTOR_MAGNET", 
+    "HOUSEHOLD_INCOME", 
+    "HOUSEHOLD_SIZE", 
+    "TYPE_OF_RESIDENCE", 
+    "MALE_HEAD_AGE", 
+    "FEMALE_HEAD_AGE", 
+    "MALE_HEAD_EDUCATION", 
+    "FEMALE_HEAD_EDUCATION", 
+    "MALE_HEAD_OCCUPATION", 
+    "FEMALE_HEAD_OCCUPATION", 
+    "MALE_HEAD_EMPLOYMENT", 
+    "FEMALE_HEAD_EMPLOYMENT", 
+    "MARITAL_STATUS", 
+    "RACE", 
+    "HISPANIC_ORIGIN", 
+    "FIPS_STATE_DESCR")
 
 # Columns to rename trips data for consistency
 trips_cols <- 
-  c('trip_code_uc', 
-    'household_code', 
-    'retailer_code', 
-    'purchase_date', 
-    'panel_year', 
-    'total_spent')
+  c("trip_code_uc", 
+    "household_code", 
+    "retailer_code", 
+    "purchase_date", 
+    "panel_year", 
+    "total_spent")
 
 # Columns to rename trips data for consistency
 trips_cols_new <- 
-  c('TRIP_CODE_UC', 
-    'HOUSEHOLD_CODE', 
-    'RETAILER_CODE', 
-    'PURCHASE_DATE', 
-    'PANEL_YEAR', 
-    'TOTAL_SPENT')
+  c("TRIP_CODE_UC", 
+    "HOUSEHOLD_CODE", 
+    "RETAILER_CODE", 
+    "PURCHASE_DATE", 
+    "PANEL_YEAR", 
+    "TOTAL_SPENT")
 
 # Columns to use from the Retailer data
 retailers_cols <- 
-  c('retailer_code', 
-    'channel_type')
+  c("retailer_code", 
+    "channel_type")
 
 # Columns to use from the Retailer data
 retailers_cols_new <- 
-  c('RETAILER_CODE', 
-    'CHANNEL_TYPE')
+  c("RETAILER_CODE", 
+    "CHANNEL_TYPE")
+
+
+northeast = c("ME", "VT", "NH", "MA", "RI", "CT", "NJ", "NY", "PA")
+midwest = c("OH", "MI", "IN", "IL", "WI", "MN", "IA", "MO", "ND", "SD", "NE", "KS")
+south = c("MD", "DE", "DC", "WV", "VA", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LS", "OK", "TX")
+west = c("MT", "WY", "CO", "NM", "ID", "UT", "AZ", "NV", "WA", "OR", "CA", "AK", "HI")
 
 
 ## ATTENTION, ONLY 2017!!!!!!
@@ -169,8 +175,37 @@ for (i in length(years)) {
     left_join(panelists %>% 
                 select(HOUSEHOLD_CODE,
                        FIPS_STATE_DESCR),
-              by = "HOUSEHOLD_CODE"
-              )
+              by = "HOUSEHOLD_CODE")
+  
+  consumption_ne <- 
+    consumption %>%
+    filter(FIPS_STATE_DESCR %in% northeast) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT)
+  
+  consumption_mw <- 
+    consumption %>%
+    filter(FIPS_STATE_DESCR %in% midwest) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT)
+  
+  consumption_so <- 
+    consumption %>%
+    filter(FIPS_STATE_DESCR %in% south) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT)
+  
+  consumption_we <- 
+    consumption %>%
+    filter(FIPS_STATE_DESCR %in% west) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT)
+  
+  #rm(consumption)
   
 }
 
@@ -189,9 +224,12 @@ rm(i,
 
 
 
+a <- rbind(consumption_mw,
+          consumption_ne,
+          consumption_so,
+          consumption_we)
 
-
-
+b <- anti_join(consumption,a)
 
 
 #######################################################################
