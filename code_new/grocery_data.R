@@ -162,6 +162,16 @@ for (i in length(years)) {
   
   rm(trips_retailers)
   
+  # Gather region from panelists and join to consumption
+  
+  consumption <-
+    consumption %>% 
+    left_join(panelists %>% 
+                select(HOUSEHOLD_CODE,
+                       FIPS_STATE_DESCR),
+              by = "HOUSEHOLD_CODE"
+              )
+  
 }
 
 rm(i,
