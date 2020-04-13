@@ -8,7 +8,6 @@ base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 # We have data from 2004 to 2017
 years <- seq(2004, 2017)
 
-
 ############################################
 ### These are the columns we want to return from each dataset
 
@@ -87,7 +86,7 @@ retailers_cols_new <-
 
 northeast = c("ME", "VT", "NH", "MA", "RI", "CT", "NJ", "NY", "PA")
 midwest = c("OH", "MI", "IN", "IL", "WI", "MN", "IA", "MO", "ND", "SD", "NE", "KS")
-south = c("MD", "DE", "DC", "WV", "VA", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LS", "OK", "TX")
+south = c("MD", "DE", "DC", "WV", "VA", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LS", "OK", "TX", "LA")
 west = c("MT", "WY", "CO", "NM", "ID", "UT", "AZ", "NV", "WA", "OR", "CA", "AK", "HI")
 
 
@@ -224,188 +223,9 @@ rm(i,
 
 
 
-a <- rbind(consumption_mw,
-          consumption_ne,
-          consumption_so,
-          consumption_we)
-
-b <- anti_join(consumption,a)
-
-
 #######################################################################
 
 if (FALSE) {
-
-# Columns to use when combining Trips and Panelists
-trips_panelists_cols <- unique(c(trips_cols, panelists_cols_new))
-
-# Columns to pull out while aggregating over total_spent
-grocery_trips_index <- 
-  c('household_code', 
-    'purchase_date', 
-    'panel_year', 
-    'projection_factor', 
-    'projection_factor_magnet', 
-    'household_income', 
-    'household_size', 
-    'type_of_residence', 
-    'male_head_age', 
-    'female_head_age', 
-    'male_head_education', 
-    'female_head_education', 
-    'male_head_occupation', 
-    'female_head_occupation', 
-    'male_head_employment', 
-    'female_head_employment', 
-    'marital_status', 
-    'race', 
-    'hispanic_origin', 
-    'fips_state_descr')
-
-# Final dataset columns
-grocery_trips_cols <- 
-  c('household_code', 
-    'purchase_date', 
-    'panel_year', 
-    'total_spent', 
-    'projection_factor', 
-    'projection_factor_magnet', 
-    'household_income', 
-    'household_size', 
-    'type_of_residence', 
-    'male_head_age', 
-    'female_head_age', 
-    'male_head_education', 
-    'female_head_education', 
-    'male_head_occupation', 
-    'female_head_occupation', 
-    'male_head_employment', 
-    'female_head_employment', 
-    'marital_status', 
-    'race', 
-    'hispanic_origin', 
-    'fips_state_descr')
-
-############################################
-### Pull in raw data
-
-# Create empty matrix
-trips_panelists <- 
-  setNames(data.frame(matrix(ncol = length(trips_panelists_cols),
-                             nrow = 0)),
-           trips_panelists_cols)
-
-# Loop through all the years to pull in the data
-# The data is in separate sub-folders for each year
-for (i in 1:length(years)) {
-  
-  # Select year
-  year <- years[i]
-  
-  # Get panelists file and select columns
-  # This file contains household characteristics
-  panelists_filename <- 
-    file.path(base_path, 
-              paste0('nielsen_extracts/HMS/', 
-                     year, 
-                     "/Annual_Files/panelists_", 
-                     year, 
-                     ".tsv"))
-  
-  panelists <- 
-    read_tsv(panelists_filename) %>% 
-    select(panelists_cols)
-  
-  # Rename column names for consistency
-  colnames(panelists) <- panelists_cols_new
-  
-  # Get trips file and select columns
-  # This file contains the total amount spent per trip
-  # There may be multiple trips per day
-  trips_filename <- 
-    file.path(base_path, 
-              paste0('nielsen_extracts/HMS/', 
-                     year, 
-                     "/Annual_Files/trips_", 
-                     year, 
-                     ".tsv"))
-  
-  trips <- 
-    read_tsv(trips_filename) %>% 
-    select(trips_cols)
-  
-  # Join trips and panelists together
-  trips_panelists_temp <- 
-    trips %>%
-    left_join(panelists, 
-              by=c('household_code'='household_code', 
-                   'panel_year'='panel_year')) %>%
-    select(trips_panelists_cols)
-
-  # Bind data together from previous years
-  trips_panelists <- 
-    rbind(trips_panelists, 
-          trips_panelists_temp)
-}
-
-
-############################################
-### Construct final data
-
-# Get retailer data and select columns
-# The retailer data is necessary to filter by grocery stores
-retailers_filename <- 
-  file.path(base_path, 
-            paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
-
-retailers <- 
-  read_tsv(retailers_filename) %>% 
-  select(retailers_cols)
-
-# Join retailer data to trips data
-trips <- 
-  trips_panelists %>% 
-  left_join(retailers, 
-            by='retailer_code')
-
-# Restrict for grocery purchases
-only_grocery_trips <- 
-  trips %>%
-  filter(channel_type == 'Grocery')
-
-# How does it look?
-head(only_grocery_trips)
-nrow(only_grocery_trips)
-
-# Aggregate from trip level to daily level
-consumption <- 
-  only_grocery_trips %>%
-  select(household_code, 
-         purchase_date, 
-         panel_year, 
-         total_spent) %>%
-  group_by(household_code, panel_year, purchase_date) %>%
-  summarise(total_spent = sum(total_spent)) %>%
-  ungroup()
-
-# Pull out the household characteristics that don't change over the year
-grocery_const <- 
-  only_grocery_trips %>%
-  select(grocery_trips_index) %>%
-  distinct()
-
-# Join the household characteristics back to the aggregated daily consumption
-grocery_trips <- 
-  consumption %>%
-  left_join(grocery_const, 
-            by=c("household_code", 
-                 "purchase_date", 
-                 "panel_year")) %>%
-  select(grocery_trips_cols)
-
-# How does it look?
-head(grocery_trips)
-nrow(grocery_trips)
 
 # Write to file
 grocery_filename <- 
