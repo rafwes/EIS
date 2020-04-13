@@ -94,11 +94,53 @@ for (i in length(years)) {
   # Rename column names for consistency
   colnames(panelists_temp) <- panelists_cols_new
   
+  # Get trips file and select columns
+  # This file contains the total amount spent per trip
+  # There may be multiple trips per day
+  trips_filename <- 
+    file.path(base_path, 
+              paste0('nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files/trips_", 
+                     year, 
+                     ".tsv"))
+  
+  trips_temp <- 
+    read_tsv(trips_filename) %>% 
+    select(trips_cols)
+  
+  # Get retailer data and select columns
+  # The retailer data is necessary to filter by grocery stores
+  retailers_filename <- 
+    file.path(base_path, 
+              paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
+  
+  retailers <- 
+    read_tsv(retailers_filename) %>% 
+    select(retailers_cols)
+  
+  # Join retailer data to trips data
+  trips_retailers <- 
+    trips_temp %>% 
+    left_join(retailers, 
+              by='retailer_code')
+  
+  # Multiple trips a day by the same household are summed up
+  consumption <- 
+    trips_retailers %>%
+    filter(channel_type == "Grocery") %>% 
+    select(household_code, 
+           purchase_date, 
+           panel_year, 
+           total_spent) %>%
+    group_by(household_code, panel_year, purchase_date) %>%
+    summarise(total_spent = sum(total_spent)) %>%
+    ungroup()
+  
+  
+  
+  
 }
-
-
-
-
 
 
 
@@ -256,7 +298,7 @@ head(only_grocery_trips)
 nrow(only_grocery_trips)
 
 # Aggregate from trip level to daily level
-Consumption <- 
+consumption <- 
   only_grocery_trips %>%
   select(household_code, 
          purchase_date, 
@@ -274,7 +316,7 @@ grocery_const <-
 
 # Join the household characteristics back to the aggregated daily consumption
 grocery_trips <- 
-  Consumption %>%
+  consumption %>%
   left_join(grocery_const, 
             by=c("household_code", 
                  "purchase_date", 
