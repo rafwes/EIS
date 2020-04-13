@@ -343,6 +343,33 @@ rm(i,
    )
 
 
+###################################
+# Arrange consumption data into time series
+
+consumption <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
+colnames(consumption) <- "PURCHASE_DATE" 
+
+test <- consumption_mw %>% 
+  group_by(HOUSEHOLD_CODE) %>%
+  group_split()
+
+
+for (i in 1:length(test)) {
+  
+  df <- data.frame(test[i])
+  colname <- as.character(df[[1]][1])
+  df <- rename(df, !!colname := "TOTAL_SPENT")
+  df <- df %>% select(- HOUSEHOLD_CODE)
+  
+  consumption <-
+    consumption %>% 
+    left_join(df, by = "PURCHASE_DATE")
+
+  }
+
+
+
+
 
 #######################################################################
 
@@ -355,5 +382,65 @@ grocery_filename <-
 
 write_csv(grocery_trips, 
           grocery_filename)
+
+
+
+
+
+
+
+
+
+a <- consumption_mw %>% 
+  group_by(HOUSEHOLD_CODE) %>%
+  group_split() %>% 
+  reduce(full_join, by="PURCHASE_DATE")
+
+b <- consumption_mw %>% 
+  group_by(HOUSEHOLD_CODE) %>% 
+  group_split() %>% 
+  set_names() %>% 
+  map(~ .x %>% 
+        rename_at(vars("TOTAL_SPENT"), 
+                  atest))
+
+
+
+
+
+
+
+data.frame(b)
+
+
+df1 <- tibble(
+  id_site = 1,
+  country = rep(paste0("country", 1:2), each = 3, len = 5),
+  species = rep(paste0("sp.", c(1, 3)), each = 3, len = 5),
+  min = c(100, 900, 2200, 400, 1300)
+)
+df2 <- tibble(
+  id_ref = 2,
+  country = "country3",
+  species = rep(paste0("sp.", 2:6), each = 1, len = 4),
+  min_alt = c(2700, 400, 600, 1800)
+)
+
+list(df1,df2) %>% 
+  set_names("df1", "df2")%>% 
+  map(~ .x %>% 
+        rename_at(vars(matches("(alt|site)$")), 
+                  str_replace_all, pattern = c("_alt" = "", "site" = "ref")))
+
+
+
+
+
+
+
+
+
+
+
 
 }
