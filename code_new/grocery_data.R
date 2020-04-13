@@ -84,14 +84,89 @@ retailers_cols_new <-
     "CHANNEL_TYPE")
 
 
-northeast = c("ME", "VT", "NH", "MA", "RI", "CT", "NJ", "NY", "PA")
-midwest = c("OH", "MI", "IN", "IL", "WI", "MN", "IA", "MO", "ND", "SD", "NE", "KS")
-south = c("MD", "DE", "DC", "WV", "VA", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LS", "OK", "TX", "LA")
-west = c("MT", "WY", "CO", "NM", "ID", "UT", "AZ", "NV", "WA", "OR", "CA", "AK", "HI")
+# Data will be later separated by regions
+northeast <-
+  c("ME", "VT", "NH", 
+    "MA", "RI", "CT", 
+    "NJ", "NY", "PA")
+
+midwest <- 
+  c("OH", "MI", "IN", 
+    "IL", "WI", "MN", 
+    "IA", "MO", "ND", 
+    "SD", "NE", "KS")
+
+south <- 
+  c("MD", "DE", "DC", 
+    "WV", "VA", "NC", 
+    "SC", "GA", "FL", 
+    "KY", "TN", "AL", 
+    "MS", "AR", "LS", 
+    "OK", "TX", "LA")
+
+west <- 
+  c("MT", "WY", "CO", 
+    "NM", "ID", "UT", 
+    "AZ", "NV", "WA", 
+    "OR", "CA", "AK", 
+    "HI")
 
 
-## ATTENTION, ONLY 2017!!!!!!
-for (i in length(years)) {
+panelists_cols_type <- 
+  cols(
+    .default = col_double(),
+    Panelist_ZipCd = col_character(),
+    Fips_State_Desc = col_character(),
+    Fips_County_Desc = col_character(),
+    Scantrack_Market_Identifier_Desc = col_character(),
+    DMA_Name = col_character(),
+    Wic_Indicator_Current = col_logical(),
+    Wic_Indicator_Ever_Not_Current = col_logical(),
+    Member_4_Employment = col_logical(),
+    Member_5_Employment = col_logical(),
+    Member_6_Birth = col_character(),
+    Member_6_Relationship_Sex = col_character(),
+    Member_6_Employment = col_logical(),
+    Member_7_Birth = col_character(),
+    Member_7_Relationship_Sex = col_character(),
+    Member_7_Employment = col_logical()
+  )
+
+trips_cols_type <- 
+  cols(
+    trip_code_uc = col_double(),
+    household_code = col_double(),
+    purchase_date = col_date(format = ""),
+    retailer_code = col_double(),
+    store_code_uc = col_double(),
+    panel_year = col_double(),
+    store_zip3 = col_character(),
+    total_spent = col_double()
+  )
+
+retailer_cols_type <- 
+  cols(
+    retailer_code = col_double(),
+    channel_type = col_character()
+  )
+
+
+# Get retailer data and select columns
+# The retailer data is necessary to filter by grocery stores
+retailers_filename <- 
+  file.path(base_path, 
+            paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
+
+retailers <- 
+  read_tsv(retailers_filename,
+           col_types = retailer_cols_type) %>% 
+  select(retailers_cols)
+
+# Rename column names for consistency
+colnames(retailers) <- retailers_cols_new
+
+## Import all consumption data over the years
+for (i in 1:length(years)) {
   
   # Select year
   year <- years[i]
@@ -106,13 +181,14 @@ for (i in length(years)) {
                      year, 
                      ".tsv"))
   
-  panelists <- 
-    read_tsv(panelists_filename) %>% 
+  panelists_year <- 
+    read_tsv(panelists_filename,
+             col_types = panelists_cols_type) %>% 
     select(panelists_cols)
   
   
   # Rename column names for consistency
-  colnames(panelists) <- panelists_cols_new
+  colnames(panelists_year) <- panelists_cols_new
   
   # Get trips file and select columns
   # This file contains the total amount spent per trip
@@ -126,24 +202,13 @@ for (i in length(years)) {
                      ".tsv"))
   
   trips <- 
-    read_tsv(trips_filename) %>% 
+    read_tsv(trips_filename,
+             col_types = trips_cols_type) %>% 
     select(trips_cols)
   
   # Rename column names for consistency
   colnames(trips) <- trips_cols_new
-  
-  # Get retailer data and select columns
-  # The retailer data is necessary to filter by grocery stores
-  retailers_filename <- 
-    file.path(base_path, 
-              paste0("nielsen_extracts/HMS/Master_Files/Latest/retailers.tsv"))
-  
-  retailers <- 
-    read_tsv(retailers_filename) %>% 
-    select(retailers_cols)
-  
-  # Rename column names for consistency
-  colnames(retailers) <- retailers_cols_new
+
   
   # Join retailer data to trips data
   trips_retailers <- 
@@ -151,7 +216,7 @@ for (i in length(years)) {
     left_join(retailers, 
               by="RETAILER_CODE")
   
-  rm(retailers,trips)
+  rm(trips)
   
   # Multiple trips a day by the same household are summed up
   consumption <- 
@@ -168,43 +233,86 @@ for (i in length(years)) {
   rm(trips_retailers)
   
   # Gather region from panelists and join to consumption
-  
   consumption <-
     consumption %>% 
-    left_join(panelists %>% 
+    left_join(panelists_year %>% 
                 select(HOUSEHOLD_CODE,
                        FIPS_STATE_DESCR),
               by = "HOUSEHOLD_CODE")
   
-  consumption_ne <- 
+  # We need to deflate prices by region, so separate them
+  consumption_ne_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% northeast) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT)
   
-  consumption_mw <- 
+  consumption_mw_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% midwest) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT)
   
-  consumption_so <- 
+  consumption_so_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% south) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT)
   
-  consumption_we <- 
+  consumption_we_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% west) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT)
   
-  #rm(consumption)
+  rm(consumption)
+  
+  # Agregate yearly data into single dataframes
+  if (exists("consumption_mw")) {
+    consumption_mw <- 
+      rbind(consumption_mw,
+            consumption_mw_year)
+  } else {
+    consumption_mw <- consumption_mw_year
+    }
+
+  if (exists("consumption_ne")) {
+    consumption_ne <- 
+      rbind(consumption_ne,
+            consumption_ne_year)
+  } else {
+    consumption_ne <- consumption_ne_year
+    }
+
+  if (exists("consumption_so")) {
+    consumption_so <- 
+      rbind(consumption_so,
+            consumption_so_year)
+  } else {
+    consumption_so <- consumption_so_year
+    }
+  
+  if (exists("consumption_we")) {
+    consumption_we <- 
+      rbind(consumption_we,
+            consumption_we_year)
+  } else {
+    consumption_we <- consumption_we_year
+    }
+  
+  # Do the same for panelists
+  
+  if (exists("panelists")) {
+    panelists <- 
+      rbind(panelists,
+            panelists_year)
+  } else {
+    panelists <- panelists_year
+  }
   
 }
 
@@ -214,12 +322,25 @@ rm(i,
    panelists_filename,
    panelists_cols, 
    panelists_cols_new,
+   panelists_cols_type,
    retailers_filename,
    retailers_cols,
    retailers_cols_new,
+   retailer_cols_type,
    trips_filename,
    trips_cols,
-   trips_cols_new)
+   trips_cols_new,
+   trips_cols_type,
+   midwest,
+   south,
+   northeast,
+   west,
+   consumption_mw_year,
+   consumption_ne_year,
+   consumption_so_year,
+   consumption_we_year,
+   panelists_year
+   )
 
 
 
@@ -234,6 +355,5 @@ grocery_filename <-
 
 write_csv(grocery_trips, 
           grocery_filename)
-
 
 }
