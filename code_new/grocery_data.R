@@ -101,12 +101,13 @@ for (i in length(years)) {
                      year, 
                      ".tsv"))
   
-  panelists_temp <- 
+  panelists <- 
     read_tsv(panelists_filename) %>% 
     select(panelists_cols)
   
+  
   # Rename column names for consistency
-  colnames(panelists_temp) <- panelists_cols_new
+  colnames(panelists) <- panelists_cols_new
   
   # Get trips file and select columns
   # This file contains the total amount spent per trip
@@ -119,12 +120,12 @@ for (i in length(years)) {
                      year, 
                      ".tsv"))
   
-  trips_temp <- 
+  trips <- 
     read_tsv(trips_filename) %>% 
     select(trips_cols)
   
   # Rename column names for consistency
-  colnames(trips_temp) <- trips_cols_new
+  colnames(trips) <- trips_cols_new
   
   # Get retailer data and select columns
   # The retailer data is necessary to filter by grocery stores
@@ -141,9 +142,11 @@ for (i in length(years)) {
   
   # Join retailer data to trips data
   trips_retailers <- 
-    trips_temp %>% 
+    trips %>% 
     left_join(retailers, 
               by="RETAILER_CODE")
+  
+  rm(retailers,trips)
   
   # Multiple trips a day by the same household are summed up
   consumption <- 
@@ -157,10 +160,22 @@ for (i in length(years)) {
     summarise(TOTAL_SPENT = sum(TOTAL_SPENT)) %>%
     ungroup()
   
+  rm(trips_retailers)
+  
 }
 
-
-
+rm(i,
+   year,
+   years,
+   panelists_filename,
+   panelists_cols, 
+   panelists_cols_new,
+   retailers_filename,
+   retailers_cols,
+   retailers_cols_new,
+   trips_filename,
+   trips_cols,
+   trips_cols_new)
 
 
 
@@ -249,12 +264,12 @@ for (i in 1:length(years)) {
                      year, 
                      ".tsv"))
   
-  panelists_temp <- 
+  panelists <- 
     read_tsv(panelists_filename) %>% 
     select(panelists_cols)
   
   # Rename column names for consistency
-  colnames(panelists_temp) <- panelists_cols_new
+  colnames(panelists) <- panelists_cols_new
   
   # Get trips file and select columns
   # This file contains the total amount spent per trip
@@ -267,14 +282,14 @@ for (i in 1:length(years)) {
                      year, 
                      ".tsv"))
   
-  trips_temp <- 
+  trips <- 
     read_tsv(trips_filename) %>% 
     select(trips_cols)
   
   # Join trips and panelists together
   trips_panelists_temp <- 
-    trips_temp %>%
-    left_join(panelists_temp, 
+    trips %>%
+    left_join(panelists, 
               by=c('household_code'='household_code', 
                    'panel_year'='panel_year')) %>%
     select(trips_panelists_cols)
