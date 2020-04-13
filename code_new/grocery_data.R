@@ -36,27 +36,27 @@ panelists_cols <-
 
 # Columns to rename the panelists data for consistency
 panelists_cols_new <- 
-  c('household_code', 
-    'panel_year', 
-    'projection_factor', 
-    'projection_factor_magnet', 
-    'household_income', 
-    'household_size', 
-    'type_of_residence', 
-    'male_head_age', 
-    'female_head_age', 
-    'male_head_education', 
-    'female_head_education', 
-    'male_head_occupation', 
-    'female_head_occupation', 
-    'male_head_employment', 
-    'female_head_employment', 
-    'marital_status', 
-    'race', 
-    'hispanic_origin', 
-    'fips_state_descr')
+  c('HOUSEHOLD_CODE', 
+    'PANEL_YEAR', 
+    'PROJECTION_FACTOR', 
+    'PROJECTION_FACTOR_MAGNET', 
+    'HOUSEHOLD_INCOME', 
+    'HOUSEHOLD_SIZE', 
+    'TYPE_OF_RESIDENCE', 
+    'MALE_HEAD_AGE', 
+    'FEMALE_HEAD_AGE', 
+    'MALE_HEAD_EDUCATION', 
+    'FEMALE_HEAD_EDUCATION', 
+    'MALE_HEAD_OCCUPATION', 
+    'FEMALE_HEAD_OCCUPATION', 
+    'MALE_HEAD_EMPLOYMENT', 
+    'FEMALE_HEAD_EMPLOYMENT', 
+    'MARITAL_STATUS', 
+    'RACE', 
+    'HISPANIC_ORIGIN', 
+    'FIPS_STATE_DESCR')
 
-# Columns to use from the Trips data
+# Columns to rename trips data for consistency
 trips_cols <- 
   c('trip_code_uc', 
     'household_code', 
@@ -65,10 +65,24 @@ trips_cols <-
     'panel_year', 
     'total_spent')
 
+# Columns to rename trips data for consistency
+trips_cols_new <- 
+  c('TRIP_CODE_UC', 
+    'HOUSEHOLD_CODE', 
+    'RETAILER_CODE', 
+    'PURCHASE_DATE', 
+    'PANEL_YEAR', 
+    'TOTAL_SPENT')
+
 # Columns to use from the Retailer data
 retailers_cols <- 
   c('retailer_code', 
     'channel_type')
+
+# Columns to use from the Retailer data
+retailers_cols_new <- 
+  c('RETAILER_CODE', 
+    'CHANNEL_TYPE')
 
 
 ## ATTENTION, ONLY 2017!!!!!!
@@ -81,7 +95,7 @@ for (i in length(years)) {
   # This file contains household characteristics
   panelists_filename <- 
     file.path(base_path, 
-              paste0('nielsen_extracts/HMS/', 
+              paste0("nielsen_extracts/HMS/", 
                      year, 
                      "/Annual_Files/panelists_", 
                      year, 
@@ -99,7 +113,7 @@ for (i in length(years)) {
   # There may be multiple trips per day
   trips_filename <- 
     file.path(base_path, 
-              paste0('nielsen_extracts/HMS/', 
+              paste0("nielsen_extracts/HMS/", 
                      year, 
                      "/Annual_Files/trips_", 
                      year, 
@@ -108,6 +122,9 @@ for (i in length(years)) {
   trips_temp <- 
     read_tsv(trips_filename) %>% 
     select(trips_cols)
+  
+  # Rename column names for consistency
+  colnames(trips_temp) <- trips_cols_new
   
   # Get retailer data and select columns
   # The retailer data is necessary to filter by grocery stores
@@ -119,26 +136,26 @@ for (i in length(years)) {
     read_tsv(retailers_filename) %>% 
     select(retailers_cols)
   
+  # Rename column names for consistency
+  colnames(retailers) <- retailers_cols_new
+  
   # Join retailer data to trips data
   trips_retailers <- 
     trips_temp %>% 
     left_join(retailers, 
-              by='retailer_code')
+              by="RETAILER_CODE")
   
   # Multiple trips a day by the same household are summed up
   consumption <- 
     trips_retailers %>%
-    filter(channel_type == "Grocery") %>% 
-    select(household_code, 
-           purchase_date, 
-           panel_year, 
-           total_spent) %>%
-    group_by(household_code, panel_year, purchase_date) %>%
-    summarise(total_spent = sum(total_spent)) %>%
+    filter(CHANNEL_TYPE == "Grocery") %>% 
+    select(HOUSEHOLD_CODE, 
+           PURCHASE_DATE, 
+           PANEL_YEAR, 
+           TOTAL_SPENT) %>%
+    group_by(HOUSEHOLD_CODE, PANEL_YEAR, PURCHASE_DATE) %>%
+    summarise(TOTAL_SPENT = sum(TOTAL_SPENT)) %>%
     ungroup()
-  
-  
-  
   
 }
 
