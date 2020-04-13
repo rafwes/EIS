@@ -1,9 +1,9 @@
+rm(list=ls())
+
 library(tidyverse)
 
 #base_path <- '/extra/agalvao/eis_nielsen'
-
-setwd("..")
-base_path <- getwd()
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # We have data from 2004 to 2017
 years <- seq(2004, 2017)
@@ -70,6 +70,47 @@ retailers_cols <-
   c('retailer_code', 
     'channel_type')
 
+
+## ATTENTION, ONLY 2017!!!!!!
+for (i in length(years)) {
+  
+  # Select year
+  year <- years[i]
+  
+  # Get panelists file and select columns
+  # This file contains household characteristics
+  panelists_filename <- 
+    file.path(base_path, 
+              paste0('nielsen_extracts/HMS/', 
+                     year, 
+                     "/Annual_Files/panelists_", 
+                     year, 
+                     ".tsv"))
+  
+  panelists_temp <- 
+    read_tsv(panelists_filename) %>% 
+    select(panelists_cols)
+  
+  # Rename column names for consistency
+  colnames(panelists_temp) <- panelists_cols_new
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######################################################################
 
 if (FALSE) {
 
