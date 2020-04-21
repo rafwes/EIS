@@ -1,6 +1,8 @@
 rm(list=ls())
 
 library(tidyverse)
+library(visdat)
+library(naniar)
 
 #base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -339,35 +341,9 @@ rm(i,
    consumption_ne_year,
    consumption_so_year,
    consumption_we_year,
-   panelists_year
+   panelists_year,
+   retailers
    )
-
-
-###################################
-# Arrange consumption data into time series
-
-consumption <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
-colnames(consumption) <- "PURCHASE_DATE" 
-
-test <- consumption_mw %>% 
-  group_by(HOUSEHOLD_CODE) %>%
-  group_split()
-
-
-for (i in 1:length(test)) {
-  
-  df <- data.frame(test[i])
-  colname <- as.character(df[[1]][1])
-  df <- rename(df, !!colname := "TOTAL_SPENT")
-  df <- df %>% select(- HOUSEHOLD_CODE)
-  
-  consumption <-
-    consumption %>% 
-    left_join(df, by = "PURCHASE_DATE")
-
-  }
-
-
 
 
 
@@ -383,64 +359,105 @@ grocery_filename <-
 write_csv(grocery_trips, 
           grocery_filename)
 
+}
 
 
-
-
-
-
-
-
-a <- consumption_mw %>% 
-  group_by(HOUSEHOLD_CODE) %>%
-  group_split() %>% 
-  reduce(full_join, by="PURCHASE_DATE")
-
-b <- consumption_mw %>% 
-  group_by(HOUSEHOLD_CODE) %>% 
-  group_split() %>% 
-  set_names() %>% 
-  map(~ .x %>% 
-        rename_at(vars("TOTAL_SPENT"), 
-                  atest))
-
-
-
-
-
-
-
-data.frame(b)
-
-
-df1 <- tibble(
-  id_site = 1,
-  country = rep(paste0("country", 1:2), each = 3, len = 5),
-  species = rep(paste0("sp.", c(1, 3)), each = 3, len = 5),
-  min = c(100, 900, 2200, 400, 1300)
-)
-df2 <- tibble(
-  id_ref = 2,
-  country = "country3",
-  species = rep(paste0("sp.", 2:6), each = 1, len = 4),
-  min_alt = c(2700, 400, 600, 1800)
-)
-
-list(df1,df2) %>% 
-  set_names("df1", "df2")%>% 
-  map(~ .x %>% 
-        rename_at(vars(matches("(alt|site)$")), 
-                  str_replace_all, pattern = c("_alt" = "", "site" = "ref")))
-
-
-
-
-
-
-
-
-
-
-
-
+if (FALSE) {
+  
+  ###################################
+  # Arrange consumption data into time series
+  
+  groceries_daily_mw <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
+  groceries_daily_ne <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
+  groceries_daily_so <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
+  groceries_daily_we <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
+  colnames(groceries_daily_mw) <- "PURCHASE_DATE"
+  colnames(groceries_daily_ne) <- "PURCHASE_DATE" 
+  colnames(groceries_daily_so) <- "PURCHASE_DATE" 
+  colnames(groceries_daily_we) <- "PURCHASE_DATE" 
+  
+  consumption_ts_mw <- consumption_mw %>% 
+    group_by(HOUSEHOLD_CODE) %>%
+    group_split()
+  
+  consumption_ts_ne <- consumption_ne %>% 
+    group_by(HOUSEHOLD_CODE) %>%
+    group_split()
+  
+  consumption_ts_so <- consumption_so %>% 
+    group_by(HOUSEHOLD_CODE) %>%
+    group_split()
+  
+  consumption_ts_we <- consumption_we %>% 
+    group_by(HOUSEHOLD_CODE) %>%
+    group_split()
+  
+  for (i in 1:length(consumption_ts_mw)) {
+    
+    df <- data.frame(consumption_ts_mw[i])
+    colname <- as.character(df[[1]][1])
+    df <- rename(df, !!colname := "TOTAL_SPENT")
+    df <- df %>% select(- HOUSEHOLD_CODE)
+    
+    groceries_daily_mw <-
+      groceries_daily_mw %>% 
+      left_join(df, by = "PURCHASE_DATE")
+    
+  }
+  
+  for (i in 1:length(consumption_ts_ne)) {
+    
+    df <- data.frame(consumption_ts_ne[i])
+    colname <- as.character(df[[1]][1])
+    df <- rename(df, !!colname := "TOTAL_SPENT")
+    df <- df %>% select(- HOUSEHOLD_CODE)
+    
+    groceries_daily_ne <-
+      groceries_daily_ne %>% 
+      left_join(df, by = "PURCHASE_DATE")
+    
+  }
+  
+  for (i in 1:length(consumption_ts_so)) {
+    
+    df <- data.frame(consumption_ts_so[i])
+    colname <- as.character(df[[1]][1])
+    df <- rename(df, !!colname := "TOTAL_SPENT")
+    df <- df %>% select(- HOUSEHOLD_CODE)
+    
+    groceries_daily_so <-
+      groceries_daily_so %>% 
+      left_join(df, by = "PURCHASE_DATE")
+    
+  }
+  
+  for (i in 1:length(consumption_ts_we)) {
+    
+    df <- data.frame(consumption_ts_we[i])
+    colname <- as.character(df[[1]][1])
+    df <- rename(df, !!colname := "TOTAL_SPENT")
+    df <- df %>% select(- HOUSEHOLD_CODE)
+    
+    groceries_daily_we <-
+      groceries_daily_we %>% 
+      left_join(df, by = "PURCHASE_DATE")
+    
+  }
+  
+  
+  
+  #vis_dat(groceries_daily, warn_large_data = FALSE)
+  
+  #vis_miss(groceries_daily_mw, warn_large_data = FALSE)
+  #vis_miss(groceries_daily_ne, warn_large_data = FALSE)
+  #vis_miss(groceries_daily_so, warn_large_data = FALSE)
+  #vis_miss(groceries_daily_we, warn_large_data = FALSE)
+  
+  
+  rm(df,
+     consumption_ts_mw,
+     consumption_ts_ne,
+     consumption_ts_so,
+     consumption_ts_we)
+  
 }

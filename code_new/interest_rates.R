@@ -307,6 +307,8 @@ index_table <-
 sprintf("Step %i: Index Deflation", step)
 step <- step + 1
 
+if (FALSE) {
+
 ### ======================================== ###
 ### Real Return Rates
 ### ======================================== ###
@@ -332,6 +334,7 @@ rates_real <-
 
 sprintf("Step %i: Finished calculating Real Return Rates", step)
 step <- step + 1
+
 
 ### ======================================== ###
 ### Smoothing Return Rates
@@ -493,6 +496,8 @@ ggplot() +
                  color = variable))
 
 rm(long_curve,long_curve_cut,long_points,long_points_cut)
+
+}
 
 ############# garbage bin
 if(FALSE) {
