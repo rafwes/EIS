@@ -1,5 +1,8 @@
 rm(list=ls())
 
+library(zoo)
+library(lubridate)
+
 #base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
@@ -20,3 +23,34 @@ consumption_ne_def <-
 
 rm(consumption_ne)
 
+sum_ne <- 
+  consumption_ne_def %>% 
+  arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>%
+  group_by(HOUSEHOLD_CODE, 
+           WEEK = week(PURCHASE_DATE), 
+           YEAR = year(PURCHASE_DATE)) %>% 
+  summarise(SUM = sum(TOTAL_SPENT_DEF))
+
+
+if (FALSE) {
+
+test <- 
+  consumption_ne_def %>% 
+  arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>%
+  group_by(HOUSEHOLD_CODE, 
+           WEEK = week(PURCHASE_DATE), 
+           YEAR = year(PURCHASE_DATE))
+
+
+
+test2 <- 
+  consumption_ne_def %>% 
+  arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>% 
+  group_by(HOUSEHOLD_CODE) %>% 
+  mutate(SUM_SPENT_DEF = rollapply(TOTAL_SPENT_DEF,
+                                   width = 7,
+                                   FUN = sum,
+                                   align = "left", 
+                                   partial = TRUE))
+
+}
