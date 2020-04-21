@@ -16,11 +16,11 @@ consumption_ne_def <-
   left_join(index_table %>% 
               select(DATE,INDEX_CPI_NE),
             by = c("PURCHASE_DATE" = "DATE")) %>% 
-  mutate(TOTAL_SPENT_DEF = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
+  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
   na.exclude() %>% 
   select(HOUSEHOLD_CODE,
          PURCHASE_DATE,
-         TOTAL_SPENT_DEF)
+         TOTAL_SPENT_DEF_NE)
 
 rm(consumption_ne)
 
@@ -30,64 +30,52 @@ sum_consumption_ne <-
   arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>%
   group_by(HOUSEHOLD_CODE, 
            ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
-  summarise(SUM_SPENT_WEEK_DEF = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
   ungroup()
 
+
+lag_in_weeks = 4L
+
 # For each week, take the average observed tbill/stock index
-avg_indexes_ne <- 
+# and create a log rate over 4 weeks
+avg_rates_ne <- 
   index_table %>% 
   select(DATE,INDEX_TB_DEF_NE,INDEX_ST_DEF_NE) %>% 
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
   summarise(AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
             AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE)) %>% 
-  ungroup()
+  ungroup() %>% 
+  mutate(AVG_LOG_RATE_TB_DEF_NE = 
+           log(AVG_INDEX_TB_DEF_NE) - log(lag(AVG_INDEX_TB_DEF_NE,
+                                              n = lag_in_weeks)),
+         AVG_LOG_RATE_ST_DEF_NE = 
+           log(AVG_INDEX_ST_DEF_NE) - log(lag(AVG_INDEX_ST_DEF_NE,
+                                              n = lag_in_weeks))) %>% 
+  select(ISOWEEK,
+         AVG_LOG_RATE_TB_DEF_NE,
+         AVG_LOG_RATE_ST_DEF_NE)
 
-# Transforms week/year into a single date (first day of the week)
-# in order to perform lags calculations coherently
-consumption_indexes_ne <- 
+# Calculates lagged variables, drops observations for which no
+# lags could be calculated and then joins them with rates and
+# then delivers a proper date column since.
+crude_estimator_ne <- 
   sum_consumption_ne %>% 
-  left_join(avg_indexes_ne,
+  complete(ISOWEEK,HOUSEHOLD_CODE) %>%
+  arrange(ISOWEEK) %>%
+  group_by(HOUSEHOLD_CODE) %>% 
+  mutate(LOG_SPENT_GROWTH_DEF_NE = 
+           log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE,
+                                           n = lag_in_weeks))) %>%
+  na.exclude() %>%
+  ungroup() %>% 
+  left_join(avg_rates_ne,
             by = "ISOWEEK") %>%
-  mutate(DATE = as.Date(ISOweek2date(paste(ISOWEEK,
-                                           "1",
-                                           sep = "-")))) %>%
-  select(HOUSEHOLD_CODE,
-         DATE,
-         ISOWEEK,
-         SUM_SPENT_WEEK_DEF,
-         AVG_INDEX_TB_DEF_NE,
-         AVG_INDEX_ST_DEF_NE) %>% 
-  arrange(DATE) 
+  mutate(DATE = as.Date(ISOweek2date(
+                          paste(ISOWEEK, "1", sep = "-")))) %>% 
+  select(DATE,
+         HOUSEHOLD_CODE,
+         LOG_SPENT_GROWTH_DEF_NE,
+         AVG_LOG_RATE_TB_DEF_NE,
+         AVG_LOG_RATE_ST_DEF_NE)
 
 
-
-
-x <- paste(1999:2011, "-12-31", sep = "")
-y <- as.Date(x)
-data.frame(date = format(y), weekdate = date2ISOweek(y))
-data.frame(date = x, weekdate = date2ISOweek(x))
-
-data.frame(date = format(y), week = ISOweek(y))
-a <- data.frame(date = x, week = ISOweek(x))
-
-
-w <- paste("2009-W53", 1:7, sep = "-")
-data.frame(weekdate = w, date = ISOweek2date(w))
-# convert from calendar date to week date and back to calendar date
-x <- paste(1999:2011, "-12-31", sep = "")
-w <- date2ISOweek(x)
-d <- ISOweek2date(w)
-data.frame(date = x, weekdate = w, date2 = d)
-
-
-x <- paste(1999:2011, "-12-31", sep = "")
-y <- as.Date(x)
-data.frame(date = format(y), weekday = ISOweekday(y))
-data.frame(date = x, weekday = ISOweekday(x))
-
-
-if (FALSE) {
-
-
-
-}
