@@ -203,7 +203,9 @@ tbill_daily$INDEX_TB <- NA
 
 tbill_daily <- 
   tbill_daily %>% 
-  mutate(INDEX_TB = replace(INDEX_TB, DATE == base_date, 100))
+  mutate(INDEX_TB = replace(INDEX_TB, 
+                            DATE == base_date, 
+                            100))
 
 ## Creates index for t-bills based on daily rates.
 datapoints <- length(tbill_daily$INDEX_TB)
@@ -291,7 +293,8 @@ rm(cpi_monthly,
    stocks_daily,
    tbill_daily)
 
-## Deflates T-Bills and Stock Indexes
+## Deflates T-Bills and Stock Indexes, cropping last month for
+## which there is no inflation data.
 index_table <- 
   index_table %>% 
   mutate(INDEX_TB_DEF_NE = 100 * INDEX_TB / INDEX_CPI_NE,
@@ -301,10 +304,10 @@ index_table <-
          INDEX_TB_DEF_SO = 100 * INDEX_TB / INDEX_CPI_SO,
          INDEX_ST_DEF_SO = 100 * INDEX_ST / INDEX_CPI_SO,
          INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE,
-         INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE)
+         INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE) %>%
+  drop_na()
 
-
-sprintf("Step %i: Index Deflation", step)
+sprintf("Step %i: Finished Index Deflation", step)
 step <- step + 1
 
 if (FALSE) {
