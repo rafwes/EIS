@@ -23,7 +23,6 @@ consumption_ne_def <-
 
 rm(consumption_ne)
 
-
 # Consumption data is too sparse, condense into weekly data
 sum_consumption_ne <- 
   consumption_ne_def %>% 
@@ -42,11 +41,25 @@ avg_indexes_ne <-
   summarise(AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
             AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE))
 
+# Transforms week/year into a single date (first day of the week)
+# in order to perform lags calculations coherently
 joint_data <- 
   sum_consumption_ne %>% 
   left_join(avg_indexes_ne,
-            by = c("WEEK", "YEAR"))
-
+            by = c("WEEK", "YEAR")) %>%
+  unite(YEAR,
+        WEEK,
+        col = YEAR_WEEK,
+        sep = "-") %>%
+  mutate(DATE = as.Date(paste(YEAR_WEEK,
+                              "1",
+                              sep = "-"), 
+                        "%Y-%U-%u")) %>%
+  select(HOUSEHOLD_CODE,
+         DATE,
+         SUM_SPENT_WEEK_DEF,
+         AVG_INDEX_TB_DEF_NE,
+         AVG_INDEX_ST_DEF_NE)
 
 
 
