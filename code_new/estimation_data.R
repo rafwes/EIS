@@ -23,34 +23,38 @@ consumption_ne_def <-
 
 rm(consumption_ne)
 
-sum_ne <- 
+
+# Consumption data is too sparse, condense into weekly data
+sum_consumption_ne <- 
   consumption_ne_def %>% 
   arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>%
   group_by(HOUSEHOLD_CODE, 
            WEEK = week(PURCHASE_DATE), 
            YEAR = year(PURCHASE_DATE)) %>% 
-  summarise(SUM = sum(TOTAL_SPENT_DEF))
+  summarise(SUM_SPENT_WEEK_DEF = sum(TOTAL_SPENT_DEF))
+
+# For each week, take the average observed tbill/stock index
+avg_indexes_ne <- 
+  index_table %>% 
+  select(DATE,INDEX_TB_DEF_NE,INDEX_ST_DEF_NE) %>% 
+  group_by(WEEK = week(DATE), 
+           YEAR = year(DATE)) %>% 
+  summarise(AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
+            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE))
+
+joint_data <- 
+  sum_consumption_ne %>% 
+  left_join(avg_indexes_ne,
+            by = c("WEEK", "YEAR"))
+
+
+
+
+
 
 
 if (FALSE) {
 
-test <- 
-  consumption_ne_def %>% 
-  arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>%
-  group_by(HOUSEHOLD_CODE, 
-           WEEK = week(PURCHASE_DATE), 
-           YEAR = year(PURCHASE_DATE))
 
-
-
-test2 <- 
-  consumption_ne_def %>% 
-  arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>% 
-  group_by(HOUSEHOLD_CODE) %>% 
-  mutate(SUM_SPENT_DEF = rollapply(TOTAL_SPENT_DEF,
-                                   width = 7,
-                                   FUN = sum,
-                                   align = "left", 
-                                   partial = TRUE))
 
 }
