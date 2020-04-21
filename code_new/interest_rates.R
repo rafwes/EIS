@@ -1,7 +1,7 @@
 ## This code imports daily T-Bill rates, SP500 stock prices and
 ## regional CPI data to create deflated indexes for stocks and t-bills.
 
-rm(list=ls())
+#rm(list=ls())
 
 library(tidyverse)
 library(zoo)
@@ -309,6 +309,13 @@ index_table <-
 
 sprintf("Step %i: Finished Index Deflation", step)
 step <- step + 1
+rm(step)
+
+
+
+
+
+
 
 if (FALSE) {
 
