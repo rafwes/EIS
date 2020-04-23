@@ -105,16 +105,15 @@ preliminary_estimator_ne <-
 if (FALSE) {
   
   library(plm)
-  zz <- plm(Y ~ X_ST,
+  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
             data = preliminary_estimator_ne,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   summary(zz)
   detach("package:plm", unload=TRUE)
   
+  # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
-  
-
   
 }
 
