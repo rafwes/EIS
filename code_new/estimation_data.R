@@ -58,32 +58,46 @@ avg_rates_ne <-
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
 # then delivers a proper date column since.
+# Y = log(C_t) - log(C_{t-4})   , where C_t is consumption for time t 
+# X_TB = log(1+r)               , where r is the real rate for t-bills
+# X_ST = log(1+r)               , same for stock returns
+# 
+
 crude_estimator_ne <- 
   sum_consumption_ne %>% 
   complete(ISOWEEK,HOUSEHOLD_CODE) %>%
   arrange(ISOWEEK) %>%
   group_by(HOUSEHOLD_CODE) %>% 
-  mutate(LOG_SPENT_GROWTH_DEF_NE = 
-           log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE,
-                                           n = lag_in_weeks))) %>%
+  mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE,
+                                                n = lag_in_weeks))) %>%
   na.exclude() %>%
   ungroup() %>% 
   left_join(avg_rates_ne,
             by = "ISOWEEK") %>%
-  mutate(DATE = as.Date(ISOweek2date(
-                          paste(ISOWEEK, "1", sep = "-")))) %>% 
-  select(DATE,
-         HOUSEHOLD_CODE,
-         LOG_SPENT_GROWTH_DEF_NE,
-         AVG_LOG_RATE_TB_DEF_NE,
-         AVG_LOG_RATE_ST_DEF_NE)
-
-zz <- plm(LOG_SPENT_GROWTH_DEF_NE ~ AVG_LOG_RATE_TB_DEF_NE,
-          data = crude_estimator_ne,
-          model = "pooling",
-          index = c("HOUSEHOLD_CODE", "DATE"))
+  transmute(DATE = as.Date(ISOweek2date(paste(ISOWEEK, "1", sep = "-"))),
+            HOUSEHOLD = HOUSEHOLD_CODE,
+            Y = Y,
+            X_TB = AVG_LOG_RATE_TB_DEF_NE,
+            X_ST = AVG_LOG_RATE_ST_DEF_NE)
 
 
+if (FALSE) {
+  
+  library(plm)
+  zz <- plm(Y ~ X_ST,
+            data = crude_estimator_ne,
+            model = "pooling",
+            index = c("HOUSEHOLD", "DATE"))
+  summary(zz)
+  detach("package:plm", unload=TRUE)
+  
+  #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
+
+  
+  
+  
+  
+}
 
 
 
