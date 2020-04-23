@@ -67,7 +67,8 @@ rates_log_avg_ne <-
             RATE_ST_DEF_NE = 
               log(AVG_INDEX_ST_DEF_NE) 
             - log(lag(AVG_INDEX_ST_DEF_NE,
-                      n = lag_in_weeks)))
+                      n = lag_in_weeks))) %>%
+  na.exclude()
 
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
@@ -78,7 +79,7 @@ rates_log_avg_ne <-
 # Z1    = log(C_{t-1} - log{C_{t-5}}
 
 
-crude_estimator_ne <- 
+preliminary_estimator_ne <- 
   sum_consumption_ne %>% 
   complete(ISOWEEK,HOUSEHOLD_CODE) %>%
   arrange(ISOWEEK) %>%
@@ -93,24 +94,27 @@ crude_estimator_ne <-
   transmute(DATE = as.Date(ISOweek2date(paste(ISOWEEK, "1", sep = "-"))),
             HOUSEHOLD = HOUSEHOLD_CODE,
             Y = Y,
-            X_TB = AVG_LOG_RATE_TB_DEF_NE,
-            X_ST = AVG_LOG_RATE_ST_DEF_NE,
+            X_TB = RATE_TB_DEF_NE,
+            X_ST = RATE_ST_DEF_NE,
             Z1 = Z1,
-            Z2 = 0,
-            Z3 = 0)
+            Z2_TB = lag(RATE_TB, n = 2), 
+            Z2_ST = lag(RATE_ST, n = 2),
+            Z3 = lag(RATE_INFL_NE, n = 2))
 
 
 if (FALSE) {
   
   library(plm)
   zz <- plm(Y ~ X_ST,
-            data = crude_estimator_ne,
+            data = preliminary_estimator_ne,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   summary(zz)
   detach("package:plm", unload=TRUE)
   
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
+  
+
   
 }
 
