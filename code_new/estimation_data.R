@@ -76,7 +76,10 @@ rates_log_avg_ne <-
 # Y     = log(C_t) - log(C_{t-4})   ,where C_t is consumption for time t 
 # X_TB  = log(1+r)                  ,where r is the real rate for t-bills
 # X_ST  = log(1+r)                  ,same for stock returns
-# Z1    = log(C_{t-1} - log{C_{t-5}}
+# Z1    = Y_{t-1} = log(C_{t-1} - log{C_{t-5}}
+# Z2_TB = X_TB_{t-2} 
+# Z2_ST = X_ST_{t-2}
+# Z3    = log(1+\pi)_{t-2}          ,where \pi is the inflation rate
 
 
 preliminary_estimator_ne <- 
@@ -114,7 +117,8 @@ if (FALSE) {
   
   # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
-  
+ 
+  write_csv(preliminary_estimator_ne, "../prelimiary_estimator_ne")
 }
 
 
