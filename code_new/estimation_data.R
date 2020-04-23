@@ -58,18 +58,20 @@ avg_rates_ne <-
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
 # then delivers a proper date column since.
-# Y = log(C_t) - log(C_{t-4})   , where C_t is consumption for time t 
-# X_TB = log(1+r)               , where r is the real rate for t-bills
-# X_ST = log(1+r)               , same for stock returns
-# 
+# Y     = log(C_t) - log(C_{t-4})   ,where C_t is consumption for time t 
+# X_TB  = log(1+r)                  ,where r is the real rate for t-bills
+# X_ST  = log(1+r)                  ,same for stock returns
+# Z1    = log(C_{t-1} - log{C_{t-5}}
+
 
 crude_estimator_ne <- 
   sum_consumption_ne %>% 
   complete(ISOWEEK,HOUSEHOLD_CODE) %>%
   arrange(ISOWEEK) %>%
   group_by(HOUSEHOLD_CODE) %>% 
-  mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE,
-                                                n = lag_in_weeks))) %>%
+  mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
+                                                n = lag_in_weeks)),
+         Z1 = lag(Y, n = 1)) %>%
   na.exclude() %>%
   ungroup() %>% 
   left_join(avg_rates_ne,
@@ -78,7 +80,8 @@ crude_estimator_ne <-
             HOUSEHOLD = HOUSEHOLD_CODE,
             Y = Y,
             X_TB = AVG_LOG_RATE_TB_DEF_NE,
-            X_ST = AVG_LOG_RATE_ST_DEF_NE)
+            X_ST = AVG_LOG_RATE_ST_DEF_NE,
+            Z1 = Z1)
 
 
 if (FALSE) {
@@ -94,6 +97,20 @@ if (FALSE) {
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
 
   
+  
+  crude_estimator_ne <- 
+    sum_consumption_ne %>% 
+    complete(ISOWEEK,HOUSEHOLD_CODE) %>%
+    arrange(ISOWEEK) %>%
+    filter(HOUSEHOLD_CODE == 2006923) %>% 
+    mutate(
+           Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
+                                                  n = lag_in_weeks)),
+           Z1 = log(lag(SUM_SPENT_WK_DEF_NE, 
+                        n = 1))
+           - log(lag(SUM_SPENT_WK_DEF_NE, 
+                     n = lag_in_weeks + 1)),
+           ZZ = lag(Y, n = 1))
   
   
   
