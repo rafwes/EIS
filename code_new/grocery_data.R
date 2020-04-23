@@ -221,6 +221,7 @@ for (i in 1:length(years)) {
   rm(trips)
   
   # Multiple trips a day by the same household are summed up
+  # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
     filter(CHANNEL_TYPE == "Grocery") %>% 
@@ -230,7 +231,8 @@ for (i in 1:length(years)) {
            TOTAL_SPENT) %>%
     group_by(HOUSEHOLD_CODE, PANEL_YEAR, PURCHASE_DATE) %>%
     summarise(TOTAL_SPENT = sum(TOTAL_SPENT)) %>%
-    ungroup()
+    ungroup() %>% 
+    filter(TOTAL_SPENT != 0)
   
   rm(trips_retailers)
   
@@ -344,7 +346,6 @@ rm(i,
    panelists_year,
    retailers
    )
-
 
 
 #######################################################################

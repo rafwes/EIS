@@ -78,4 +78,14 @@ crude_estimator_ne <-
          AVG_LOG_RATE_TB_DEF_NE,
          AVG_LOG_RATE_ST_DEF_NE)
 
+zz <- plm(LOG_SPENT_GROWTH_DEF_NE ~ AVG_LOG_RATE_TB_DEF_NE,
+          data = crude_estimator_ne,
+          model = "pooling",
+          index = c("HOUSEHOLD_CODE", "DATE"))
+
+
+
+
+
+
 
