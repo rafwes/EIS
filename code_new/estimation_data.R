@@ -95,24 +95,6 @@ if (FALSE) {
   detach("package:plm", unload=TRUE)
   
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
-
-  
-  
-  crude_estimator_ne <- 
-    sum_consumption_ne %>% 
-    complete(ISOWEEK,HOUSEHOLD_CODE) %>%
-    arrange(ISOWEEK) %>%
-    filter(HOUSEHOLD_CODE == 2006923) %>% 
-    mutate(
-           Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
-                                                  n = lag_in_weeks)),
-           Z1 = log(lag(SUM_SPENT_WK_DEF_NE, 
-                        n = 1))
-           - log(lag(SUM_SPENT_WK_DEF_NE, 
-                     n = lag_in_weeks + 1)),
-           ZZ = lag(Y, n = 1))
-  
-  
   
 }
 
