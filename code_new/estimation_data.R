@@ -45,15 +45,13 @@ avg_rates_ne <-
   summarise(AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
             AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE)) %>% 
   ungroup() %>% 
-  mutate(AVG_LOG_RATE_TB_DEF_NE = 
-           log(AVG_INDEX_TB_DEF_NE) - log(lag(AVG_INDEX_TB_DEF_NE,
-                                              n = lag_in_weeks)),
-         AVG_LOG_RATE_ST_DEF_NE = 
-           log(AVG_INDEX_ST_DEF_NE) - log(lag(AVG_INDEX_ST_DEF_NE,
-                                              n = lag_in_weeks))) %>% 
-  select(ISOWEEK,
-         AVG_LOG_RATE_TB_DEF_NE,
-         AVG_LOG_RATE_ST_DEF_NE)
+  transmute(ISOWEEK = ISOWEEK,
+            AVG_LOG_RATE_TB_DEF_NE = 
+              log(AVG_INDEX_TB_DEF_NE) - log(lag(AVG_INDEX_TB_DEF_NE,
+                                                 n = lag_in_weeks)),
+            AVG_LOG_RATE_ST_DEF_NE = 
+              log(AVG_INDEX_ST_DEF_NE) - log(lag(AVG_INDEX_ST_DEF_NE,
+                                                 n = lag_in_weeks)))
 
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
@@ -81,7 +79,9 @@ crude_estimator_ne <-
             Y = Y,
             X_TB = AVG_LOG_RATE_TB_DEF_NE,
             X_ST = AVG_LOG_RATE_ST_DEF_NE,
-            Z1 = Z1)
+            Z1 = Z1,
+            Z2 = 0,
+            Z3 = 0)
 
 
 if (FALSE) {
