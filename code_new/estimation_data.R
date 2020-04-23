@@ -38,20 +38,36 @@ lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over 4 weeks
-avg_rates_ne <- 
-  index_table %>% 
-  select(DATE,INDEX_TB_DEF_NE,INDEX_ST_DEF_NE) %>% 
+rates_log_avg_ne <- 
+  index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
-  summarise(AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE)) %>% 
+  summarise(AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
+            AVG_INDEX_TB = mean(INDEX_TB),
+            AVG_INDEX_ST = mean(INDEX_ST),
+            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
+            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE)) %>%
   ungroup() %>% 
   transmute(ISOWEEK = ISOWEEK,
-            AVG_LOG_RATE_TB_DEF_NE = 
-              log(AVG_INDEX_TB_DEF_NE) - log(lag(AVG_INDEX_TB_DEF_NE,
-                                                 n = lag_in_weeks)),
-            AVG_LOG_RATE_ST_DEF_NE = 
-              log(AVG_INDEX_ST_DEF_NE) - log(lag(AVG_INDEX_ST_DEF_NE,
-                                                 n = lag_in_weeks)))
+            RATE_TB = 
+              log(AVG_INDEX_TB) 
+            - log(lag(AVG_INDEX_TB,
+                      n = lag_in_weeks)),
+            RATE_ST = 
+              log(AVG_INDEX_ST) 
+            - log(lag(AVG_INDEX_ST,
+                      n = lag_in_weeks)),
+            RATE_INFL_NE =
+              log(AVG_INDEX_CPI_NE) 
+            - log(lag(AVG_INDEX_CPI_NE,
+                      n = lag_in_weeks)),
+            RATE_TB_DEF_NE = 
+              log(AVG_INDEX_TB_DEF_NE) 
+            - log(lag(AVG_INDEX_TB_DEF_NE,
+                      n = lag_in_weeks)),
+            RATE_ST_DEF_NE = 
+              log(AVG_INDEX_ST_DEF_NE) 
+            - log(lag(AVG_INDEX_ST_DEF_NE,
+                      n = lag_in_weeks)))
 
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
@@ -72,7 +88,7 @@ crude_estimator_ne <-
          Z1 = lag(Y, n = 1)) %>%
   na.exclude() %>%
   ungroup() %>% 
-  left_join(avg_rates_ne,
+  left_join(rates_log_avg_ne,
             by = "ISOWEEK") %>%
   transmute(DATE = as.Date(ISOweek2date(paste(ISOWEEK, "1", sep = "-"))),
             HOUSEHOLD = HOUSEHOLD_CODE,
