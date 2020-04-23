@@ -102,13 +102,14 @@ preliminary_estimator_ne <-
             Z1 = Z1,
             Z2_TB = lag(RATE_TB, n = 2), 
             Z2_ST = lag(RATE_ST, n = 2),
-            Z3 = lag(RATE_INFL_NE, n = 2))
+            Z3 = lag(RATE_INFL_NE, n = 2)) %>% 
+  na.exclude()
 
 
 if (FALSE) {
   
   library(plm)
-  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+  zz <- plm(Y ~ X_TB,
             data = preliminary_estimator_ne,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
@@ -118,7 +119,7 @@ if (FALSE) {
   # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
  
-  write_csv(preliminary_estimator_ne, "../prelimiary_estimator_ne")
+  write_csv(preliminary_estimator_ne, "../preliminary_estimator_ne")
 }
 
 
