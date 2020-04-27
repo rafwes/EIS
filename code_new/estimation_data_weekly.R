@@ -30,7 +30,7 @@ sum_consumption_ne_def <-
 rm(consumption_ne)
 
 
-lag_in_weeks = 4L
+lag_in_weeks = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks" weeks
@@ -106,10 +106,16 @@ preliminary_estimator_ne <-
 
 
 
+
+
+
+
 if (FALSE) {
   
+  
   library(plm)
-  zz <- plm(Y ~ X_ST | Z1 + Z2_ST + Z3,
+  cat("\014")
+  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
             data = preliminary_estimator_ne,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
@@ -119,7 +125,7 @@ if (FALSE) {
   # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
  
-  write_csv(preliminary_estimator_ne, "../preliminary_estimator_ne")
+  # write_csv(preliminary_estimator_ne, "../data_1week_sample05_ne.csv")
 }
 
 

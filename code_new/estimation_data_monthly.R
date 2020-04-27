@@ -114,10 +114,15 @@ preliminary_estimator_ne <-
   rename(HOUSEHOLD = HOUSEHOLD_CODE)
 
 
+
+
+
+
 if (FALSE) {
   
   library(plm)
-  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+  cat("\014")
+  zz <- plm(Y ~ X_TB,
             data = preliminary_estimator_ne,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
@@ -127,20 +132,10 @@ if (FALSE) {
   # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
  
-  write_csv(preliminary_estimator_ne, "../preliminary_estimator_ne")
-  
-  
-  
-  # Consumption data is too sparse, condense into weekly data
-  sum_consumption_ne <- 
-    consumption_ne_def %>% 
-    arrange(HOUSEHOLD_CODE,PURCHASE_DATE) %>%
-    group_by(HOUSEHOLD_CODE,
-             YEAR = year(PURCHASE_DATE),
-             MONTH = month(PURCHASE_DATE)) %>% 
-    summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
-    ungroup()
-  
-  
+  # write_csv(preliminary_estimator_ne, "../data_1month_sample05_ne.csv")
 }
+
+
+
+
 
