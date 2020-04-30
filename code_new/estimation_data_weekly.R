@@ -1,7 +1,10 @@
 rm(list=ls())
 
+library(tidyverse)
 library(zoo)
-library(lubridate)
+library(reshape2)
+library(naniar)
+library(visdat)
 library(ISOweek)
 
 #base_path <- "/extra/agalvao/eis_nielsen"
@@ -27,10 +30,9 @@ sum_consumption_ne_def <-
   summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
   ungroup()
 
-rm(consumption_ne)
+#rm(consumption_ne)
 
-
-lag_in_weeks = 1L
+lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks" weeks
@@ -88,7 +90,7 @@ preliminary_estimator_ne <-
   arrange(ISOWEEK) %>%
   mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
                                                 n = lag_in_weeks)),
-         Z1 = lag(Y, n = 1)) %>%
+         Z1 = lag(Y, n = 2)) %>%
   na.exclude() %>%
   left_join(rates_log_avg_ne,
             by = "ISOWEEK") %>%
@@ -103,7 +105,6 @@ preliminary_estimator_ne <-
   na.exclude() %>% 
   ungroup() %>%
   rename(HOUSEHOLD = HOUSEHOLD_CODE)
-
 
 
 

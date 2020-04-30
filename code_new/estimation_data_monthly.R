@@ -1,7 +1,10 @@
 rm(list=ls())
 
+library(tidyverse)
 library(zoo)
-library(lubridate)
+library(reshape2)
+library(naniar)
+library(visdat)
 library(ISOweek)
 
 #base_path <- "/extra/agalvao/eis_nielsen"
@@ -94,7 +97,7 @@ preliminary_estimator_ne <-
           MONTH) %>%
   mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
                                                 n = lag_in_months)),
-         Z1 = lag(Y, n = 1)) %>%
+         Z1 = lag(Y, n = 2)) %>%
   na.exclude() %>%
   left_join(rates_log_avg_ne,
             by = c("YEAR","MONTH")) %>%
