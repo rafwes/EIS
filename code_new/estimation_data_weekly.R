@@ -6,6 +6,8 @@ library(reshape2)
 library(naniar)
 library(visdat)
 library(ISOweek)
+library(lubridate)
+
 
 #base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -32,7 +34,7 @@ sum_consumption_ne_def <-
 
 #rm(consumption_ne)
 
-lag_in_weeks = 4L
+lag_in_weeks = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks" weeks

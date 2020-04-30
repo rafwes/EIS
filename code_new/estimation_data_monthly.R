@@ -6,6 +6,7 @@ library(reshape2)
 library(naniar)
 library(visdat)
 library(ISOweek)
+library(lubridate)
 
 #base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -125,7 +126,7 @@ if (FALSE) {
   
   library(plm)
   cat("\014")
-  zz <- plm(Y ~ X_TB,
+  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
             data = preliminary_estimator_ne,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
