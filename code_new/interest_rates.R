@@ -3,12 +3,12 @@
 
 #rm(list=ls())
 
-library(tidyverse)
-library(zoo)
-library(reshape2)
+#library(tidyverse)
+#library(zoo)
+#library(reshape2)
 
-#getwd()
-#setwd()
+#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 print("Let's Start")
 step=as.integer(1)
@@ -27,8 +27,10 @@ step=as.integer(1)
 ## Primary Source: Board of Governors of the Federal Reserve System (US)
 ## Retrival Date: March 17, 2020
 
+
+
 raw_tbill_daily <-
-  read.csv("data_raw/fred_tbill_rates_daily.csv",
+  read.csv(file.path(base_path,"EIS/data_raw/fred_tbill_rates_daily.csv"),
            col.names = c("DATE","RATE_360"),
            colClasses = c("Date","numeric"),
            na.strings = c("NA","."))
@@ -48,7 +50,7 @@ raw_tbill_daily <-
 ## Retrival Date: March 12, 2020
 
 raw_stock_prices <-
-  read.csv("data_raw/yahoo_sp500_stockprices_daily.csv",
+  read.csv(file.path(base_path,"EIS/data_raw/yahoo_sp500_stockprices_daily.csv"),
            colClasses = c("Date", rep("numeric", 6)))
 
 
@@ -77,22 +79,22 @@ c_classes <- c("factor",
                "numeric")
    
 raw_cpi_northeast <- 
-  read.csv("data_raw/bls_cpi_northeast.csv",
+  read.csv(file.path(base_path,"EIS/data_raw/bls_cpi_northeast.csv"),
            col.names = c(c_names, "CPI_NE"),
            colClasses = c_classes)
 
 raw_cpi_midwest <-
-  read.csv("data_raw/bls_cpi_midwest.csv",
+  read.csv(file.path(base_path,"EIS/data_raw/bls_cpi_midwest.csv"),
            col.names = c(c_names, "CPI_MW"), 
            colClasses = c_classes)
 
 raw_cpi_south <- 
-  read.csv("data_raw/bls_cpi_south.csv",
+  read.csv(file.path(base_path,"EIS/data_raw/bls_cpi_south.csv"),
            col.names = c(c_names, "CPI_SO"),
            colClasses = c_classes)
 
 raw_cpi_west <- 
-  read.csv("data_raw/bls_cpi_west.csv",
+  read.csv(file.path(base_path,"EIS/data_raw/bls_cpi_west.csv"),
            col.names = c(c_names, "CPI_WE"),
            colClasses = c_classes)
 
