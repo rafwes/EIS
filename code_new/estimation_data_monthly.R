@@ -218,13 +218,16 @@ write_csv(estimation_data,
           file.path(base_path, 
                     "csv_output/estimation_data_monthly.csv"))
 
-library(plm)
-zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-          data = estimation_data,
-          model = "pooling",
-          index = c("HOUSEHOLD", "DATE"))
-summary(zz)
-detach("package:plm", unload=TRUE)
+ library(plm)
+  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+            data = estimation_data,
+            model = "pooling",
+            index = c("HOUSEHOLD", "DATE"))
+  
+  summary(zz)
+  detach("package:plm", unload=TRUE)
+  
+  rm(estimation_data,zz)
 
 
 if (FALSE) {
