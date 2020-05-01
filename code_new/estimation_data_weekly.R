@@ -13,7 +13,7 @@ base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
-lag_in_weeks = 4L
+lag_in_weeks = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks"
@@ -209,7 +209,7 @@ rm(sum_consumption_ne_def,
 
 write_csv(estimation_data,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_4w.csv"))
+                    "csv_output/estimation_data_weekly_1w.csv"))
 
   
   library(plm)
