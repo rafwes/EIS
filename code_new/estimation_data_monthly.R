@@ -7,8 +7,8 @@ library(ISOweek)
 library(lubridate)
 library(EnvStats)
 
-#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -220,21 +220,18 @@ write_csv(estimation_data,
           file.path(base_path, 
                     "csv_output/estimation_data_monthly.csv"))
 
+library(plm)
+zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+          data = estimation_data,
+          model = "pooling",
+          index = c("HOUSEHOLD", "DATE"))
+summary(zz)
+detach("package:plm", unload=TRUE)
+
 
 if (FALSE) {
-  
-  library(plm)
-  cat("\014")
-  zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-            data = estimation_data,
-            model = "pooling",
-            index = c("HOUSEHOLD", "DATE"))
-  summary(zz)
-  detach("package:plm", unload=TRUE)
-  
-  # Lance's Regression Code
-  #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
- 
+cat("\014")
+
   # write_csv(estimation_data, "../data_1month_sample05_ne.csv")
   
   # %>% 

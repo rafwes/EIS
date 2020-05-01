@@ -7,8 +7,8 @@ library(ISOweek)
 library(lubridate)
 library(EnvStats)
 
-#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -211,18 +211,18 @@ write_csv(estimation_data,
           file.path(base_path, 
                     "csv_output/estimation_data_weekly_4w.csv"))
 
-
-if (FALSE) {
-  
   
   library(plm)
-  cat("\014")
   zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
             data = estimation_data,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   summary(zz)
   detach("package:plm", unload=TRUE)
+
+  
+if (FALSE) {
+  cat("\014")
   
   # write_csv(estimation_data, "../data_1week_sample05_ne.csv")
   
