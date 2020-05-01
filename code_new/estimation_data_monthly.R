@@ -45,69 +45,69 @@ rates_log_avg_ne <-
             RATE_TB = 
               log(AVG_INDEX_TB) 
             - log(lag(AVG_INDEX_TB,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_ST = 
               log(AVG_INDEX_ST) 
             - log(lag(AVG_INDEX_ST,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_INFL_NE =
               log(AVG_INDEX_CPI_NE) 
             - log(lag(AVG_INDEX_CPI_NE,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_INFL_MW =
               log(AVG_INDEX_CPI_MW) 
             - log(lag(AVG_INDEX_CPI_MW,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_INFL_SO =
               log(AVG_INDEX_CPI_SO) 
             - log(lag(AVG_INDEX_CPI_SO,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_INFL_WE =
               log(AVG_INDEX_CPI_WE) 
             - log(lag(AVG_INDEX_CPI_WE,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_TB_DEF_NE = 
               log(AVG_INDEX_TB_DEF_NE) 
             - log(lag(AVG_INDEX_TB_DEF_NE,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_TB_DEF_MW = 
               log(AVG_INDEX_TB_DEF_MW) 
             - log(lag(AVG_INDEX_TB_DEF_MW,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_TB_DEF_SO = 
               log(AVG_INDEX_TB_DEF_SO) 
             - log(lag(AVG_INDEX_TB_DEF_SO,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_TB_DEF_WE = 
               log(AVG_INDEX_TB_DEF_WE) 
             - log(lag(AVG_INDEX_TB_DEF_WE,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_ST_DEF_NE = 
               log(AVG_INDEX_ST_DEF_NE) 
             - log(lag(AVG_INDEX_ST_DEF_NE,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_ST_DEF_MW = 
               log(AVG_INDEX_ST_DEF_MW) 
             - log(lag(AVG_INDEX_ST_DEF_MW,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_ST_DEF_SO = 
               log(AVG_INDEX_ST_DEF_SO) 
             - log(lag(AVG_INDEX_ST_DEF_SO,
-                      n = lag_in_weeks)),
+                      n = lag_in_months)),
             RATE_ST_DEF_WE = 
               log(AVG_INDEX_ST_DEF_WE) 
             - log(lag(AVG_INDEX_ST_DEF_WE,
-                      n = lag_in_weeks))
+                      n = lag_in_months))
             ) %>%
   na.exclude()
 
 
 # Gathers inflation data and deflates consumption by region
 # Consumption data is too sparse, condense into monthly data
-Deflate_Sum <- function(x) {
+Deflate_Than_Sum <- function(x) {
   
   # Extract region from dataframe name
-  region <- str_to_upper(str_sub(deparse(substitute(consumption_ne)),-2,-1))
+  region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
    
   TOTAL_SPENT_DEF_REGION = 
     as.name(paste0("TOTAL_SPENT_DEF_", region))
@@ -135,21 +135,17 @@ Deflate_Sum <- function(x) {
     ungroup()
 }
 
-sum_consumption_ne_def <- 
-  Deflate_Sum(consumption_ne)
-#rm(consumption_ne)
+sum_consumption_ne_def <- Deflate_Than_Sum(consumption_ne)
+rm(consumption_ne)
 
-sum_consumption_mw_def <- 
-  Deflate_Sum(consumption_mw)
-#rm(consumption_mw)
+sum_consumption_mw_def <- Deflate_Than_Sum(consumption_mw)
+rm(consumption_mw)
 
-sum_consumption_so_def <- 
-  Deflate_Sum(consumption_so)
-#rm(consumption_so)
+sum_consumption_so_def <- Deflate_Than_Sum(consumption_so)
+rm(consumption_so)
 
-sum_consumption_we_def <- 
-  Deflate_Sum(consumption_we)
-#rm(consumption_we)
+sum_consumption_we_def <- Deflate_Than_Sum(consumption_we)
+rm(consumption_we)
 
 
 #rm(consumption_ne)
@@ -172,8 +168,7 @@ preliminary_estimator_ne <-
            MONTH,
            HOUSEHOLD_CODE) %>%
   group_by(HOUSEHOLD_CODE) %>%
-  arrange(YEAR,
-          MONTH) %>%
+  arrange(YEAR, MONTH) %>%
   mutate(Y = log(SUM_SPENT_DEF_NE) - log(lag(SUM_SPENT_DEF_NE, 
                                                 n = lag_in_months)),
          Z1 = lag(Y, n = 2)) %>%
@@ -194,6 +189,52 @@ preliminary_estimator_ne <-
   na.exclude() %>% 
   ungroup() %>% 
   rename(HOUSEHOLD = HOUSEHOLD_CODE)
+
+
+Generate_Estimation_Data <- function(x) {
+  
+  # Extract region from dataframe name
+  region <- str_to_upper(str_sub(deparse(substitute(x)),-6,-5))
+  
+  SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
+  RATE_TB_DEF_REGION = as.name(paste0("RATE_TB_DEF_",region))
+  RATE_ST_DEF_REGION = as.name(paste0("RATE_ST_DEF_",region))
+  RATE_INFL_REGION = as.name(paste0("RATE_INFL_",region))
+  
+  x %>%   
+    complete(YEAR,
+             MONTH,
+             HOUSEHOLD_CODE) %>%
+    group_by(HOUSEHOLD_CODE) %>%
+    arrange(YEAR, MONTH) %>%
+    mutate(Y = log(!!SUM_SPENT_DEF_REGION) - log(lag(!!SUM_SPENT_DEF_REGION, 
+                                                     n = lag_in_months)),
+           Z1 = lag(Y, n = 2)) %>%
+    na.exclude() %>%
+    left_join(rates_log_avg_ne,
+              by = c("YEAR","MONTH")) %>%
+    unite(YEAR_MONTH,
+          YEAR:MONTH,
+          sep = "-") %>%
+    transmute(DATE = as.Date(paste(YEAR_MONTH, "1", sep = "-")),
+              Y = Y,
+              X_TB = !!RATE_TB_DEF_REGION,
+              X_ST = !!RATE_ST_DEF_REGION,
+              Z1 = Z1,
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+    na.exclude() %>% 
+    ungroup() %>%
+    rename(HOUSEHOLD = HOUSEHOLD_CODE) 
+  
+}
+
+
+preliminary_estimator_ne <- Generate_Estimation_Data(sum_consumption_ne_def)
+preliminary_estimator_mw <- Generate_Estimation_Data(sum_consumption_mw_def)
+preliminary_estimator_so <- Generate_Estimation_Data(sum_consumption_so_def)
+preliminary_estimator_we <- Generate_Estimation_Data(sum_consumption_we_def)
 
 
 
