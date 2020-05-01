@@ -103,22 +103,40 @@ rates_log_avg_ne <-
 
 
 # Gathers inflation data and deflates consumption by region
-# and condense into monthly data because
-sum_consumption_ne_def <- 
-  consumption_ne %>% 
-  left_join(index_table %>% 
-              select(DATE,INDEX_CPI_NE),
-            by = c("PURCHASE_DATE" = "DATE")) %>% 
-  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
-  na.exclude() %>% 
-  select(HOUSEHOLD_CODE,
-         PURCHASE_DATE,
-         TOTAL_SPENT_DEF_NE) %>% 
-  group_by(HOUSEHOLD_CODE,
-           YEAR = year(PURCHASE_DATE),
-           MONTH = month(PURCHASE_DATE)) %>% 
-  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
-  ungroup()
+# Consumption data is too sparse, condense into monthly data
+Deflate_Sum <- function(x,y) {
+  
+  TOTAL_SPENT_DEF_REGION = 
+    as.name(paste0("TOTAL_SPENT_DEF_",y))
+  INDEX_CPI_REGION = 
+    as.name(paste0("INDEX_CPI_",y))
+  SUM_SPENT_WK_DEF_REGION = 
+    as.name(paste0("SUM_SPENT_WK_DEF_",y))
+  
+  x %>%
+    left_join(index_table %>%
+                select(DATE,!!INDEX_CPI_REGION),
+              by = c("PURCHASE_DATE" = "DATE")) %>% 
+    mutate(!!TOTAL_SPENT_DEF_REGION := 
+             100 * TOTAL_SPENT 
+           / !!INDEX_CPI_REGION) %>% 
+    na.exclude() %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           !!TOTAL_SPENT_DEF_REGION) %>% 
+    group_by(HOUSEHOLD_CODE,
+             YEAR = year(PURCHASE_DATE),
+             MONTH = month(PURCHASE_DATE)) %>% 
+    summarise(!!SUM_SPENT_WK_DEF_REGION := 
+                sum(!!TOTAL_SPENT_DEF_REGION)) %>%
+    ungroup()
+}
+
+
+sum_consumption_ne_def <- Deflate_Sum(consumption_ne,"NE")
+sum_consumption_mw_def <- Deflate_Sum(consumption_mw,"MW")
+sum_consumption_so_def <- Deflate_Sum(consumption_so,"SO")
+sum_consumption_we_def <- Deflate_Sum(consumption_we,"WE")
 
 #rm(consumption_ne)
 
@@ -128,7 +146,7 @@ sum_consumption_ne_def <-
 # Y     = log(C_t) - log(C_{t-4})   ,where C_t is consumption for time t 
 # X_TB  = log(1+r)                  ,where r is the real rate for t-bills
 # X_ST  = log(1+r)                  ,same for stock returns
-# Z1    = Y_{t-1} = log(C_{t-1} - log{C_{t-5}}
+# Z1    = Y_{t-2} = log(C_{t-2} - log{C_{t-6}}
 # Z2_TB = X_TB_{t-2} 
 # Z2_ST = X_ST_{t-2}
 # Z3    = log(1+\pi)_{t-2}          ,where \pi is the inflation rate
@@ -180,6 +198,27 @@ if (FALSE) {
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
  
   # write_csv(preliminary_estimator_ne, "../data_1month_sample05_ne.csv")
+  
+  
+  
+  sum_consumption_ne_def <- 
+    consumption_ne %>% 
+    left_join(index_table %>% 
+                select(DATE,INDEX_CPI_NE),
+              by = c("PURCHASE_DATE" = "DATE")) %>% 
+    mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
+    na.exclude() %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT_DEF_NE) %>% 
+    group_by(HOUSEHOLD_CODE,
+             YEAR = year(PURCHASE_DATE),
+             MONTH = month(PURCHASE_DATE)) %>% 
+    summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
+    ungroup()
+  
+  
+  
 }
 
 
