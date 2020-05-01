@@ -42,11 +42,20 @@ lag_in_weeks = 4L
 rates_log_avg_ne <- 
   index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
-  summarise(AVG_INDEX_CPI_NE = geoMean(INDEX_CPI_NE),
-            AVG_INDEX_TB = geoMean(INDEX_TB),
+  summarise(AVG_INDEX_TB = geoMean(INDEX_TB),
             AVG_INDEX_ST = geoMean(INDEX_ST),
+            AVG_INDEX_CPI_NE = geoMean(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = geoMean(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = geoMean(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = geoMean(INDEX_CPI_WE),
             AVG_INDEX_TB_DEF_NE = geoMean(INDEX_TB_DEF_NE),
-            AVG_INDEX_ST_DEF_NE = geoMean(INDEX_ST_DEF_NE)) %>%
+            AVG_INDEX_TB_DEF_MW = geoMean(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = geoMean(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = geoMean(INDEX_TB_DEF_WE),
+            AVG_INDEX_ST_DEF_NE = geoMean(INDEX_ST_DEF_NE),
+            AVG_INDEX_ST_DEF_MW = geoMean(INDEX_ST_DEF_MW),
+            AVG_INDEX_ST_DEF_SO = geoMean(INDEX_ST_DEF_SO),
+            AVG_INDEX_ST_DEF_WE = geoMean(INDEX_ST_DEF_WE)) %>%
   ungroup() %>% 
   arrange(ISOWEEK) %>% 
   transmute(ISOWEEK = ISOWEEK,
@@ -62,14 +71,51 @@ rates_log_avg_ne <-
               log(AVG_INDEX_CPI_NE) 
             - log(lag(AVG_INDEX_CPI_NE,
                       n = lag_in_weeks)),
+            RATE_INFL_MW =
+              log(AVG_INDEX_CPI_MW) 
+            - log(lag(AVG_INDEX_CPI_MW,
+                      n = lag_in_weeks)),
+            RATE_INFL_SO =
+              log(AVG_INDEX_CPI_SO) 
+            - log(lag(AVG_INDEX_CPI_SO,
+                      n = lag_in_weeks)),
+            RATE_INFL_WE =
+              log(AVG_INDEX_CPI_WE) 
+            - log(lag(AVG_INDEX_CPI_WE,
+                      n = lag_in_weeks)),
             RATE_TB_DEF_NE = 
               log(AVG_INDEX_TB_DEF_NE) 
             - log(lag(AVG_INDEX_TB_DEF_NE,
                       n = lag_in_weeks)),
+            RATE_TB_DEF_MW = 
+              log(AVG_INDEX_TB_DEF_MW) 
+            - log(lag(AVG_INDEX_TB_DEF_MW,
+                      n = lag_in_weeks)),
+            RATE_TB_DEF_SO = 
+              log(AVG_INDEX_TB_DEF_SO) 
+            - log(lag(AVG_INDEX_TB_DEF_SO,
+                      n = lag_in_weeks)),
+            RATE_TB_DEF_WE = 
+              log(AVG_INDEX_TB_DEF_WE) 
+            - log(lag(AVG_INDEX_TB_DEF_WE,
+                      n = lag_in_weeks)),
             RATE_ST_DEF_NE = 
               log(AVG_INDEX_ST_DEF_NE) 
             - log(lag(AVG_INDEX_ST_DEF_NE,
-                      n = lag_in_weeks))) %>%
+                      n = lag_in_weeks)),
+            RATE_ST_DEF_MW = 
+              log(AVG_INDEX_ST_DEF_MW) 
+            - log(lag(AVG_INDEX_ST_DEF_MW,
+                      n = lag_in_weeks)),
+            RATE_ST_DEF_SO = 
+              log(AVG_INDEX_ST_DEF_SO) 
+            - log(lag(AVG_INDEX_ST_DEF_SO,
+                      n = lag_in_weeks)),
+            RATE_ST_DEF_WE = 
+              log(AVG_INDEX_ST_DEF_WE) 
+            - log(lag(AVG_INDEX_ST_DEF_WE,
+                      n = lag_in_weeks))
+            ) %>%
   na.exclude()
 
 # Calculates lagged variables, drops observations for which no
@@ -108,9 +154,6 @@ preliminary_estimator_ne <-
   na.exclude() %>% 
   ungroup() %>%
   rename(HOUSEHOLD = HOUSEHOLD_CODE)
-
-
-
 
 
 
