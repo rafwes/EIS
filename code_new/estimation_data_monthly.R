@@ -232,9 +232,9 @@ if (FALSE) {
   # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
  
-  # write_csv(preliminary_estimator_ne, "../data_1month_sample05_ne.csv")
+  # write_csv(estimation_data, "..data_1month_sample05_ne.csv")
   
-  %>% 
-    filter_all(any_vars(is.na(.)))
+  # %>% 
+  #  filter_all(any_vars(is.na(.)))
   
   }
