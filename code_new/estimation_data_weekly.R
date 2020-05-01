@@ -13,7 +13,7 @@ base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
-lag_in_weeks = 1L
+lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks"
@@ -144,7 +144,6 @@ sum_consumption_we_def <-
 rm(consumption_we)
 
 
-
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
 # then delivers a proper date column since.
@@ -209,9 +208,9 @@ rm(sum_consumption_ne_def,
 
 write_csv(estimation_data,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_1w.csv"))
+                    "csv_output/estimation_data_weekly_4w.csv"))
 
-  
+  print("Estimation for 4 Weeks")
   library(plm)
   zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
             data = estimation_data,
@@ -220,7 +219,12 @@ write_csv(estimation_data,
   summary(zz)
   detach("package:plm", unload=TRUE)
 
+
+## RERUN EVERYTHING FOR 1 MONTH DATA ####
   
+
+  
+    
 if (FALSE) {
   cat("\014")
   

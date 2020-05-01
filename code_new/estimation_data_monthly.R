@@ -150,8 +150,6 @@ sum_consumption_we_def <-
 rm(consumption_we)
 
 
-#rm(consumption_ne)
-
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
 # then delivers a proper date column since.
