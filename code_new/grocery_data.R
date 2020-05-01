@@ -344,7 +344,8 @@ rm(i,
    consumption_so_year,
    consumption_we_year,
    panelists_year,
-   retailers
+   retailers,
+   panelists
    )
 
 
