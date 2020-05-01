@@ -7,6 +7,7 @@ library(naniar)
 library(visdat)
 library(ISOweek)
 library(lubridate)
+library(EnvStats)
 
 
 #base_path <- "/extra/agalvao/eis_nielsen"
@@ -34,18 +35,18 @@ sum_consumption_ne_def <-
 
 #rm(consumption_ne)
 
-lag_in_weeks = 1L
+lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks" weeks
 rates_log_avg_ne <- 
   index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
-  summarise(AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE)) %>%
+  summarise(AVG_INDEX_CPI_NE = geoMean(INDEX_CPI_NE),
+            AVG_INDEX_TB = geoMean(INDEX_TB),
+            AVG_INDEX_ST = geoMean(INDEX_ST),
+            AVG_INDEX_TB_DEF_NE = geoMean(INDEX_TB_DEF_NE),
+            AVG_INDEX_ST_DEF_NE = geoMean(INDEX_ST_DEF_NE)) %>%
   ungroup() %>% 
   arrange(ISOWEEK) %>% 
   transmute(ISOWEEK = ISOWEEK,

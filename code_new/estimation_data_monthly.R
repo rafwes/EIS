@@ -7,6 +7,7 @@ library(naniar)
 library(visdat)
 library(ISOweek)
 library(lubridate)
+library(EnvStats)
 
 #base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -16,6 +17,7 @@ source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
 # Gathers inflation data and deflates consumption by region
 # and condense into monthly data because
+
 sum_consumption_ne_def <- 
   consumption_ne %>% 
   left_join(index_table %>% 
@@ -44,11 +46,11 @@ rates_log_avg_ne <-
   index_table %>%
   group_by(YEAR = year(DATE),
            MONTH = month(DATE)) %>% 
-  summarise(AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE)) %>%
+  summarise(AVG_INDEX_CPI_NE = geoMean(INDEX_CPI_NE),
+            AVG_INDEX_TB = geoMean(INDEX_TB),
+            AVG_INDEX_ST = geoMean(INDEX_ST),
+            AVG_INDEX_TB_DEF_NE = geoMean(INDEX_TB_DEF_NE),
+            AVG_INDEX_ST_DEF_NE = geoMean(INDEX_ST_DEF_NE)) %>%
   ungroup() %>%
   arrange(YEAR,
           MONTH) %>%
