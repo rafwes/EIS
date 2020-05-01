@@ -212,6 +212,7 @@
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   
+  print("Estimation for 4 Weeks") 
   summary(zz)
   detach("package:plm", unload=TRUE)
   

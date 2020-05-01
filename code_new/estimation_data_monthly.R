@@ -224,6 +224,7 @@ write_csv(estimation_data,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   
+  print("Estimation for 1 Month")
   summary(zz)
   detach("package:plm", unload=TRUE)
   
