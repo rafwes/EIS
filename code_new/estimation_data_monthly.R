@@ -218,7 +218,7 @@ rm(sum_consumption_ne_def,
    sum_consumption_we_def)
 
 
-write_csv(estimation_data, "../data_1month_sample05_ne.csv")
+write_csv(estimation_data, "../csv_output/estimation_data_monthly.csv")
 
 
 if (FALSE) {

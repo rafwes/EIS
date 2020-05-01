@@ -208,6 +208,9 @@ rm(sum_consumption_ne_def,
    sum_consumption_so_def,
    sum_consumption_we_def)
 
+write_csv(estimation_data, "../csv_output/estimation_data_weekly_4w.csv")
+
+
 if (FALSE) {
   
   
