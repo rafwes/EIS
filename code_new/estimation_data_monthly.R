@@ -15,33 +15,10 @@ base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
-# Gathers inflation data and deflates consumption by region
-# and condense into monthly data because
-
-sum_consumption_ne_def <- 
-  consumption_ne %>% 
-  left_join(index_table %>% 
-              select(DATE,INDEX_CPI_NE),
-            by = c("PURCHASE_DATE" = "DATE")) %>% 
-  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
-  na.exclude() %>% 
-  select(HOUSEHOLD_CODE,
-         PURCHASE_DATE,
-         TOTAL_SPENT_DEF_NE) %>% 
-  group_by(HOUSEHOLD_CODE,
-           YEAR = year(PURCHASE_DATE),
-           MONTH = month(PURCHASE_DATE)) %>% 
-  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
-  ungroup()
-
-
-#rm(consumption_ne)
-
-
 lag_in_months = 1L
 
 # For each week, take the average observed tbill/stock index
-# and create a log rate over 4 weeks
+# and create a log rate over over "lag_in_months"
 rates_log_avg_ne <- 
   index_table %>%
   group_by(YEAR = year(DATE),
@@ -124,6 +101,27 @@ rates_log_avg_ne <-
             ) %>%
   na.exclude()
 
+
+# Gathers inflation data and deflates consumption by region
+# and condense into monthly data because
+sum_consumption_ne_def <- 
+  consumption_ne %>% 
+  left_join(index_table %>% 
+              select(DATE,INDEX_CPI_NE),
+            by = c("PURCHASE_DATE" = "DATE")) %>% 
+  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
+  na.exclude() %>% 
+  select(HOUSEHOLD_CODE,
+         PURCHASE_DATE,
+         TOTAL_SPENT_DEF_NE) %>% 
+  group_by(HOUSEHOLD_CODE,
+           YEAR = year(PURCHASE_DATE),
+           MONTH = month(PURCHASE_DATE)) %>% 
+  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
+  ungroup()
+
+#rm(consumption_ne)
+
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
 # then delivers a proper date column since.
@@ -164,9 +162,6 @@ preliminary_estimator_ne <-
   na.exclude() %>% 
   ungroup() %>% 
   rename(HOUSEHOLD = HOUSEHOLD_CODE)
-
-
-
 
 
 

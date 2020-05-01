@@ -9,36 +9,16 @@ library(ISOweek)
 library(lubridate)
 library(EnvStats)
 
-
 #base_path <- "/extra/agalvao/eis_nielsen"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
-# Gathers inflation data and deflates consumption by region
-# Consumption data is too sparse, condense into weekly data
-sum_consumption_ne_def <- 
-  consumption_ne %>% 
-  left_join(index_table %>% 
-              select(DATE,INDEX_CPI_NE),
-            by = c("PURCHASE_DATE" = "DATE")) %>% 
-  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
-  na.exclude() %>% 
-  select(HOUSEHOLD_CODE,
-         PURCHASE_DATE,
-         TOTAL_SPENT_DEF_NE) %>% 
-  group_by(HOUSEHOLD_CODE, 
-           ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
-  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
-  ungroup()
-
-#rm(consumption_ne)
-
 lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
-# and create a log rate over "lag_in_weeks" weeks
+# and create a log rate over "lag_in_weeks"
 rates_log_avg_ne <- 
   index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
@@ -117,6 +97,26 @@ rates_log_avg_ne <-
                       n = lag_in_weeks))
             ) %>%
   na.exclude()
+
+
+# Gathers inflation data and deflates consumption by region
+# Consumption data is too sparse, condense into weekly data
+sum_consumption_ne_def <- 
+  consumption_ne %>% 
+  left_join(index_table %>% 
+              select(DATE,INDEX_CPI_NE),
+            by = c("PURCHASE_DATE" = "DATE")) %>% 
+  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
+  na.exclude() %>% 
+  select(HOUSEHOLD_CODE,
+         PURCHASE_DATE,
+         TOTAL_SPENT_DEF_NE) %>% 
+  group_by(HOUSEHOLD_CODE, 
+           ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
+  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
+  ungroup()
+
+
 
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
