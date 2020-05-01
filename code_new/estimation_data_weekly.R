@@ -101,20 +101,52 @@ rates_log_avg_ne <-
 
 # Gathers inflation data and deflates consumption by region
 # Consumption data is too sparse, condense into weekly data
+Deflate_Sum <- function(x) {
+  
+  # Extract region from dataframe name
+  region <- str_to_upper(str_sub(deparse(substitute(consumption_ne)),-2,-1))
+  
+  TOTAL_SPENT_DEF_REGION = 
+    as.name(paste0("TOTAL_SPENT_DEF_",region))
+  INDEX_CPI_REGION = 
+    as.name(paste0("INDEX_CPI_",region))
+  SUM_SPENT_DEF_REGION = 
+    as.name(paste0("SUM_SPENT_DEF_",region))
+  
+  x %>%
+    left_join(index_table %>%
+                select(DATE,!!INDEX_CPI_REGION),
+              by = c("PURCHASE_DATE" = "DATE")) %>% 
+    mutate(!!TOTAL_SPENT_DEF_REGION := 
+             100 * TOTAL_SPENT 
+           / !!INDEX_CPI_REGION) %>% 
+    na.exclude() %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           !!TOTAL_SPENT_DEF_REGION) %>% 
+    group_by(HOUSEHOLD_CODE,
+             ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
+    summarise(!!SUM_SPENT_DEF_REGION := 
+                sum(!!TOTAL_SPENT_DEF_REGION)) %>%
+    ungroup()
+}
+
+
 sum_consumption_ne_def <- 
-  consumption_ne %>% 
-  left_join(index_table %>% 
-              select(DATE,INDEX_CPI_NE),
-            by = c("PURCHASE_DATE" = "DATE")) %>% 
-  mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
-  na.exclude() %>% 
-  select(HOUSEHOLD_CODE,
-         PURCHASE_DATE,
-         TOTAL_SPENT_DEF_NE) %>% 
-  group_by(HOUSEHOLD_CODE, 
-           ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
-  summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
-  ungroup()
+  Deflate_Sum(consumption_ne)
+#rm(consumption_ne)
+
+sum_consumption_mw_def <- 
+  Deflate_Sum(consumption_mw)
+#rm(consumption_mw)
+
+sum_consumption_so_def <- 
+  Deflate_Sum(consumption_so)
+#rm(consumption_so)
+
+sum_consumption_we_def <- 
+  Deflate_Sum(consumption_we)
+#rm(consumption_we)
 
 
 
@@ -137,7 +169,7 @@ preliminary_estimator_ne <-
            HOUSEHOLD_CODE) %>%
   group_by(HOUSEHOLD_CODE) %>%
   arrange(ISOWEEK) %>%
-  mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
+  mutate(Y = log(SUM_SPENT_DEF_NE) - log(lag(SUM_SPENT_DEF_NE, 
                                                 n = lag_in_weeks)),
          Z1 = lag(Y, n = 2)) %>%
   na.exclude() %>%

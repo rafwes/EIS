@@ -104,14 +104,17 @@ rates_log_avg_ne <-
 
 # Gathers inflation data and deflates consumption by region
 # Consumption data is too sparse, condense into monthly data
-Deflate_Sum <- function(x,y) {
+Deflate_Sum <- function(x) {
   
+  # Extract region from dataframe name
+  region <- str_to_upper(str_sub(deparse(substitute(consumption_ne)),-2,-1))
+   
   TOTAL_SPENT_DEF_REGION = 
-    as.name(paste0("TOTAL_SPENT_DEF_",y))
+    as.name(paste0("TOTAL_SPENT_DEF_", region))
   INDEX_CPI_REGION = 
-    as.name(paste0("INDEX_CPI_",y))
-  SUM_SPENT_WK_DEF_REGION = 
-    as.name(paste0("SUM_SPENT_WK_DEF_",y))
+    as.name(paste0("INDEX_CPI_", region))
+  SUM_SPENT_DEF_REGION = 
+    as.name(paste0("SUM_SPENT_DEF_", region))
   
   x %>%
     left_join(index_table %>%
@@ -127,16 +130,27 @@ Deflate_Sum <- function(x,y) {
     group_by(HOUSEHOLD_CODE,
              YEAR = year(PURCHASE_DATE),
              MONTH = month(PURCHASE_DATE)) %>% 
-    summarise(!!SUM_SPENT_WK_DEF_REGION := 
+    summarise(!!SUM_SPENT_DEF_REGION := 
                 sum(!!TOTAL_SPENT_DEF_REGION)) %>%
     ungroup()
 }
 
+sum_consumption_ne_def <- 
+  Deflate_Sum(consumption_ne)
+#rm(consumption_ne)
 
-sum_consumption_ne_def <- Deflate_Sum(consumption_ne,"NE")
-sum_consumption_mw_def <- Deflate_Sum(consumption_mw,"MW")
-sum_consumption_so_def <- Deflate_Sum(consumption_so,"SO")
-sum_consumption_we_def <- Deflate_Sum(consumption_we,"WE")
+sum_consumption_mw_def <- 
+  Deflate_Sum(consumption_mw)
+#rm(consumption_mw)
+
+sum_consumption_so_def <- 
+  Deflate_Sum(consumption_so)
+#rm(consumption_so)
+
+sum_consumption_we_def <- 
+  Deflate_Sum(consumption_we)
+#rm(consumption_we)
+
 
 #rm(consumption_ne)
 
@@ -160,7 +174,7 @@ preliminary_estimator_ne <-
   group_by(HOUSEHOLD_CODE) %>%
   arrange(YEAR,
           MONTH) %>%
-  mutate(Y = log(SUM_SPENT_WK_DEF_NE) - log(lag(SUM_SPENT_WK_DEF_NE, 
+  mutate(Y = log(SUM_SPENT_DEF_NE) - log(lag(SUM_SPENT_DEF_NE, 
                                                 n = lag_in_months)),
          Z1 = lag(Y, n = 2)) %>%
   na.exclude() %>%
@@ -214,7 +228,7 @@ if (FALSE) {
     group_by(HOUSEHOLD_CODE,
              YEAR = year(PURCHASE_DATE),
              MONTH = month(PURCHASE_DATE)) %>% 
-    summarise(SUM_SPENT_WK_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
+    summarise(SUM_SPENT_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
     ungroup()
   
   
