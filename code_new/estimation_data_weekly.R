@@ -19,7 +19,7 @@ lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks"
-rates_log_avg_ne <- 
+rates_log_avg <- 
   index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
   summarise(AVG_INDEX_TB = geoMean(INDEX_TB),
@@ -129,16 +129,20 @@ Deflate_Than_Sum <- function(x) {
 }
 
 
-sum_consumption_ne_def <- Deflate_Than_Sum(consumption_ne)
+sum_consumption_ne_def <- 
+  Deflate_Than_Sum(consumption_ne)
 rm(consumption_ne)
 
-sum_consumption_mw_def <- Deflate_Than_Sum(consumption_mw)
+sum_consumption_mw_def <- 
+  Deflate_Than_Sum(consumption_mw)
 rm(consumption_mw)
 
-sum_consumption_so_def <- Deflate_Than_Sum(consumption_so)
+sum_consumption_so_def <- 
+  Deflate_Than_Sum(consumption_so)
 rm(consumption_so)
 
-sum_consumption_we_def <- Deflate_Than_Sum(consumption_we)
+sum_consumption_we_def <- 
+  Deflate_Than_Sum(consumption_we)
 rm(consumption_we)
 
 
@@ -160,7 +164,6 @@ Generate_Estimation_Data <- function(x) {
   
   # Extract region from dataframe name
   region <- str_to_upper(str_sub(deparse(substitute(x)),-6,-5))
-  print(region)
   
   SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
   RATE_TB_DEF_REGION = as.name(paste0("RATE_TB_DEF_",region))
@@ -176,7 +179,7 @@ Generate_Estimation_Data <- function(x) {
                                                      n = lag_in_weeks)),
            Z1 = lag(Y, n = 2)) %>%
     na.exclude() %>%
-    left_join(rates_log_avg_ne,
+    left_join(rates_log_avg,
               by = "ISOWEEK") %>%
     transmute(DATE = as.Date(ISOweek2date(paste(ISOWEEK, "1", sep = "-"))),
               Y = Y,
@@ -192,10 +195,18 @@ Generate_Estimation_Data <- function(x) {
 
 }
 
-preliminary_estimator_ne <- Generate_Estimation_Data(sum_consumption_ne_def)
-preliminary_estimator_mw <- Generate_Estimation_Data(sum_consumption_mw_def)
-preliminary_estimator_so <- Generate_Estimation_Data(sum_consumption_so_def)
-preliminary_estimator_we <- Generate_Estimation_Data(sum_consumption_we_def)
+
+estimation_data <-
+  bind_rows(Generate_Estimation_Data(sum_consumption_ne_def),
+            Generate_Estimation_Data(sum_consumption_mw_def),
+            Generate_Estimation_Data(sum_consumption_so_def),
+            Generate_Estimation_Data(sum_consumption_we_def)) %>% 
+  arrange(HOUSEHOLD,DATE)
+
+rm(sum_consumption_ne_def,
+   sum_consumption_mw_def,
+   sum_consumption_so_def,
+   sum_consumption_we_def)
 
 if (FALSE) {
   
@@ -203,7 +214,7 @@ if (FALSE) {
   library(plm)
   cat("\014")
   zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-            data = preliminary_estimator_ne,
+            data = estimation_data,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   summary(zz)

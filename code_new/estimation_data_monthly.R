@@ -19,7 +19,7 @@ lag_in_months = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over over "lag_in_months"
-rates_log_avg_ne <- 
+rates_log_avg <- 
   index_table %>%
   group_by(YEAR = year(DATE),
            MONTH = month(DATE)) %>% 
@@ -135,16 +135,20 @@ Deflate_Than_Sum <- function(x) {
     ungroup()
 }
 
-sum_consumption_ne_def <- Deflate_Than_Sum(consumption_ne)
+sum_consumption_ne_def <- 
+  Deflate_Than_Sum(consumption_ne)
 rm(consumption_ne)
 
-sum_consumption_mw_def <- Deflate_Than_Sum(consumption_mw)
+sum_consumption_mw_def <- 
+  Deflate_Than_Sum(consumption_mw)
 rm(consumption_mw)
 
-sum_consumption_so_def <- Deflate_Than_Sum(consumption_so)
+sum_consumption_so_def <- 
+  Deflate_Than_Sum(consumption_so)
 rm(consumption_so)
 
-sum_consumption_we_def <- Deflate_Than_Sum(consumption_we)
+sum_consumption_we_def <- 
+  Deflate_Than_Sum(consumption_we)
 rm(consumption_we)
 
 
@@ -160,36 +164,6 @@ rm(consumption_we)
 # Z2_TB = X_TB_{t-2} 
 # Z2_ST = X_ST_{t-2}
 # Z3    = log(1+\pi)_{t-2}          ,where \pi is the inflation rate
-
-
-preliminary_estimator_ne <- 
-  sum_consumption_ne_def %>% 
-  complete(YEAR,
-           MONTH,
-           HOUSEHOLD_CODE) %>%
-  group_by(HOUSEHOLD_CODE) %>%
-  arrange(YEAR, MONTH) %>%
-  mutate(Y = log(SUM_SPENT_DEF_NE) - log(lag(SUM_SPENT_DEF_NE, 
-                                                n = lag_in_months)),
-         Z1 = lag(Y, n = 2)) %>%
-  na.exclude() %>%
-  left_join(rates_log_avg_ne,
-            by = c("YEAR","MONTH")) %>%
-  unite(YEAR_MONTH, 
-        YEAR:MONTH, 
-        sep = "-") %>% 
-  transmute(DATE = as.Date(paste(YEAR_MONTH, "1", sep = "-")),
-            Y = Y,
-            X_TB = RATE_TB_DEF_NE,
-            X_ST = RATE_ST_DEF_NE,
-            Z1 = Z1,
-            Z2_TB = lag(RATE_TB, n = 2), 
-            Z2_ST = lag(RATE_ST, n = 2),
-            Z3 = lag(RATE_INFL_NE, n = 2)) %>% 
-  na.exclude() %>% 
-  ungroup() %>% 
-  rename(HOUSEHOLD = HOUSEHOLD_CODE)
-
 
 Generate_Estimation_Data <- function(x) {
   
@@ -211,7 +185,7 @@ Generate_Estimation_Data <- function(x) {
                                                      n = lag_in_months)),
            Z1 = lag(Y, n = 2)) %>%
     na.exclude() %>%
-    left_join(rates_log_avg_ne,
+    left_join(rates_log_avg,
               by = c("YEAR","MONTH")) %>%
     unite(YEAR_MONTH,
           YEAR:MONTH,
@@ -231,11 +205,17 @@ Generate_Estimation_Data <- function(x) {
 }
 
 
-preliminary_estimator_ne <- Generate_Estimation_Data(sum_consumption_ne_def)
-preliminary_estimator_mw <- Generate_Estimation_Data(sum_consumption_mw_def)
-preliminary_estimator_so <- Generate_Estimation_Data(sum_consumption_so_def)
-preliminary_estimator_we <- Generate_Estimation_Data(sum_consumption_we_def)
+estimation_data <-
+  bind_rows(Generate_Estimation_Data(sum_consumption_ne_def),
+            Generate_Estimation_Data(sum_consumption_mw_def),
+            Generate_Estimation_Data(sum_consumption_so_def),
+            Generate_Estimation_Data(sum_consumption_we_def)) %>% 
+  arrange(HOUSEHOLD,DATE)
 
+rm(sum_consumption_ne_def,
+   sum_consumption_mw_def,
+   sum_consumption_so_def,
+   sum_consumption_we_def)
 
 
 if (FALSE) {
@@ -243,7 +223,7 @@ if (FALSE) {
   library(plm)
   cat("\014")
   zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-            data = preliminary_estimator_ne,
+            data = estimation_data,
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   summary(zz)
@@ -254,29 +234,7 @@ if (FALSE) {
  
   # write_csv(preliminary_estimator_ne, "../data_1month_sample05_ne.csv")
   
+  %>% 
+    filter_all(any_vars(is.na(.)))
   
-  
-  sum_consumption_ne_def <- 
-    consumption_ne %>% 
-    left_join(index_table %>% 
-                select(DATE,INDEX_CPI_NE),
-              by = c("PURCHASE_DATE" = "DATE")) %>% 
-    mutate(TOTAL_SPENT_DEF_NE = 100 * TOTAL_SPENT / INDEX_CPI_NE) %>% 
-    na.exclude() %>% 
-    select(HOUSEHOLD_CODE,
-           PURCHASE_DATE,
-           TOTAL_SPENT_DEF_NE) %>% 
-    group_by(HOUSEHOLD_CODE,
-             YEAR = year(PURCHASE_DATE),
-             MONTH = month(PURCHASE_DATE)) %>% 
-    summarise(SUM_SPENT_DEF_NE = sum(TOTAL_SPENT_DEF_NE)) %>%
-    ungroup()
-  
-  
-  
-}
-
-
-
-
-
+  }
