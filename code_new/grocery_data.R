@@ -4,8 +4,8 @@ library(tidyverse)
 library(visdat)
 library(naniar)
 
-#base_path <- "/extra/agalvao/eis_nielsen"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # We have data from 2004 to 2017
 years <- seq(2004, 2017)

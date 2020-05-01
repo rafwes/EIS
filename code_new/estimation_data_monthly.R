@@ -9,8 +9,8 @@ library(ISOweek)
 library(lubridate)
 library(EnvStats)
 
-#base_path <- "/extra/agalvao/eis_nielsen"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -218,6 +218,9 @@ rm(sum_consumption_ne_def,
    sum_consumption_we_def)
 
 
+write_csv(estimation_data, "../data_1month_sample05_ne.csv")
+
+
 if (FALSE) {
   
   library(plm)
@@ -232,7 +235,7 @@ if (FALSE) {
   # Lance's Regression Code
   #plm(Y ~ LogR | YInst + Lag2LogNomR + Lag2Inf, data=Trips4_1, model='pooling', index=c('household_code', 'monthR'))
  
-  # write_csv(estimation_data, "..data_1month_sample05_ne.csv")
+  # write_csv(estimation_data, "../data_1month_sample05_ne.csv")
   
   # %>% 
   #  filter_all(any_vars(is.na(.)))
