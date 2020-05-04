@@ -8,8 +8,8 @@ library(plotrix)
 #library(lubridate)
 #library(EnvStats)
 
-#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 monthly_file <- file.path(base_path,"csv_output/estimation_data_monthly.csv")
 weekly_1w_file <- file.path(base_path,"csv_output/estimation_data_weekly_1w.csv")
