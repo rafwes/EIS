@@ -3,12 +3,12 @@
   library(tidyverse)
   library(zoo)
   library(reshape2)
-  library(ISOweek)
+  #library(ISOweek)
   library(lubridate)
-  library(EnvStats)
+  #library(EnvStats)
   library(grid)
-  library(forecast)
-  library(xts)
+  #library(forecast)
+  #library(xts)
   
   
   #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
@@ -16,72 +16,6 @@
   
   source(file.path(base_path,"EIS/code_new/interest_rates.R"))
   source(file.path(base_path,"EIS/code_new/grocery_data.R"))
-  
-  lag_in_days = 28L
-  
-  # For each week, take the average observed tbill/stock index
-  # and create a log rate over "lag_in_days"
-  rates_log <- 
-    index_table %>%
-   transmute(DATE = DATE,
-              RATE_TB = 
-                log(INDEX_TB) 
-              - log(lag(INDEX_TB,
-                        n = lag_in_days)),
-              RATE_ST = 
-                log(INDEX_ST) 
-              - log(lag(INDEX_ST,
-                        n = lag_in_days)),
-              RATE_INFL_NE =
-                log(INDEX_CPI_NE) 
-              - log(lag(INDEX_CPI_NE,
-                        n = lag_in_days)),
-              RATE_INFL_MW =
-                log(INDEX_CPI_MW) 
-              - log(lag(INDEX_CPI_MW,
-                        n = lag_in_days)),
-              RATE_INFL_SO =
-                log(INDEX_CPI_SO) 
-              - log(lag(INDEX_CPI_SO,
-                        n = lag_in_days)),
-              RATE_INFL_WE =
-                log(INDEX_CPI_WE) 
-              - log(lag(INDEX_CPI_WE,
-                        n = lag_in_days)),
-              RATE_TB_DEF_NE = 
-                log(INDEX_TB_DEF_NE) 
-              - log(lag(INDEX_TB_DEF_NE,
-                        n = lag_in_days)),
-              RATE_TB_DEF_MW = 
-                log(INDEX_TB_DEF_MW) 
-              - log(lag(INDEX_TB_DEF_MW,
-                        n = lag_in_days)),
-              RATE_TB_DEF_SO = 
-                log(INDEX_TB_DEF_SO) 
-              - log(lag(INDEX_TB_DEF_SO,
-                        n = lag_in_days)),
-              RATE_TB_DEF_WE = 
-                log(INDEX_TB_DEF_WE) 
-              - log(lag(INDEX_TB_DEF_WE,
-                        n = lag_in_days)),
-              RATE_ST_DEF_NE = 
-                log(INDEX_ST_DEF_NE) 
-              - log(lag(INDEX_ST_DEF_NE,
-                        n = lag_in_days)),
-              RATE_ST_DEF_MW = 
-                log(INDEX_ST_DEF_MW) 
-              - log(lag(INDEX_ST_DEF_MW,
-                        n = lag_in_days)),
-              RATE_ST_DEF_SO = 
-                log(INDEX_ST_DEF_SO) 
-              - log(lag(INDEX_ST_DEF_SO,
-                        n = lag_in_days)),
-              RATE_ST_DEF_WE = 
-                log(INDEX_ST_DEF_WE) 
-              - log(lag(INDEX_ST_DEF_WE,
-                        n = lag_in_days))
-              ) %>%
-    na.exclude()
   
   
   # Gathers inflation data and deflates consumption by region
@@ -98,13 +32,13 @@
     
     x %>%
       group_by(PURCHASE_DATE) %>% 
-      summarize(AVG_SPENT = mean(TOTAL_SPENT)) %>%
+      summarize(AVG_TRIP = mean(TOTAL_SPENT)) %>%
       ungroup() %>% 
       left_join(index_table %>%
                   select(DATE, !!INDEX_CPI_REGION),
                 by = c("PURCHASE_DATE" = "DATE")) %>% 
       mutate(AVG_TRIP := 
-               100 * AVG_SPENT 
+               100 * AVG_TRIP 
              / !!INDEX_CPI_REGION) %>% 
       na.exclude() %>% 
       transmute(DATE = PURCHASE_DATE,
@@ -129,11 +63,61 @@
   }
   
   
+
+  
+  sum_consumption_def_we <- 
+    Deflate_Than_Sum(consumption_we)
+  
+  
+  sum_consumption_ds_def_we <- 
+    Deflate_Than_Sum(consumption_ds_we)
+  
+  
+  plot_we <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_def_we %>%
+                select(DATE, AVG_TRIP_3M_WE, TREND_1Y_WE) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+ 
+  plot_ds_we <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_ds_def_we %>%
+                select(DATE, AVG_TRIP_3M_WE, TREND_1Y_WE) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  
+  
+  grid.newpage()
+  grid.draw(rbind(ggplotGrob(plot_we),
+                  ggplotGrob(plot_ds_we),
+                  size = "last"))
+  
+  
+  ## Last week code ##
+  #############################################
+  
+  
   sum_consumption_ne_def <- 
     Deflate_Than_Sum(consumption_ne)
  
-  #cons_ne <- as.xts(sum_consumption_ne_def$AVG_SPENT_DEF_NE, sum_consumption_ne_def$DATE)
-   
   sum_consumption_mw_def <- 
     Deflate_Than_Sum(consumption_mw)
   

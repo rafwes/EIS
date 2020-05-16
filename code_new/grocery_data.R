@@ -1,4 +1,4 @@
-rm(list=ls())
+#rm(list=ls())
 
 library(tidyverse)
 library(lubridate)
@@ -352,35 +352,6 @@ rm(i,
 
 ## Deseasonalization code (experimental)
 
-# Creates monthly 
-
-deseason_month <- 
-  consumption_we %>% 
-  mutate(M01 = case_when(month(PURCHASE_DATE) == 1 ~ 1,
-                          TRUE ~ 0),
-         M02 = case_when(month(PURCHASE_DATE) == 2 ~ 1,
-                          TRUE ~ 0),
-         M03 = case_when(month(PURCHASE_DATE) == 3 ~ 1,
-                          TRUE ~ 0),
-         M04 = case_when(month(PURCHASE_DATE) == 4 ~ 1,
-                          TRUE ~ 0),
-         M05 = case_when(month(PURCHASE_DATE) == 5 ~ 1,
-                          TRUE ~ 0),
-         M06 = case_when(month(PURCHASE_DATE) == 6 ~ 1,
-                          TRUE ~ 0),
-         M07 = case_when(month(PURCHASE_DATE) == 7 ~ 1,
-                          TRUE ~ 0),
-         M08 = case_when(month(PURCHASE_DATE) == 8 ~ 1,
-                          TRUE ~ 0),
-         M09 = case_when(month(PURCHASE_DATE) == 9 ~ 1,
-                          TRUE ~ 0),
-         M10 = case_when(month(PURCHASE_DATE) == 10 ~ 1,
-                          TRUE ~ 0),
-         M11 = case_when(month(PURCHASE_DATE) == 11 ~ 1,
-                          TRUE ~ 0),
-         M12 = case_when(month(PURCHASE_DATE) == 12 ~ 1,
-                          TRUE ~ 0))
-
 
 deseason_week_we <- 
   consumption_we %>% 
@@ -491,18 +462,6 @@ deseason_week_we <-
          W53 = case_when(isoweek(PURCHASE_DATE) == 53 ~ 1,
                          TRUE ~ 0))
   
-  library(plm)
-  model_month <- plm(TOTAL_SPENT ~ -1+M01+M02+M03+M04+M05+M06+
-                       M07+M08+M09+M10+M11+M12,
-                     data = deseason_month,
-                     model = "pooling",
-                     index = c("HOUSEHOLD_CODE", "PURCHASE_DATE"))
-  
-  print("Deseasonalization")
-  summary(model_month)
-  detach("package:plm", unload=TRUE)
-  #a <- data.frame(residuals(model_month))
-  
   
   library(plm)
   model_week_we <- plm(TOTAL_SPENT ~ -1+
@@ -516,14 +475,19 @@ deseason_week_we <-
                     model = "pooling",
                     index = c("HOUSEHOLD_CODE", "PURCHASE_DATE"))
   
-  print("Deseasonalization")
+  #print("Deseasonalization Done")
   summary(model_week_we)
-  detach("package:plm", unload=TRUE)
+  #rm(deseason_week_we)
   
-  
-  consumption_we_ds <- consumption_we %>% 
+  # We need to reorder data to match residual function
+  consumption_ds_we <- consumption_we %>%
+    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
     select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT = residuals(model_week_we))
+  
+  detach("package:plm", unload=TRUE)
+  
+  #rm(model_week_we)
   
 ######################################################################
 
@@ -540,102 +504,50 @@ write_csv(grocery_trips,
 }
 
 
+  
+  
 if (FALSE) {
   
-  ###################################
-  # Arrange consumption data into time series
+  # Creates monthly 
   
-  groceries_daily_mw <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
-  groceries_daily_ne <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
-  groceries_daily_so <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
-  groceries_daily_we <- data.frame(seq(as.Date('2003-12-20'), as.Date('2018-01-30'), by="days"))
-  colnames(groceries_daily_mw) <- "PURCHASE_DATE"
-  colnames(groceries_daily_ne) <- "PURCHASE_DATE" 
-  colnames(groceries_daily_so) <- "PURCHASE_DATE" 
-  colnames(groceries_daily_we) <- "PURCHASE_DATE" 
-  
-  consumption_ts_mw <- consumption_mw %>% 
-    group_by(HOUSEHOLD_CODE) %>%
-    group_split()
-  
-  consumption_ts_ne <- consumption_ne %>% 
-    group_by(HOUSEHOLD_CODE) %>%
-    group_split()
-  
-  consumption_ts_so <- consumption_so %>% 
-    group_by(HOUSEHOLD_CODE) %>%
-    group_split()
-  
-  consumption_ts_we <- consumption_we %>% 
-    group_by(HOUSEHOLD_CODE) %>%
-    group_split()
-  
-  for (i in 1:length(consumption_ts_mw)) {
-    
-    df <- data.frame(consumption_ts_mw[i])
-    colname <- as.character(df[[1]][1])
-    df <- rename(df, !!colname := "TOTAL_SPENT")
-    df <- df %>% select(- HOUSEHOLD_CODE)
-    
-    groceries_daily_mw <-
-      groceries_daily_mw %>% 
-      left_join(df, by = "PURCHASE_DATE")
-    
-  }
-  
-  for (i in 1:length(consumption_ts_ne)) {
-    
-    df <- data.frame(consumption_ts_ne[i])
-    colname <- as.character(df[[1]][1])
-    df <- rename(df, !!colname := "TOTAL_SPENT")
-    df <- df %>% select(- HOUSEHOLD_CODE)
-    
-    groceries_daily_ne <-
-      groceries_daily_ne %>% 
-      left_join(df, by = "PURCHASE_DATE")
-    
-  }
-  
-  for (i in 1:length(consumption_ts_so)) {
-    
-    df <- data.frame(consumption_ts_so[i])
-    colname <- as.character(df[[1]][1])
-    df <- rename(df, !!colname := "TOTAL_SPENT")
-    df <- df %>% select(- HOUSEHOLD_CODE)
-    
-    groceries_daily_so <-
-      groceries_daily_so %>% 
-      left_join(df, by = "PURCHASE_DATE")
-    
-  }
-  
-  for (i in 1:length(consumption_ts_we)) {
-    
-    df <- data.frame(consumption_ts_we[i])
-    colname <- as.character(df[[1]][1])
-    df <- rename(df, !!colname := "TOTAL_SPENT")
-    df <- df %>% select(- HOUSEHOLD_CODE)
-    
-    groceries_daily_we <-
-      groceries_daily_we %>% 
-      left_join(df, by = "PURCHASE_DATE")
-    
-  }
+  deseason_month <- 
+    consumption_we %>% 
+    mutate(M01 = case_when(month(PURCHASE_DATE) == 1 ~ 1,
+                           TRUE ~ 0),
+           M02 = case_when(month(PURCHASE_DATE) == 2 ~ 1,
+                           TRUE ~ 0),
+           M03 = case_when(month(PURCHASE_DATE) == 3 ~ 1,
+                           TRUE ~ 0),
+           M04 = case_when(month(PURCHASE_DATE) == 4 ~ 1,
+                           TRUE ~ 0),
+           M05 = case_when(month(PURCHASE_DATE) == 5 ~ 1,
+                           TRUE ~ 0),
+           M06 = case_when(month(PURCHASE_DATE) == 6 ~ 1,
+                           TRUE ~ 0),
+           M07 = case_when(month(PURCHASE_DATE) == 7 ~ 1,
+                           TRUE ~ 0),
+           M08 = case_when(month(PURCHASE_DATE) == 8 ~ 1,
+                           TRUE ~ 0),
+           M09 = case_when(month(PURCHASE_DATE) == 9 ~ 1,
+                           TRUE ~ 0),
+           M10 = case_when(month(PURCHASE_DATE) == 10 ~ 1,
+                           TRUE ~ 0),
+           M11 = case_when(month(PURCHASE_DATE) == 11 ~ 1,
+                           TRUE ~ 0),
+           M12 = case_when(month(PURCHASE_DATE) == 12 ~ 1,
+                           TRUE ~ 0))
   
   
+  library(plm)
+  model_month <- plm(TOTAL_SPENT ~ -1+M01+M02+M03+M04+M05+M06+
+                       M07+M08+M09+M10+M11+M12,
+                     data = deseason_month,
+                     model = "pooling",
+                     index = c("HOUSEHOLD_CODE", "PURCHASE_DATE"))
   
-  #vis_dat(groceries_daily, warn_large_data = FALSE)
-  
-  #vis_miss(groceries_daily_mw, warn_large_data = FALSE)
-  #vis_miss(groceries_daily_ne, warn_large_data = FALSE)
-  #vis_miss(groceries_daily_so, warn_large_data = FALSE)
-  #vis_miss(groceries_daily_we, warn_large_data = FALSE)
-  
-  
-  rm(df,
-     consumption_ts_mw,
-     consumption_ts_ne,
-     consumption_ts_so,
-     consumption_ts_we)
+  print(" Monthly Deseasonalization Done")
+  summary(model_month)
+  detach("package:plm", unload=TRUE)
+  #a <- data.frame(residuals(model_month))
   
 }
