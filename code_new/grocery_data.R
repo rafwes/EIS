@@ -468,32 +468,62 @@ Seasonality_Matrix <- function(x) {
 
 }
   
+Deseasonlize <- function(x) {
   
-  library(plm)
-  model_week_we <- plm(TOTAL_SPENT ~ -1+
-                      W01+W02+W03+W04+W05+W06+W07+W08+W09+W10+
-                      W11+W12+W13+W14+W15+W16+W17+W18+W19+W20+
-                      W21+W22+W23+W24+W25+W26+W27+W28+W29+W30+
-                      W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
-                      W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
-                      W51+W52+W53,
-                    data = Seasonality_Matrix(consumption_we),
-                    model = "pooling",
-                    index = c("HOUSEHOLD_CODE", 
-                              "PURCHASE_DATE"))
+  # Extract region from dataframe name
+  region <- str_sub(deparse(substitute(x)),-2,-1)
   
-  #print("Deseasonalization Done")
-  summary(model_week_we)
+  consumption_region = as.name(paste0("consumption_",region))
   
-  # We need to reorder data to match residual function
+  plm(TOTAL_SPENT ~ -1+
+        W01+W02+W03+W04+W05+W06+W07+W08+W09+W10+
+        W11+W12+W13+W14+W15+W16+W17+W18+W19+W20+
+        W21+W22+W23+W24+W25+W26+W27+W28+W29+W30+
+        W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
+        W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
+        W51+W52+W53,
+      data = Seasonality_Matrix(eval(consumption_region)),
+      model = "pooling",
+      index = c("HOUSEHOLD_CODE", 
+                "PURCHASE_DATE"))
+}
+
+
+library(plm)
+model_ds_ne <- 
+  Deseasonlize(consumption_ne)
+model_ds_mw <- 
+  Deseasonlize(consumption_mw)
+model_ds_so <- 
+  Deseasonlize(consumption_so)
+model_ds_we <- 
+  Deseasonlize(consumption_we)
+detach("package:plm", unload=TRUE)
+
+
+  # Creates deseasonlized consumption data
+  # We need to reorder datapoints to match residual function
+  consumption_ds_ne <- consumption_ne %>%
+    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT = residuals(model_ds_ne))
+  
+  consumption_ds_mw <- consumption_mw %>%
+    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT = residuals(model_ds_mw))
+  
+  consumption_ds_so <- consumption_so %>%
+    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT = residuals(model_ds_so))
+  
   consumption_ds_we <- consumption_we %>%
     arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
     select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT = residuals(model_week_we))
+    mutate(TOTAL_SPENT = residuals(model_ds_we))
   
-  detach("package:plm", unload=TRUE)
-  
-  #rm(model_week_we)
+  #summary(model_week_we)
   
 ######################################################################
 
