@@ -87,7 +87,8 @@
   plot_ne <- 
     ggplot() + 
     geom_line(data = sum_consumption_def_ne %>%
-                select(DATE, AVG_TRIP_3M_NE, TREND_1Y_NE) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_NE = scale(AVG_TRIP_3M_NE)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
@@ -95,29 +96,27 @@
               aes(x = DATE, 
                   y = value, 
                   colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
- 
-  plot_ds_ne <- 
-    ggplot() + 
     geom_line(data = sum_consumption_ds_def_ne %>%
-                select(DATE, AVG_TRIP_3M_NE, TREND_1Y_NE) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_DS_NE = scale(AVG_TRIP_3M_NE)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
                 pivot_longer(-DATE),
               aes(x = DATE, 
                   y = value, 
-                  colour = name)) +
+                  colour = name))+
     scale_x_date(date_breaks = "1 year",
                  date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
-  
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
+
   plot_mw <- 
     ggplot() + 
     geom_line(data = sum_consumption_def_mw %>%
-                select(DATE, AVG_TRIP_3M_MW, TREND_1Y_MW) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_MW = scale(AVG_TRIP_3M_MW)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
@@ -125,29 +124,27 @@
               aes(x = DATE, 
                   y = value, 
                   colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
-  
-  plot_ds_mw <- 
-    ggplot() + 
     geom_line(data = sum_consumption_ds_def_mw %>%
-                select(DATE, AVG_TRIP_3M_MW, TREND_1Y_MW) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_DS_MW = scale(AVG_TRIP_3M_MW)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
                 pivot_longer(-DATE),
               aes(x = DATE, 
                   y = value, 
-                  colour = name)) +
+                  colour = name))+
     scale_x_date(date_breaks = "1 year",
                  date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
   
   plot_so <- 
     ggplot() + 
     geom_line(data = sum_consumption_def_so %>%
-                select(DATE, AVG_TRIP_3M_SO, TREND_1Y_SO) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_SO = scale(AVG_TRIP_3M_SO)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
@@ -155,29 +152,27 @@
               aes(x = DATE, 
                   y = value, 
                   colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
-  
-  plot_ds_so <- 
-    ggplot() + 
     geom_line(data = sum_consumption_ds_def_so %>%
-                select(DATE, AVG_TRIP_3M_SO, TREND_1Y_SO) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_DS_SO = scale(AVG_TRIP_3M_SO)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
                 pivot_longer(-DATE),
               aes(x = DATE, 
                   y = value, 
-                  colour = name)) +
+                  colour = name))+
     scale_x_date(date_breaks = "1 year",
                  date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
   
   plot_we <- 
     ggplot() + 
     geom_line(data = sum_consumption_def_we %>%
-                select(DATE, AVG_TRIP_3M_WE, TREND_1Y_WE) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_WE = scale(AVG_TRIP_3M_WE)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
@@ -185,35 +180,29 @@
               aes(x = DATE, 
                   y = value, 
                   colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
-  
-  plot_ds_we <- 
-    ggplot() + 
     geom_line(data = sum_consumption_ds_def_we %>%
-                select(DATE, AVG_TRIP_3M_WE, TREND_1Y_WE) %>% 
+                transmute(DATE = DATE,
+                          AVG_TRIP_3M_DS_WE = scale(AVG_TRIP_3M_WE)) %>%
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
                 pivot_longer(-DATE),
               aes(x = DATE, 
                   y = value, 
-                  colour = name)) +
+                  colour = name))+
     scale_x_date(date_breaks = "1 year",
                  date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
+  
   
   
   grid.newpage()
   grid.draw(rbind(ggplotGrob(plot_ne),
-                  ggplotGrob(plot_ds_ne),
                   ggplotGrob(plot_mw),
-                  ggplotGrob(plot_ds_mw),
                   ggplotGrob(plot_so),
-                  ggplotGrob(plot_ds_so),
                   ggplotGrob(plot_we),
-                  ggplotGrob(plot_ds_we),
                   size = "last"))
   
   
@@ -393,10 +382,164 @@ if (FALSE) {
   # %>% 
   #  filter_all(any_vars(is.na(.)))
   
+
+}
+
+  
+## Working RAW_VS_DESEASONED plots
+if (FALSE) {
+  
+  sum_consumption_def_ne <- 
+    Deflate_Than_Sum(consumption_ne)
+  sum_consumption_ds_def_ne <- 
+    Deflate_Than_Sum(consumption_ds_ne)
+  
+  sum_consumption_def_mw <- 
+    Deflate_Than_Sum(consumption_mw)
+  sum_consumption_ds_def_mw <- 
+    Deflate_Than_Sum(consumption_ds_mw)
+  
+  sum_consumption_def_so <- 
+    Deflate_Than_Sum(consumption_so)
+  sum_consumption_ds_def_so <- 
+    Deflate_Than_Sum(consumption_ds_so)
+  
+  sum_consumption_def_we <- 
+    Deflate_Than_Sum(consumption_we)
+  sum_consumption_ds_def_we <- 
+    Deflate_Than_Sum(consumption_ds_we)
   
   
+  plot_ne <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_def_ne %>%
+                select(DATE, AVG_TRIP_3M_NE, TREND_1Y_NE) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_ds_ne <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_ds_def_ne %>%
+                select(DATE, AVG_TRIP_3M_NE, TREND_1Y_NE) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_mw <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_def_mw %>%
+                select(DATE, AVG_TRIP_3M_MW, TREND_1Y_MW) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_ds_mw <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_ds_def_mw %>%
+                select(DATE, AVG_TRIP_3M_MW, TREND_1Y_MW) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_so <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_def_so %>%
+                select(DATE, AVG_TRIP_3M_SO, TREND_1Y_SO) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_ds_so <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_ds_def_so %>%
+                select(DATE, AVG_TRIP_3M_SO, TREND_1Y_SO) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_we <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_def_we %>%
+                select(DATE, AVG_TRIP_3M_WE, TREND_1Y_WE) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
+  
+  plot_ds_we <- 
+    ggplot() + 
+    geom_line(data = sum_consumption_ds_def_we %>%
+                select(DATE, AVG_TRIP_3M_WE, TREND_1Y_WE) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text())
   
   
+  grid.newpage()
+  grid.draw(rbind(ggplotGrob(plot_ne),
+                  ggplotGrob(plot_ds_ne),
+                  ggplotGrob(plot_mw),
+                  ggplotGrob(plot_ds_mw),
+                  ggplotGrob(plot_so),
+                  ggplotGrob(plot_ds_so),
+                  ggplotGrob(plot_we),
+                  ggplotGrob(plot_ds_we),
+                  size = "last"))
   
-   
 }
