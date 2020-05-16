@@ -1,11 +1,12 @@
-#rm(list=ls())
+rm(list=ls())
 
-#library(tidyverse)
+library(tidyverse)
+library(lubridate)
 #library(visdat)
 #library(naniar)
 
 #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # We have data from 2004 to 2017
 years <- seq(2004, 2017)
@@ -244,7 +245,7 @@ for (i in 1:length(years)) {
                        FIPS_STATE_DESCR),
               by = "HOUSEHOLD_CODE")
   
-  # We need to deflate prices by region, so separate them
+  # We need to deflate consumption by region, so separate them
   consumption_ne_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% northeast) %>% 
@@ -348,8 +349,50 @@ rm(i,
    panelists
    )
 
+## Deseasonalization code (experimental)
 
-#######################################################################
+# Creates monthly 
+
+deseason_month <- 
+  consumption_we %>% 
+  mutate(M01 = case_when(month(PURCHASE_DATE) == 1 ~ 1,
+                          TRUE ~ 0),
+         M02 = case_when(month(PURCHASE_DATE) == 2 ~ 1,
+                          TRUE ~ 0),
+         M03 = case_when(month(PURCHASE_DATE) == 3 ~ 1,
+                          TRUE ~ 0),
+         M04 = case_when(month(PURCHASE_DATE) == 4 ~ 1,
+                          TRUE ~ 0),
+         M05 = case_when(month(PURCHASE_DATE) == 5 ~ 1,
+                          TRUE ~ 0),
+         M06 = case_when(month(PURCHASE_DATE) == 6 ~ 1,
+                          TRUE ~ 0),
+         M07 = case_when(month(PURCHASE_DATE) == 7 ~ 1,
+                          TRUE ~ 0),
+         M08 = case_when(month(PURCHASE_DATE) == 8 ~ 1,
+                          TRUE ~ 0),
+         M09 = case_when(month(PURCHASE_DATE) == 9 ~ 1,
+                          TRUE ~ 0),
+         M10 = case_when(month(PURCHASE_DATE) == 10 ~ 1,
+                          TRUE ~ 0),
+         M11 = case_when(month(PURCHASE_DATE) == 11 ~ 1,
+                          TRUE ~ 0),
+         M12 = case_when(month(PURCHASE_DATE) == 12 ~ 1,
+                          TRUE ~ 0))
+  
+library(plm)
+  zz <- plm(TOTAL_SPENT ~ -1+M01+M02+M03+M04+M05+M06+M07+M08+M09+M10+M11+M12,
+            data = deseason_month,
+            model = "pooling",
+            index = c("HOUSEHOLD_CODE", "PURCHASE_DATE"))
+  
+  print("Deseasonalization")
+  summary(zz)
+  detach("package:plm", unload=TRUE)
+  a <- data.frame(residuals(zz))
+  
+  
+######################################################################
 
 if (FALSE) {
 
