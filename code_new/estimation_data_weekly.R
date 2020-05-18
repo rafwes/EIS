@@ -172,7 +172,9 @@
   print("======================================================")
   summary(zz)
   detach("package:plm", unload=TRUE)
-  rm(estimation_data_4w,zz)
+  rm(estimation_data_4w,
+     zz,
+     rates_log_avg)
   
   
   #####################################################################
