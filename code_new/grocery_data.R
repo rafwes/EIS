@@ -350,7 +350,7 @@ rm(i,
    panelists
    )
 
-## Deseasonalization code (experimental)
+## Deseasonalization code
 
 # Append a dummy variable matrix
 Seasonality_Matrix <- function(x) {
@@ -503,22 +503,28 @@ model_ds_we <-
     select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT = residuals(model_ds_ne))
   
+  rm(consumption_ne, model_ds_ne)
+  
   consumption_ds_mw <- consumption_mw %>%
     arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
     select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT = residuals(model_ds_mw))
+  
+  rm(consumption_mw, model_ds_mw)
   
   consumption_ds_so <- consumption_so %>%
     arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
     select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT = residuals(model_ds_so))
   
+  rm(consumption_so, model_ds_so)
+  
   consumption_ds_we <- consumption_we %>%
     arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
     select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT = residuals(model_ds_we))
   
-  #summary(model_week_we)
+  rm(consumption_we, model_ds_we)
   
 ######################################################################
 

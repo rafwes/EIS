@@ -5,7 +5,7 @@
   library(reshape2)
   library(ISOweek)
   library(lubridate)
-  library(EnvStats)
+  #library(EnvStats)
   
   #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
   base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
