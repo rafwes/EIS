@@ -96,7 +96,7 @@
     ) %>%
     na.exclude()
   
-  
+  # Sums consumption over given period
   # Calculates lagged variables, drops observations for which no
   # lags could be calculated and then joins them with rates and
   # then delivers a proper date column since.
@@ -120,7 +120,12 @@
     RATE_ST_DEF_REGION = as.name(paste0("RATE_ST_DEF_",region))
     RATE_INFL_REGION = as.name(paste0("RATE_INFL_",region))
     
-    x %>%   
+    x %>%
+      group_by(HOUSEHOLD_CODE,
+               ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
+      summarise(!!SUM_SPENT_DEF_REGION := 
+                  sum(TOTAL_SPENT_DS_DEF)) %>%
+      ungroup() %>% 
       complete(ISOWEEK,
                HOUSEHOLD_CODE) %>%
       group_by(HOUSEHOLD_CODE) %>%
@@ -147,17 +152,11 @@
   
   
   estimation_data_4w <-
-    bind_rows(Generate_Estimation_Data(sum_consumption_ds_def_ne),
-              Generate_Estimation_Data(sum_consumption_ds_def_mw),
-              Generate_Estimation_Data(sum_consumption_ds_def_so),
-              Generate_Estimation_Data(sum_consumption_ds_def_we)) %>% 
+    bind_rows(Generate_Estimation_Data(consumption_ds_def_ne),
+              Generate_Estimation_Data(consumption_ds_def_mw),
+              Generate_Estimation_Data(consumption_ds_def_so),
+              Generate_Estimation_Data(consumption_ds_def_we)) %>% 
     arrange(HOUSEHOLD,DATE)
-  
-  rm(sum_consumption_ne_def,
-     sum_consumption_mw_def,
-     sum_consumption_so_def,
-     sum_consumption_we_def)
-  
   
   write_csv(estimation_data_4w,
             file.path(base_path, 
@@ -169,12 +168,21 @@
             model = "pooling",
             index = c("HOUSEHOLD", "DATE"))
   
-  print("Estimation for 4 Weeks") 
+  print("Estimation for 4 Weeks")
+  print("======================================================")
   summary(zz)
   detach("package:plm", unload=TRUE)
-  
   rm(estimation_data_4w,zz)
   
+  
+  #####################################################################
+  ## REDO FOR 1 WEEK 
+  #####################################################################
+  
+  
+  
+  
+  rm(list=ls(pattern="^consumption_ds_def"))
   
   if (FALSE) {
     cat("\014")
@@ -183,33 +191,5 @@
     
     # %>% 
     #  filter_all(any_vars(is.na(.)))
-    
-    Deflate_Than_Sum <- function(x) {
-      
-      # Extract region from dataframe name
-      region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
-      
-      TOTAL_SPENT_DEF_REGION = as.name(paste0("TOTAL_SPENT_DEF_",region))
-      INDEX_CPI_REGION = as.name(paste0("INDEX_CPI_",region))
-      SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
-      
-      x %>%
-        left_join(index_table %>%
-                    select(DATE,!!INDEX_CPI_REGION),
-                  by = c("PURCHASE_DATE" = "DATE")) %>% 
-        mutate(!!TOTAL_SPENT_DEF_REGION := 
-                 100 * TOTAL_SPENT 
-               / !!INDEX_CPI_REGION) %>% 
-        na.exclude() %>% 
-        select(HOUSEHOLD_CODE,
-               PURCHASE_DATE,
-               !!TOTAL_SPENT_DEF_REGION) %>% 
-        group_by(HOUSEHOLD_CODE,
-                 ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
-        summarise(!!SUM_SPENT_DEF_REGION := 
-                    sum(!!TOTAL_SPENT_DEF_REGION)) %>%
-        ungroup()
-    }
-    
     
   }
