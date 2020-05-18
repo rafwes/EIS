@@ -7,8 +7,8 @@
   library(lubridate)
   library(EnvStats)
   
-  base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-  #base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+  #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+  base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
   
   source(file.path(base_path,"EIS/code_new/interest_rates.R"))
   source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -20,20 +20,20 @@
   rates_log_avg <- 
     index_table %>%
     group_by(ISOWEEK = ISOweek(DATE)) %>% 
-    summarise(AVG_INDEX_TB = geoMean(INDEX_TB),
-              AVG_INDEX_ST = geoMean(INDEX_ST),
-              AVG_INDEX_CPI_NE = geoMean(INDEX_CPI_NE),
-              AVG_INDEX_CPI_MW = geoMean(INDEX_CPI_MW),
-              AVG_INDEX_CPI_SO = geoMean(INDEX_CPI_SO),
-              AVG_INDEX_CPI_WE = geoMean(INDEX_CPI_WE),
-              AVG_INDEX_TB_DEF_NE = geoMean(INDEX_TB_DEF_NE),
-              AVG_INDEX_TB_DEF_MW = geoMean(INDEX_TB_DEF_MW),
-              AVG_INDEX_TB_DEF_SO = geoMean(INDEX_TB_DEF_SO),
-              AVG_INDEX_TB_DEF_WE = geoMean(INDEX_TB_DEF_WE),
-              AVG_INDEX_ST_DEF_NE = geoMean(INDEX_ST_DEF_NE),
-              AVG_INDEX_ST_DEF_MW = geoMean(INDEX_ST_DEF_MW),
-              AVG_INDEX_ST_DEF_SO = geoMean(INDEX_ST_DEF_SO),
-              AVG_INDEX_ST_DEF_WE = geoMean(INDEX_ST_DEF_WE)) %>%
+    summarise(AVG_INDEX_TB = mean(INDEX_TB),
+              AVG_INDEX_ST = mean(INDEX_ST),
+              AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
+              AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
+              AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
+              AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
+              AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
+              AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
+              AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
+              AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
+              AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
+              AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
+              AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
+              AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE)) %>%
     ungroup() %>% 
     arrange(ISOWEEK) %>% 
     transmute(ISOWEEK = ISOWEEK,
@@ -231,20 +231,20 @@
   rates_log_avg <- 
     index_table %>%
     group_by(ISOWEEK = ISOweek(DATE)) %>% 
-    summarise(AVG_INDEX_TB = geoMean(INDEX_TB),
-              AVG_INDEX_ST = geoMean(INDEX_ST),
-              AVG_INDEX_CPI_NE = geoMean(INDEX_CPI_NE),
-              AVG_INDEX_CPI_MW = geoMean(INDEX_CPI_MW),
-              AVG_INDEX_CPI_SO = geoMean(INDEX_CPI_SO),
-              AVG_INDEX_CPI_WE = geoMean(INDEX_CPI_WE),
-              AVG_INDEX_TB_DEF_NE = geoMean(INDEX_TB_DEF_NE),
-              AVG_INDEX_TB_DEF_MW = geoMean(INDEX_TB_DEF_MW),
-              AVG_INDEX_TB_DEF_SO = geoMean(INDEX_TB_DEF_SO),
-              AVG_INDEX_TB_DEF_WE = geoMean(INDEX_TB_DEF_WE),
-              AVG_INDEX_ST_DEF_NE = geoMean(INDEX_ST_DEF_NE),
-              AVG_INDEX_ST_DEF_MW = geoMean(INDEX_ST_DEF_MW),
-              AVG_INDEX_ST_DEF_SO = geoMean(INDEX_ST_DEF_SO),
-              AVG_INDEX_ST_DEF_WE = geoMean(INDEX_ST_DEF_WE)) %>%
+    summarise(AVG_INDEX_TB = mean(INDEX_TB),
+              AVG_INDEX_ST = mean(INDEX_ST),
+              AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
+              AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
+              AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
+              AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
+              AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
+              AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
+              AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
+              AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
+              AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
+              AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
+              AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
+              AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE)) %>%
     ungroup() %>% 
     arrange(ISOWEEK) %>% 
     transmute(ISOWEEK = ISOWEEK,
