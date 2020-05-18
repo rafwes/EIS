@@ -18,7 +18,7 @@
   
   # Gathers inflation data and deflates consumption by region
   # Consumption data is too sparse, condense into weekly data
-  Deflate_Than_Sum <- function(x) {
+  Deflate <- function(x) {
     
     # Extract region from dataframe name
     region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
@@ -37,22 +37,30 @@
       na.exclude() %>% 
       select(HOUSEHOLD_CODE,
              PURCHASE_DATE,
-             !!TOTAL_SPENT_DEF_REGION) %>% 
-      group_by(HOUSEHOLD_CODE,
-               ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
-      summarise(!!SUM_SPENT_DEF_REGION := 
-                  sum(!!TOTAL_SPENT_DEF_REGION)) %>%
-      ungroup()
+             !!TOTAL_SPENT_DEF_REGION)
   }
 
   
+  consumption_def_ne <- 
+    Deflate(consumption_ne)
+  rm(consumption_ne)
+  
+  consumption_def_mw <- 
+    Deflate(consumption_mw)
+  rm(consumption_mw)
+  
+  consumption_def_so <- 
+    Deflate(consumption_so)
+  rm(consumption_so)
+  
+  consumption_def_we <- 
+    Deflate(consumption_we)
+  rm(consumption_we)
+  
   ## Deseasonalization code
   
-  # Append a dummy variable matrix
+  # Append a dummy variable matrix for weekly deseasonalization
   Seasonality_Matrix <- function(x) {
-    
-    # Extract region from dataframe name
-    #region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
     
     x %>%
       arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
@@ -227,18 +235,7 @@
   
     
   
-  sum_consumption_ne_def <- 
-    Deflate_Than_Sum(consumption_ne)
-  
-  sum_consumption_mw_def <- 
-    Deflate_Than_Sum(consumption_mw)
-  
-  sum_consumption_so_def <- 
-    Deflate_Than_Sum(consumption_so)
-  
-  sum_consumption_we_def <- 
-    Deflate_Than_Sum(consumption_we)
-  
+
   
   
   
@@ -410,5 +407,33 @@ if (FALSE) {
   
   # %>% 
   #  filter_all(any_vars(is.na(.)))
+  
+  Deflate_Than_Sum <- function(x) {
+    
+    # Extract region from dataframe name
+    region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
+    
+    TOTAL_SPENT_DEF_REGION = as.name(paste0("TOTAL_SPENT_DEF_",region))
+    INDEX_CPI_REGION = as.name(paste0("INDEX_CPI_",region))
+    SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
+    
+    x %>%
+      left_join(index_table %>%
+                  select(DATE,!!INDEX_CPI_REGION),
+                by = c("PURCHASE_DATE" = "DATE")) %>% 
+      mutate(!!TOTAL_SPENT_DEF_REGION := 
+               100 * TOTAL_SPENT 
+             / !!INDEX_CPI_REGION) %>% 
+      na.exclude() %>% 
+      select(HOUSEHOLD_CODE,
+             PURCHASE_DATE,
+             !!TOTAL_SPENT_DEF_REGION) %>% 
+      group_by(HOUSEHOLD_CODE,
+               ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
+      summarise(!!SUM_SPENT_DEF_REGION := 
+                  sum(!!TOTAL_SPENT_DEF_REGION)) %>%
+      ungroup()
+  }
+  
    
 }
