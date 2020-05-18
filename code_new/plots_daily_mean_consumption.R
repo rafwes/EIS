@@ -197,7 +197,6 @@
           legend.position = "bottom")
   
   
-  
   grid.newpage()
   grid.draw(rbind(ggplotGrob(plot_ne),
                   ggplotGrob(plot_mw),
