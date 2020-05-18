@@ -110,7 +110,7 @@
   #
   # Y calculation is prone to generate NA, therefore it's done earlier.
   
-  Generate_Estimation_Data <- function(x) {
+  Weekly_Estimation_Data <- function(x) {
     
     # Extract region from dataframe name
     region <- str_to_upper(str_sub(deparse(substitute(x)), -2, -1))
@@ -152,10 +152,10 @@
   
   
   estimation_data_4w <-
-    bind_rows(Generate_Estimation_Data(consumption_ds_def_ne),
-              Generate_Estimation_Data(consumption_ds_def_mw),
-              Generate_Estimation_Data(consumption_ds_def_so),
-              Generate_Estimation_Data(consumption_ds_def_we)) %>% 
+    bind_rows(Weekly_Estimation_Data(consumption_ds_def_ne),
+              Weekly_Estimation_Data(consumption_ds_def_mw),
+              Weekly_Estimation_Data(consumption_ds_def_so),
+              Weekly_Estimation_Data(consumption_ds_def_we)) %>% 
     arrange(HOUSEHOLD,DATE)
   
   write_csv(estimation_data_4w,
@@ -182,7 +182,7 @@
   #####################################################################
   
   
-  rm(list=ls(pattern="^consumption_ds_def"))
+  #rm(list=ls(pattern="^consumption_ds_def"))
   
   if (FALSE) {
     cat("\014")
