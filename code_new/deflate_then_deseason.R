@@ -1,14 +1,13 @@
-  rm(list=ls())
-  
-  library(tidyverse)
-  library(zoo)
-  library(reshape2)
-  library(ISOweek)
-  library(lubridate)
-  library(grid)
-  library(gridExtra)
-  #library(EnvStats)
-  
+  # rm(list=ls())
+  # 
+  # library(tidyverse)
+  # library(zoo)
+  # library(reshape2)
+  # library(ISOweek)
+  # library(lubridate)
+  # library(grid)
+  # library(gridExtra)
+
   #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
   base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
   
@@ -198,7 +197,6 @@ if (FALSE) {
              residuals(
                Deseasonalized_LM(
                  consumption_def_ne)))
-  rm(consumption_def_ne)
   
   consumption_ds_def_mw <- 
     consumption_def_mw %>%
@@ -210,8 +208,7 @@ if (FALSE) {
              residuals(
                Deseasonalized_LM(
                  consumption_def_mw)))
-  rm(consumption_def_mw)
-  
+
   consumption_ds_def_so <- 
     consumption_def_so %>%
     arrange(HOUSEHOLD_CODE, 
@@ -222,8 +219,7 @@ if (FALSE) {
              residuals(
                Deseasonalized_LM(
                  consumption_def_so)))
-  rm(consumption_def_so)
-  
+
   consumption_ds_def_we <- 
     consumption_def_we %>%
     arrange(HOUSEHOLD_CODE, 
@@ -234,8 +230,11 @@ if (FALSE) {
              residuals(
                Deseasonalized_LM(
                  consumption_def_we)))
-  rm(consumption_def_we)
   
+  rm(Deflate,
+     Deseasonalized_LM,
+     Seasonality_Matrix)
+
 #if (FALSE) {
 
   daily_def_ne <-
@@ -432,16 +431,19 @@ if (FALSE) {
           legend.position = "bottom")
   
   rm(list=ls(pattern="^daily"))
-
+  rm(list=ls(pattern="^consumption_def_"))
+  
+  
+  if (FALSE) {   
     grid.newpage()
     grid.draw(rbind(ggplotGrob(plot_ne), 
                     ggplotGrob(plot_mw),
                     ggplotGrob(plot_so), 
                     ggplotGrob(plot_we),
                     size = "last"))
+  }
     
-    
-  if (FALSE) {   
+  
     ggsave(file=file.path(base_path, 
                           "csv_output/deflate_then_deseason.pdf"), 
            arrangeGrob(plot_ne, 
@@ -452,7 +454,7 @@ if (FALSE) {
            width = 210, 
            height = 297, 
            units = "mm")
-  }
+  
     
   rm(list=ls(pattern="^plot"))
   
