@@ -1,3 +1,5 @@
+ ####### FIX VARIABLE NAME MADNESS EXAMPLE "TOTAL_SPENT_DEF_MW" ????? #######
+
   rm(list=ls())
   
   library(tidyverse)
@@ -23,21 +25,19 @@
     # Extract region from dataframe name
     region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
     
-    TOTAL_SPENT_DEF_REGION = as.name(paste0("TOTAL_SPENT_DEF_",region))
     INDEX_CPI_REGION = as.name(paste0("INDEX_CPI_",region))
-    SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
     
     x %>%
       left_join(index_table %>%
                   select(DATE,!!INDEX_CPI_REGION),
                 by = c("PURCHASE_DATE" = "DATE")) %>% 
-      mutate(!!TOTAL_SPENT_DEF_REGION := 
+      mutate(TOTAL_SPENT_DEF := 
                100 * TOTAL_SPENT 
              / !!INDEX_CPI_REGION) %>% 
       na.exclude() %>% 
       select(HOUSEHOLD_CODE,
              PURCHASE_DATE,
-             !!TOTAL_SPENT_DEF_REGION)
+             TOTAL_SPENT_DEF)
   }
 
   
@@ -57,7 +57,75 @@
     Deflate(consumption_we)
   rm(consumption_we)
   
-  ## Deseasonalization code
+# plots deflation of data  
+if (FALSE) {
+    
+  daily <-
+    consumption_ne %>%
+    group_by(PURCHASE_DATE) %>% 
+    summarize(AVG_TRIP = mean(TOTAL_SPENT)) %>%
+    ungroup() %>% 
+    transmute(DATE = PURCHASE_DATE,
+              AVG_TRIP = rollapply(AVG_TRIP,
+                                   3*28,
+                                   mean,
+                                   partial = TRUE,
+                                   align = "center"))
+  
+  daily_def <-
+    consumption_def_ne %>%
+    group_by(PURCHASE_DATE) %>% 
+    summarize(AVG_TRIP_DEF = mean(TOTAL_SPENT_DEF)) %>%
+    ungroup() %>% 
+    transmute(DATE = PURCHASE_DATE,
+              AVG_TRIP_DEF = rollapply(AVG_TRIP_DEF,
+                                       3*28,
+                                       mean,
+                                       partial = TRUE,
+                                       align = "center"))
+    
+  ggplot() + 
+    geom_line(data = daily %>%
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2016-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    geom_line(data = daily_def %>%
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2016-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name))+
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
+}
+  
+  
+  # Setup dummy variable deseasonalization linear model 
+  Deseasonalized_LM <- function(x) {
+    
+    # Extract region from dataframe name
+    region <- str_sub(deparse(substitute(x)),-2,-1)
+    
+    consumption_def_region = as.name(paste0("consumption_def_",region))
+    
+    lm(TOTAL_SPENT_DEF ~ -1+
+         W01+W02+W03+W04+W05+W06+W07+W08+W09+W10+
+         W11+W12+W13+W14+W15+W16+W17+W18+W19+W20+
+         W21+W22+W23+W24+W25+W26+W27+W28+W29+W30+
+         W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
+         W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
+         W51+W52+W53,
+       data = Seasonality_Matrix(eval(consumption_def_region)))
+  }
   
   # Append a dummy variable matrix for weekly deseasonalization
   Seasonality_Matrix <- function(x) {
@@ -173,69 +241,53 @@
     
   }
   
-  Deseasonlize <- function(x) {
-    
-    # Extract region from dataframe name
-    region <- str_sub(deparse(substitute(x)),-2,-1)
-    
-    consumption_region = as.name(paste0("consumption_",region))
-    
-    lm(TOTAL_SPENT ~ -1+
-         W01+W02+W03+W04+W05+W06+W07+W08+W09+W10+
-         W11+W12+W13+W14+W15+W16+W17+W18+W19+W20+
-         W21+W22+W23+W24+W25+W26+W27+W28+W29+W30+
-         W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
-         W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
-         W51+W52+W53,
-       data = Seasonality_Matrix(eval(consumption_region)))
-  }
-  
-  
-  model_ds_ne <- 
-    Deseasonlize(consumption_ne)
-  model_ds_mw <- 
-    Deseasonlize(consumption_mw)
-  model_ds_so <- 
-    Deseasonlize(consumption_so)
-  model_ds_we <- 
-    Deseasonlize(consumption_we)
-  
   # Creates deseasonlized consumption data
   # We need to reorder datapoints to match residual function
-  consumption_ds_ne <- consumption_ne %>%
-    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT = residuals(model_ds_ne))
-  
-  rm(consumption_ne, model_ds_ne)
-  
-  consumption_ds_mw <- consumption_mw %>%
-    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT = residuals(model_ds_mw))
-  
-  rm(consumption_mw, model_ds_mw)
-  
-  consumption_ds_so <- consumption_so %>%
-    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT = residuals(model_ds_so))
-  
-  rm(consumption_so, model_ds_so)
-  
-  consumption_ds_we <- consumption_we %>%
-    arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT = residuals(model_ds_we))
-  
-  rm(consumption_we, model_ds_we)
-  
-  
-  
-  
-    
-  
 
+  consumption_ds_def_ne <- 
+    consumption_def_ne %>%
+    arrange(HOUSEHOLD_CODE, 
+            PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, 
+           PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(
+               Deseasonalized_LM(
+                 consumption_def_ne)))
+  
+  consumption_ds_def_mw <- 
+    consumption_def_mw %>%
+    arrange(HOUSEHOLD_CODE, 
+            PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, 
+           PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(
+               Deseasonalized_LM(
+                 consumption_def_mw)))
+  
+  consumption_ds_def_so <- 
+    consumption_def_so %>%
+    arrange(HOUSEHOLD_CODE, 
+            PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, 
+           PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(
+               Deseasonalized_LM(
+                 consumption_def_so)))
+  
+  consumption_ds_def_we <- 
+    consumption_def_we %>%
+    arrange(HOUSEHOLD_CODE, 
+            PURCHASE_DATE) %>%
+    select(HOUSEHOLD_CODE, 
+           PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(
+               Deseasonalized_LM(
+                 consumption_def_we)))
+  
   
   
   
