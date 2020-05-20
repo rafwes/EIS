@@ -115,7 +115,6 @@
     # Extract region from dataframe name
     region <- str_to_upper(str_sub(deparse(substitute(x)), -2, -1))
     
-    SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
     RATE_TB_DEF_REGION = as.name(paste0("RATE_TB_DEF_",region))
     RATE_ST_DEF_REGION = as.name(paste0("RATE_ST_DEF_",region))
     RATE_INFL_REGION = as.name(paste0("RATE_INFL_",region))
@@ -123,15 +122,21 @@
     x %>%
       group_by(HOUSEHOLD_CODE,
                ISOWEEK = ISOweek(PURCHASE_DATE)) %>% 
-      summarise(!!SUM_SPENT_DEF_REGION := 
+      summarise(SUM_SPENT_DS_DEF = 
                   sum(TOTAL_SPENT_DS_DEF)) %>%
-      ungroup() %>% 
+      ungroup() %>%
+      mutate(SUM_SPENT_DS_DEF =
+               SUM_SPENT_DS_DEF
+             - min(SUM_SPENT_DS_DEF, 
+                   na.rm = TRUE) 
+             + 1) %>%
       complete(ISOWEEK,
                HOUSEHOLD_CODE) %>%
       group_by(HOUSEHOLD_CODE) %>%
       arrange(ISOWEEK) %>%
-      mutate(Y = log(!!SUM_SPENT_DEF_REGION) - log(lag(!!SUM_SPENT_DEF_REGION, 
-                                                       n = lag_in_weeks)),
+      mutate(Y = log(SUM_SPENT_DS_DEF) 
+             - log(lag(SUM_SPENT_DS_DEF,
+                       n = lag_in_weeks)),
              Z1 = lag(Y, n = 2)) %>%
       na.exclude() %>%
       left_join(rates_log_avg,
@@ -150,7 +155,6 @@
     
   }
   
-  
   estimation_data_4w <-
     bind_rows(Weekly_Estimation_Data(consumption_ds_def_ne),
               Weekly_Estimation_Data(consumption_ds_def_mw),
@@ -161,7 +165,7 @@
   write_csv(estimation_data_4w,
             file.path(base_path, 
                       "csv_output/estimation_data_weekly_4w.csv"))
-  
+
   library(plm)
   zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
             data = estimation_data_4w,
@@ -175,11 +179,6 @@
   rm(estimation_data_4w,
      zz,
      rates_log_avg)
-  
-  
-  #####################################################################
-  ## REDO FOR 1 WEEK 
-  #####################################################################
   
   
   #rm(list=ls(pattern="^consumption_ds_def"))
