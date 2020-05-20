@@ -235,7 +235,7 @@ if (FALSE) {
      Deseasonalized_LM,
      Seasonality_Matrix)
 
-#if (FALSE) {
+if (FALSE) {
 
   daily_def_ne <-
     consumption_def_ne %>%
@@ -458,4 +458,4 @@ if (FALSE) {
     
   rm(list=ls(pattern="^plot"))
   
-#}
+}
