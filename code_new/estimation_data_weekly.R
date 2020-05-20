@@ -134,10 +134,12 @@
                HOUSEHOLD_CODE) %>%
       group_by(HOUSEHOLD_CODE) %>%
       arrange(ISOWEEK) %>%
-      mutate(Y = log(SUM_SPENT_DS_DEF) 
+      mutate(Y = 
+               log(SUM_SPENT_DS_DEF) 
              - log(lag(SUM_SPENT_DS_DEF,
                        n = lag_in_weeks)),
-             Z1 = lag(Y, n = 2)) %>%
+             Z1 = 
+               lag(Y, n = 2)) %>%
       na.exclude() %>%
       left_join(rates_log_avg,
                 by = "ISOWEEK") %>%

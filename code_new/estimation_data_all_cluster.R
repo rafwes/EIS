@@ -411,7 +411,6 @@ Monthly_Estimation_Data <- function(x) {
   # Extract region from dataframe name
   region <- str_to_upper(str_sub(deparse(substitute(x)), -2, -1))
   
-  SUM_SPENT_DEF_REGION = as.name(paste0("SUM_SPENT_DEF_",region))
   RATE_TB_DEF_REGION = as.name(paste0("RATE_TB_DEF_",region))
   RATE_ST_DEF_REGION = as.name(paste0("RATE_ST_DEF_",region))
   RATE_INFL_REGION = as.name(paste0("RATE_INFL_",region))
@@ -420,17 +419,25 @@ Monthly_Estimation_Data <- function(x) {
     group_by(HOUSEHOLD_CODE,
              YEAR = year(PURCHASE_DATE),
              MONTH = month(PURCHASE_DATE)) %>% 
-    summarise(!!SUM_SPENT_DEF_REGION := 
+    summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
-    ungroup() %>% 
+    ungroup() %>%
+    mutate(SUM_SPENT_DS_DEF =
+             SUM_SPENT_DS_DEF
+           - min(SUM_SPENT_DS_DEF, 
+                 na.rm = TRUE) 
+           + 1) %>%
     complete(YEAR,
              MONTH,
              HOUSEHOLD_CODE) %>%
     group_by(HOUSEHOLD_CODE) %>%
     arrange(YEAR, MONTH) %>%
-    mutate(Y = log(!!SUM_SPENT_DEF_REGION) - log(lag(!!SUM_SPENT_DEF_REGION, 
-                                                     n = lag_in_months)),
-           Z1 = lag(Y, n = 2)) %>%
+    mutate(Y = 
+             log(SUM_SPENT_DS_DEF) 
+           - log(lag(SUM_SPENT_DS_DEF,
+                     n = lag_in_months)),
+           Z1 = 
+             lag(Y, n = 2)) %>%
     na.exclude() %>%
     left_join(rates_log_avg,
               by = c("YEAR","MONTH")) %>%
@@ -450,7 +457,6 @@ Monthly_Estimation_Data <- function(x) {
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 
   
 }
-
 
 estimation_data_1m <-
   bind_rows(Monthly_Estimation_Data(consumption_ds_def_ne),
