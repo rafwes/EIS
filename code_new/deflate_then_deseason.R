@@ -17,7 +17,7 @@
   
   # Gathers inflation data and deflates consumption by region
   # Consumption data is too sparse, condense into weekly data
-  Deflate <- function(x) {
+  DeflateConsumption <- function(x) {
     
     # Extract region from dataframe name
     region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
@@ -39,19 +39,19 @@
 
   
   consumption_def_ne <- 
-    Deflate(consumption_ne)
+    DeflateConsumption(consumption_ne)
   rm(consumption_ne)
   
   consumption_def_mw <- 
-    Deflate(consumption_mw)
+    DeflateConsumption(consumption_mw)
   rm(consumption_mw)
   
   consumption_def_so <- 
-    Deflate(consumption_so)
+    DeflateConsumption(consumption_so)
   rm(consumption_so)
   
   consumption_def_we <- 
-    Deflate(consumption_we)
+    DeflateConsumption(consumption_we)
   rm(consumption_we)
   
 # plots deflation of data  
@@ -183,7 +183,6 @@ if (FALSE) {
              W52 = case_when(isoweek(PURCHASE_DATE) == 52 ~ 1, TRUE ~ 0),
              W53 = case_when(isoweek(PURCHASE_DATE) == 53 ~ 1, TRUE ~ 0))
   }
-  
  
   
   # Creates deseasonalized consumption data
@@ -232,7 +231,7 @@ if (FALSE) {
                SeasonalDummiesLM(
                  consumption_def_we)))
   
-  rm(Deflate,
+  rm(DeflateConsumption,
      SeasonalDummiesLM,
      SeasonalityMatrix)
 
