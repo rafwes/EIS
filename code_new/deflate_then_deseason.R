@@ -54,6 +54,7 @@
     DeflateConsumption(consumption_we)
   rm(consumption_we)
   
+  
 # plots deflation of data  
 if (FALSE) {
     
@@ -109,11 +110,6 @@ if (FALSE) {
   # Setup dummy variable deseasonalization linear model
   SeasonalDummiesLM <- function(x) {
     
-    # Extract region from dataframe name
-    region <- str_sub(deparse(substitute(x)),-2,-1)
-    
-    consumption_def_region = as.name(paste0("consumption_def_",region))
-    
     lm(TOTAL_SPENT_DEF ~ -1+
          W01+W02+W03+W04+W05+W06+W07+W08+W09+W10+
          W11+W12+W13+W14+W15+W16+W17+W18+W19+W20+
@@ -121,7 +117,7 @@ if (FALSE) {
          W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
          W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
          W51+W52+W53,
-       data = SeasonalityMatrix(eval(consumption_def_region)))
+       data = SeasonalityMatrix(x))
   }
   
   # Append a dummy variable matrix for weekly deseasonalization
@@ -184,6 +180,7 @@ if (FALSE) {
              W53 = case_when(isoweek(PURCHASE_DATE) == 53 ~ 1, TRUE ~ 0))
   }
  
+
   
   # Creates deseasonalized consumption data
 
