@@ -1,15 +1,15 @@
-  # rm(list=ls())
-  # 
-  # library(tidyverse)
-  # library(zoo)
-  # library(reshape2)
-  # library(ISOweek)
-  # library(lubridate)
-  # library(grid)
-  # library(gridExtra)
+  rm(list=ls())
+
+  library(tidyverse)
+  library(zoo)
+  library(reshape2)
+  library(ISOweek)
+  library(lubridate)
+  library(grid)
+  library(gridExtra)
 
   #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-  #base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+  base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
   
   source(file.path(base_path,"EIS/code_new/interest_rates.R"))
   source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -106,8 +106,8 @@ if (FALSE) {
 }
   
   
-  # Setup dummy variable deseasonalization linear model 
-  Deseasonalized_LM <- function(x) {
+  # Setup dummy variable deseasonalization linear model
+  SeasonalDummiesLM <- function(x) {
     
     # Extract region from dataframe name
     region <- str_sub(deparse(substitute(x)),-2,-1)
@@ -121,11 +121,11 @@ if (FALSE) {
          W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
          W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
          W51+W52+W53,
-       data = Seasonality_Matrix(eval(consumption_def_region)))
+       data = SeasonalityMatrix(eval(consumption_def_region)))
   }
   
   # Append a dummy variable matrix for weekly deseasonalization
-  Seasonality_Matrix <- function(x) {
+  SeasonalityMatrix <- function(x) {
     
     x %>%
       arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
@@ -184,8 +184,9 @@ if (FALSE) {
              W53 = case_when(isoweek(PURCHASE_DATE) == 53 ~ 1, TRUE ~ 0))
   }
   
-  # Creates deseasonlized consumption data
-  # We need to reorder datapoints to match residual function
+ 
+  
+  # Creates deseasonalized consumption data
 
   consumption_ds_def_ne <- 
     consumption_def_ne %>%
@@ -195,7 +196,7 @@ if (FALSE) {
            PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
-               Deseasonalized_LM(
+               SeasonalDummiesLM(
                  consumption_def_ne)))
   
   consumption_ds_def_mw <- 
@@ -206,7 +207,7 @@ if (FALSE) {
            PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
-               Deseasonalized_LM(
+               SeasonalDummiesLM(
                  consumption_def_mw)))
 
   consumption_ds_def_so <- 
@@ -217,7 +218,7 @@ if (FALSE) {
            PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
-               Deseasonalized_LM(
+               SeasonalDummiesLM(
                  consumption_def_so)))
 
   consumption_ds_def_we <- 
@@ -228,12 +229,12 @@ if (FALSE) {
            PURCHASE_DATE) %>% 
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
-               Deseasonalized_LM(
+               SeasonalDummiesLM(
                  consumption_def_we)))
   
   rm(Deflate,
-     Deseasonalized_LM,
-     Seasonality_Matrix)
+     SeasonalDummiesLM,
+     SeasonalityMatrix)
 
 if (FALSE) {
 
