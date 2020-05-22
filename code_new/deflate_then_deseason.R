@@ -108,7 +108,7 @@ if (FALSE) {
   
   
   # Setup dummy variable deseasonalization linear model
-  SeasonalDummiesLM <- function(x,y) {
+  SeasonalDummiesLM <- function(x) {
     
     lm(Y ~ -1+
          W01+W02+W03+W04+W05+W06+W07+W08+W09+W10+
@@ -117,7 +117,7 @@ if (FALSE) {
          W31+W32+W33+W34+W35+W36+W37+W38+W39+W40+
          W41+W42+W43+W44+W45+W46+W47+W48+W49+W50+
          W51+W52+W53,
-       data = y(x))
+       data = x)
   }
   
   # Append a dummy variable matrix for weekly deseasonalization
@@ -180,10 +180,6 @@ if (FALSE) {
                 W52 = case_when(isoweek(PURCHASE_DATE) == 52 ~ 1, TRUE ~ 0),
                 W53 = case_when(isoweek(PURCHASE_DATE) == 53 ~ 1, TRUE ~ 0))
   }
- 
-  test <- SeasonalDummiesLM(consumption_def_mw,
-                            ConsumptionSeasonalityMatrix)
-  summary(test)
   
   # Creates deseasonalized consumption data
 
@@ -196,8 +192,8 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
                SeasonalDummiesLM(
-                 consumption_def_ne,
-                 ConsumptionSeasonalityMatrix)))
+                 ConsumptionSeasonalityMatrix(
+                   consumption_def_ne))))
   
   consumption_ds_def_mw <- 
     consumption_def_mw %>%
@@ -208,8 +204,8 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
                SeasonalDummiesLM(
-                 consumption_def_mw,
-                 ConsumptionSeasonalityMatrix)))
+                 ConsumptionSeasonalityMatrix(
+                   consumption_def_mw))))
 
   consumption_ds_def_so <- 
     consumption_def_so %>%
@@ -220,8 +216,8 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
                SeasonalDummiesLM(
-                 consumption_def_so,
-                 ConsumptionSeasonalityMatrix)))
+                 ConsumptionSeasonalityMatrix(
+                   consumption_def_so))))
 
   consumption_ds_def_we <- 
     consumption_def_we %>%
@@ -232,12 +228,13 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(
                SeasonalDummiesLM(
-                 consumption_def_we,
-                 ConsumptionSeasonalityMatrix)))
+                 ConsumptionSeasonalityMatrix(
+                   consumption_def_we))))
   
-  rm(DeflateConsumption,
-     SeasonalDummiesLM,
-     SeasonalityMatrix)
+  #rm(DeflateConsumption,
+  #   SeasonalDummiesLM,
+  #   SeasonalityMatrix
+  #   )
 
 if (FALSE) {
 
@@ -461,5 +458,71 @@ if (FALSE) {
   
     
   rm(list=ls(pattern="^plot"))
+  
+}
+  
+if (FALSE) {
+  
+  IndexSeasonalityMatrix <- function(x,y) {
+    
+    x %>%
+      arrange(DATE) %>%
+      transmute(Y = !!y,
+                W01 = case_when(isoweek(DATE) == 1 ~ 1, TRUE ~ 0),
+                W02 = case_when(isoweek(DATE) == 2 ~ 1, TRUE ~ 0),
+                W03 = case_when(isoweek(DATE) == 3 ~ 1, TRUE ~ 0),
+                W04 = case_when(isoweek(DATE) == 4 ~ 1, TRUE ~ 0),
+                W05 = case_when(isoweek(DATE) == 5 ~ 1, TRUE ~ 0),
+                W06 = case_when(isoweek(DATE) == 6 ~ 1, TRUE ~ 0),
+                W07 = case_when(isoweek(DATE) == 7 ~ 1, TRUE ~ 0),
+                W08 = case_when(isoweek(DATE) == 8 ~ 1, TRUE ~ 0),
+                W09 = case_when(isoweek(DATE) == 9 ~ 1, TRUE ~ 0),
+                W10 = case_when(isoweek(DATE) == 10 ~ 1, TRUE ~ 0),
+                W11 = case_when(isoweek(DATE) == 11 ~ 1, TRUE ~ 0),
+                W12 = case_when(isoweek(DATE) == 12 ~ 1, TRUE ~ 0),
+                W13 = case_when(isoweek(DATE) == 13 ~ 1, TRUE ~ 0),
+                W14 = case_when(isoweek(DATE) == 14 ~ 1, TRUE ~ 0),
+                W15 = case_when(isoweek(DATE) == 15 ~ 1, TRUE ~ 0),
+                W16 = case_when(isoweek(DATE) == 16 ~ 1, TRUE ~ 0),
+                W17 = case_when(isoweek(DATE) == 17 ~ 1, TRUE ~ 0),
+                W18 = case_when(isoweek(DATE) == 18 ~ 1, TRUE ~ 0),
+                W19 = case_when(isoweek(DATE) == 19 ~ 1, TRUE ~ 0),
+                W20 = case_when(isoweek(DATE) == 20 ~ 1, TRUE ~ 0),
+                W21 = case_when(isoweek(DATE) == 21 ~ 1, TRUE ~ 0),
+                W22 = case_when(isoweek(DATE) == 22 ~ 1, TRUE ~ 0),
+                W23 = case_when(isoweek(DATE) == 23 ~ 1, TRUE ~ 0),
+                W24 = case_when(isoweek(DATE) == 24 ~ 1, TRUE ~ 0),
+                W25 = case_when(isoweek(DATE) == 25 ~ 1, TRUE ~ 0),
+                W26 = case_when(isoweek(DATE) == 26 ~ 1, TRUE ~ 0),
+                W27 = case_when(isoweek(DATE) == 27 ~ 1, TRUE ~ 0),
+                W28 = case_when(isoweek(DATE) == 28 ~ 1, TRUE ~ 0),
+                W29 = case_when(isoweek(DATE) == 29 ~ 1, TRUE ~ 0),
+                W30 = case_when(isoweek(DATE) == 30 ~ 1, TRUE ~ 0),
+                W31 = case_when(isoweek(DATE) == 31 ~ 1, TRUE ~ 0),
+                W32 = case_when(isoweek(DATE) == 32 ~ 1, TRUE ~ 0),
+                W33 = case_when(isoweek(DATE) == 33 ~ 1, TRUE ~ 0),
+                W34 = case_when(isoweek(DATE) == 34 ~ 1, TRUE ~ 0),
+                W35 = case_when(isoweek(DATE) == 35 ~ 1, TRUE ~ 0),
+                W36 = case_when(isoweek(DATE) == 36 ~ 1, TRUE ~ 0),
+                W37 = case_when(isoweek(DATE) == 37 ~ 1, TRUE ~ 0),
+                W38 = case_when(isoweek(DATE) == 38 ~ 1, TRUE ~ 0),
+                W39 = case_when(isoweek(DATE) == 39 ~ 1, TRUE ~ 0),
+                W40 = case_when(isoweek(DATE) == 40 ~ 1, TRUE ~ 0),
+                W41 = case_when(isoweek(DATE) == 41 ~ 1, TRUE ~ 0),
+                W42 = case_when(isoweek(DATE) == 42 ~ 1, TRUE ~ 0),
+                W43 = case_when(isoweek(DATE) == 43 ~ 1, TRUE ~ 0),
+                W44 = case_when(isoweek(DATE) == 44 ~ 1, TRUE ~ 0),
+                W45 = case_when(isoweek(DATE) == 45 ~ 1, TRUE ~ 0),
+                W46 = case_when(isoweek(DATE) == 46 ~ 1, TRUE ~ 0),
+                W47 = case_when(isoweek(DATE) == 47 ~ 1, TRUE ~ 0),
+                W48 = case_when(isoweek(DATE) == 48 ~ 1, TRUE ~ 0),
+                W49 = case_when(isoweek(DATE) == 49 ~ 1, TRUE ~ 0),
+                W50 = case_when(isoweek(DATE) == 50 ~ 1, TRUE ~ 0),
+                W51 = case_when(isoweek(DATE) == 51 ~ 1, TRUE ~ 0),
+                W52 = case_when(isoweek(DATE) == 52 ~ 1, TRUE ~ 0),
+                W53 = case_when(isoweek(DATE) == 53 ~ 1, TRUE ~ 0))
+  }
+  
+  
   
 }

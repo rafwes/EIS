@@ -1,14 +1,14 @@
 ## This code imports daily T-Bill rates, SP500 stock prices and
 ## regional CPI data to create deflated indexes for stocks and t-bills.
 
-#rm(list=ls())
+rm(list=ls())
 
-#library(tidyverse)
-#library(zoo)
-#library(reshape2)
+library(tidyverse)
+library(zoo)
+library(reshape2)
 
 #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 print("Let's Start")
 step=as.integer(1)
@@ -182,6 +182,153 @@ cpi_monthly$YEAR <- NULL
 cpi_monthly$PERIOD <- NULL
 
 
+######delete down####################
+######delete down####################
+######delete down####################
+
+
+
+
+## coerse data into montly time series object and decompose
+data <- 
+  cpi_monthly %>% 
+  select(CPI_NE)
+
+ts_cpi_ne <- 
+  ts(data$CPI_NE,
+     start = c(2003, 1),
+     end = c(2016,12),
+     frequency = 12)
+
+fit_ne <- 
+  stl(ts_cpi_ne, 
+      s.window = "period")
+
+data <- 
+  cpi_monthly %>% 
+  select(CPI_MW)
+
+ts_cpi_mw <- 
+  ts(data$CPI_MW,
+     start = c(2003, 1),
+     end = c(2016,12),
+     frequency = 12)
+
+fit_mw <- 
+  stl(ts_cpi_mw, 
+      s.window = "period")
+
+data <- 
+  cpi_monthly %>% 
+  select(CPI_SO)
+
+ts_cpi_so <- 
+  ts(data$CPI_SO,
+     start = c(2003, 1),
+     end = c(2016,12),
+     frequency = 12)
+
+fit_so <- 
+  stl(ts_cpi_so, 
+      s.window = "period")
+
+data <- 
+  cpi_monthly %>% 
+  select(CPI_WE)
+
+ts_cpi_we <- 
+  ts(data$CPI_WE,
+     start = c(2003, 1),
+     end = c(2016,12),
+     frequency = 12)
+
+fit_we <- 
+  stl(ts_cpi_we, 
+      s.window = "period")
+
+## rejoin deseasonalized data
+
+df_ne <- 
+  data.frame(fit_ne$time.series) %>% 
+  transmute(CPI_DS_NE = trend+remainder)
+
+df_mw <- 
+  data.frame(fit_mw$time.series) %>% 
+  transmute(CPI_DS_MW = trend+remainder)
+
+df_so <- 
+  data.frame(fit_so$time.series) %>% 
+  transmute(CPI_DS_SO = trend+remainder)
+
+df_we <- 
+  data.frame(fit_we$time.series) %>% 
+  transmute(CPI_DS_WE = trend+remainder)
+
+cpi_monthly <- 
+  cpi_monthly %>%
+  mutate(CPI_DS_NE = df_ne$CPI_DS_NE,
+         CPI_DS_MW = df_mw$CPI_DS_MW,
+         CPI_DS_SO = df_so$CPI_DS_SO,
+         CPI_DS_WE = df_we$CPI_DS_WE)
+
+rm(data)
+rm(list=ls(pattern="^df"))
+rm(list=ls(pattern="^ts"))
+rm(list=ls(pattern="^fit"))
+
+if (FALSE)
+{
+
+plot(fit_ne)
+plot(fit_mw)
+plot(fit_so)
+plot(fit_we)
+
+
+
+normal <-
+  cpi_monthly %>%
+  transmute(DATE,
+            NORMAL = CPI_WE)
+deseason <-
+  cpi_monthly %>%
+  transmute(DATE,
+            DESEASON = CPI_DS_WE)
+
+plot_ne <- 
+  ggplot() + 
+  geom_line(data = normal %>%
+              filter(between(DATE,
+                             as.Date("2004-06-01"), 
+                             as.Date("2016-06-01"))) %>% 
+              pivot_longer(-DATE),
+            aes(x = DATE, 
+                y = value, 
+                colour = name)) +
+  geom_line(data = deseason %>%
+              filter(between(DATE,
+                             as.Date("2004-06-01"), 
+                             as.Date("2016-06-01"))) %>% 
+              pivot_longer(-DATE),
+            aes(x = DATE, 
+                y = value, 
+                colour = name)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y") +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_text(),
+        legend.position = "bottom")
+
+plot(plot_ne)
+
+
+}
+
+######delete up####################
+######delete up####################
+######delete up####################
+
+
 sprintf("Step %i: Finished Data Sanitization", step)
 step <- step + 1
 
@@ -239,7 +386,11 @@ cpi_monthly <-
   mutate(INDEX_CPI_NE = 100 * CPI_NE / CPI_NE[DATE == base_date],
          INDEX_CPI_MW = 100 * CPI_MW / CPI_MW[DATE == base_date],
          INDEX_CPI_SO = 100 * CPI_SO / CPI_SO[DATE == base_date],
-         INDEX_CPI_WE = 100 * CPI_WE / CPI_WE[DATE == base_date])
+         INDEX_CPI_WE = 100 * CPI_WE / CPI_WE[DATE == base_date],
+         INDEX_CPI_DS_NE = 100 * CPI_DS_NE / CPI_DS_NE[DATE == base_date],
+         INDEX_CPI_DS_MW = 100 * CPI_DS_MW / CPI_DS_MW[DATE == base_date],
+         INDEX_CPI_DS_SO = 100 * CPI_DS_SO / CPI_DS_SO[DATE == base_date],
+         INDEX_CPI_DS_WE = 100 * CPI_DS_WE / CPI_DS_WE[DATE == base_date])
 
 
 sprintf("Step %i: Finished Stock and CPI Index Calculation", step)
@@ -267,9 +418,13 @@ index_table_monthcpi <-
             cpi_monthly %>% 
               select(DATE, 
                      INDEX_CPI_NE,
+                     INDEX_CPI_DS_NE,
                      INDEX_CPI_MW,
+                     INDEX_CPI_DS_MW,
                      INDEX_CPI_SO,
-                     INDEX_CPI_WE),
+                     INDEX_CPI_DS_SO,
+                     INDEX_CPI_WE,
+                     INDEX_CPI_DS_WE),
             by = "DATE")
 
 rm(index_table_nocpi)
@@ -286,6 +441,14 @@ index_table <-
          INDEX_CPI_SO = na.approx(INDEX_CPI_SO,
                                   na.rm=FALSE),
          INDEX_CPI_WE = na.approx(INDEX_CPI_WE,
+                                  na.rm=FALSE),
+         INDEX_CPI_DS_NE = na.approx(INDEX_CPI_DS_NE,
+                                  na.rm=FALSE),
+         INDEX_CPI_DS_MW = na.approx(INDEX_CPI_DS_MW,
+                                  na.rm=FALSE),
+         INDEX_CPI_DS_SO = na.approx(INDEX_CPI_DS_SO,
+                                  na.rm=FALSE),
+         INDEX_CPI_DS_WE = na.approx(INDEX_CPI_DS_WE,
                                   na.rm=FALSE))
 
 rm(index_table_monthcpi)
@@ -306,12 +469,24 @@ index_table <-
          INDEX_TB_DEF_SO = 100 * INDEX_TB / INDEX_CPI_SO,
          INDEX_ST_DEF_SO = 100 * INDEX_ST / INDEX_CPI_SO,
          INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE,
-         INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE) %>%
+         INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE,
+         INDEX_TB_DS_DEF_NE = 100 * INDEX_TB / INDEX_CPI_DS_NE,
+         INDEX_ST_DS_DEF_NE = 100 * INDEX_ST / INDEX_CPI_DS_NE,
+         INDEX_TB_DS_DEF_MW = 100 * INDEX_TB / INDEX_CPI_DS_MW,
+         INDEX_ST_DS_DEF_MW = 100 * INDEX_ST / INDEX_CPI_DS_MW,
+         INDEX_TB_DS_DEF_SO = 100 * INDEX_TB / INDEX_CPI_DS_SO,
+         INDEX_ST_DS_DEF_SO = 100 * INDEX_ST / INDEX_CPI_DS_SO,
+         INDEX_TB_DS_DEF_WE = 100 * INDEX_TB / INDEX_CPI_DS_WE,
+         INDEX_ST_DS_DEF_WE = 100 * INDEX_ST / INDEX_CPI_DS_WE) %>%
   drop_na()
 
 sprintf("Step %i: Finished Index Deflation", step)
 step <- step + 1
 rm(step)
+
+
+
+
 
 
 
@@ -626,6 +801,63 @@ class(stocks_monthly$INDEX_ST)
 class(tbill_monthly$DATE)
 class(tbill_monthly$TB4WK)
 
+
 }
 
-# Timeframe 2004-2014
+if (FALSE) {
+  
+  MonthlySeasonalDummiesLM <- function(x) {
+    
+    lm(Y ~ -1+
+         M01+M02+M03+M04+
+         M05+M06+M07+M08+
+         M09+M10+M11+M12,
+       data = x)
+  }
+  
+  
+  CPISeasonalityMatrix <- function(x,y) {
+    
+    x %>%
+      arrange(DATE) %>%
+      transmute(Y = !!y,
+                M01 = case_when(month(DATE) == 1 ~ 1, TRUE ~ 0),
+                M02 = case_when(month(DATE) == 2 ~ 1, TRUE ~ 0),
+                M03 = case_when(month(DATE) == 3 ~ 1, TRUE ~ 0),
+                M04 = case_when(month(DATE) == 4 ~ 1, TRUE ~ 0),
+                M05 = case_when(month(DATE) == 5 ~ 1, TRUE ~ 0),
+                M06 = case_when(month(DATE) == 6 ~ 1, TRUE ~ 0),
+                M07 = case_when(month(DATE) == 7 ~ 1, TRUE ~ 0),
+                M08 = case_when(month(DATE) == 8 ~ 1, TRUE ~ 0),
+                M09 = case_when(month(DATE) == 9 ~ 1, TRUE ~ 0),
+                M10 = case_when(month(DATE) == 10 ~ 1, TRUE ~ 0),
+                M11 = case_when(month(DATE) == 11 ~ 1, TRUE ~ 0),
+                M12 = case_when(month(DATE) == 12 ~ 1, TRUE ~ 0))
+  }
+  
+  
+  
+  library(lubridate)
+  library(zoo)
+  
+  trend_cpi <- 
+    cpi_monthly %>%
+    mutate(CPI_TREND_NE = rollapply(CPI_NE,
+                                    24,
+                                    mean,
+                                    partial = TRUE,
+                                    align = "center"),
+           REST = CPI_NE - CPI_TREND_NE)
+  
+  
+  
+  model <- 
+    MonthlySeasonalDummiesLM(
+      CPISeasonalityMatrix(
+        trend_cpi, 
+        as.name("CPI_TREND_NE")))
+  
+  summary(model)
+  
+  
+}  
