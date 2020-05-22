@@ -195,6 +195,8 @@ if (FALSE) {
                  ConsumptionSeasonalityMatrix(
                    consumption_def_ne))))
   
+  rm(consumption_def_ne)
+  
   consumption_ds_def_mw <- 
     consumption_def_mw %>%
     arrange(HOUSEHOLD_CODE, 
@@ -207,6 +209,8 @@ if (FALSE) {
                  ConsumptionSeasonalityMatrix(
                    consumption_def_mw))))
 
+  rm(consumption_def_mw)
+  
   consumption_ds_def_so <- 
     consumption_def_so %>%
     arrange(HOUSEHOLD_CODE, 
@@ -219,6 +223,8 @@ if (FALSE) {
                  ConsumptionSeasonalityMatrix(
                    consumption_def_so))))
 
+  rm(consumption_def_so)
+  
   consumption_ds_def_we <- 
     consumption_def_we %>%
     arrange(HOUSEHOLD_CODE, 
@@ -230,6 +236,8 @@ if (FALSE) {
                SeasonalDummiesLM(
                  ConsumptionSeasonalityMatrix(
                    consumption_def_we))))
+  
+  rm(consumption_def_we)
   
   #rm(DeflateConsumption,
   #   SeasonalDummiesLM,
