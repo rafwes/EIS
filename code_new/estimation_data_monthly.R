@@ -174,7 +174,7 @@ estimation_data_1m <-
 
 write_csv(estimation_data_1m,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_1m.csv"))
+                    "csv_output/estimation_data_monthly_1m.csv"))
 
 library(plm)
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
