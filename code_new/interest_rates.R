@@ -187,94 +187,92 @@ cpi_monthly$PERIOD <- NULL
 ######delete down####################
 
 
+MonthlySeasonalDummiesLM <- function(x) {
+  
+  lm(Y ~ -1+
+       M01+M02+M03+M04+
+       M05+M06+M07+M08+
+       M09+M10+M11+M12,
+     data = x)
+}
 
 
-## coerse data into montly time series object and decompose
-data <- 
-  cpi_monthly %>% 
-  select(CPI_NE)
+CPISeasonalityMatrix <- function(x,y) {
+  
+  x %>%
+    arrange(DATE) %>%
+    transmute(Y = !!y,
+              M01 = case_when(month(DATE) == 1 ~ 1, TRUE ~ 0),
+              M02 = case_when(month(DATE) == 2 ~ 1, TRUE ~ 0),
+              M03 = case_when(month(DATE) == 3 ~ 1, TRUE ~ 0),
+              M04 = case_when(month(DATE) == 4 ~ 1, TRUE ~ 0),
+              M05 = case_when(month(DATE) == 5 ~ 1, TRUE ~ 0),
+              M06 = case_when(month(DATE) == 6 ~ 1, TRUE ~ 0),
+              M07 = case_when(month(DATE) == 7 ~ 1, TRUE ~ 0),
+              M08 = case_when(month(DATE) == 8 ~ 1, TRUE ~ 0),
+              M09 = case_when(month(DATE) == 9 ~ 1, TRUE ~ 0),
+              M10 = case_when(month(DATE) == 10 ~ 1, TRUE ~ 0),
+              M11 = case_when(month(DATE) == 11 ~ 1, TRUE ~ 0),
+              M12 = case_when(month(DATE) == 12 ~ 1, TRUE ~ 0))
+}
 
-ts_cpi_ne <- 
-  ts(data$CPI_NE,
-     start = c(2003, 1),
-     end = c(2016,12),
-     frequency = 12)
 
-fit_ne <- 
-  stl(ts_cpi_ne, 
-      s.window = "period")
 
-data <- 
-  cpi_monthly %>% 
-  select(CPI_MW)
+library(lubridate)
+library(zoo)
 
-ts_cpi_mw <- 
-  ts(data$CPI_MW,
-     start = c(2003, 1),
-     end = c(2016,12),
-     frequency = 12)
+model_ne <- 
+  MonthlySeasonalDummiesLM(
+    CPISeasonalityMatrix(
+      cpi_monthly, 
+      as.name("CPI_NE")))
 
-fit_mw <- 
-  stl(ts_cpi_mw, 
-      s.window = "period")
+model_mw <- 
+  MonthlySeasonalDummiesLM(
+    CPISeasonalityMatrix(
+      cpi_monthly, 
+      as.name("CPI_MW")))
 
-data <- 
-  cpi_monthly %>% 
-  select(CPI_SO)
+model_so <- 
+  MonthlySeasonalDummiesLM(
+    CPISeasonalityMatrix(
+      cpi_monthly, 
+      as.name("CPI_SO")))
 
-ts_cpi_so <- 
-  ts(data$CPI_SO,
-     start = c(2003, 1),
-     end = c(2016,12),
-     frequency = 12)
+model_we <- 
+  MonthlySeasonalDummiesLM(
+    CPISeasonalityMatrix(
+      cpi_monthly, 
+      as.name("CPI_WE")))
 
-fit_so <- 
-  stl(ts_cpi_so, 
-      s.window = "period")
+# reconstruct cpi index 
 
-data <- 
-  cpi_monthly %>% 
-  select(CPI_WE)
+sumfactor_ne <-
+  cpi_monthly$CPI_NE[1] - residuals(model_ne)[1]
 
-ts_cpi_we <- 
-  ts(data$CPI_WE,
-     start = c(2003, 1),
-     end = c(2016,12),
-     frequency = 12)
+sumfactor_mw <-
+  cpi_monthly$CPI_MW[1] - residuals(model_mw)[1]
 
-fit_we <- 
-  stl(ts_cpi_we, 
-      s.window = "period")
+sumfactor_so <-
+  cpi_monthly$CPI_SO[1] - residuals(model_so)[1]
 
-## rejoin deseasonalized data
+sumfactor_we <-
+  cpi_monthly$CPI_WE[1] - residuals(model_we)[1]
 
-df_ne <- 
-  data.frame(fit_ne$time.series) %>% 
-  transmute(CPI_DS_NE = trend+remainder)
-
-df_mw <- 
-  data.frame(fit_mw$time.series) %>% 
-  transmute(CPI_DS_MW = trend+remainder)
-
-df_so <- 
-  data.frame(fit_so$time.series) %>% 
-  transmute(CPI_DS_SO = trend+remainder)
-
-df_we <- 
-  data.frame(fit_we$time.series) %>% 
-  transmute(CPI_DS_WE = trend+remainder)
 
 cpi_monthly <- 
-  cpi_monthly %>%
-  mutate(CPI_DS_NE = df_ne$CPI_DS_NE,
-         CPI_DS_MW = df_mw$CPI_DS_MW,
-         CPI_DS_SO = df_so$CPI_DS_SO,
-         CPI_DS_WE = df_we$CPI_DS_WE)
+  cpi_monthly %>% 
+  bind_cols(CPI_DS_NE = residuals(model_ne) + sumfactor_ne,
+            CPI_DS_MW = residuals(model_mw) + sumfactor_mw,
+            CPI_DS_SO = residuals(model_so) + sumfactor_so,
+            CPI_DS_WE = residuals(model_we) + sumfactor_we)
 
-rm(data)
-rm(list=ls(pattern="^df"))
-rm(list=ls(pattern="^ts"))
-rm(list=ls(pattern="^fit"))
+
+rm(list=ls(pattern="^model"))
+rm(list=ls(pattern="^sumfactor"))
+rm(MonthlySeasonalDummiesLM,
+   CPISeasonalityMatrix)
+
 
 if (FALSE)
 {
@@ -286,30 +284,19 @@ plot(fit_we)
 
 
 
-normal <-
+df_plot <-
   cpi_monthly %>%
-  transmute(DATE,
-            NORMAL = CPI_WE)
-deseason <-
-  cpi_monthly %>%
-  transmute(DATE,
-            DESEASON = CPI_DS_WE)
+  select(DATE,
+         CPI_WE,
+         CPI_DS_WE) %>% 
+  filter(between(DATE,
+                 as.Date("2004-06-01"), 
+                 as.Date("2016-06-01"))) %>% 
+  pivot_longer(-DATE)
 
-plot_ne <- 
+plot_obj <- 
   ggplot() + 
-  geom_line(data = normal %>%
-              filter(between(DATE,
-                             as.Date("2004-06-01"), 
-                             as.Date("2016-06-01"))) %>% 
-              pivot_longer(-DATE),
-            aes(x = DATE, 
-                y = value, 
-                colour = name)) +
-  geom_line(data = deseason %>%
-              filter(between(DATE,
-                             as.Date("2004-06-01"), 
-                             as.Date("2016-06-01"))) %>% 
-              pivot_longer(-DATE),
+  geom_line(data = df_plot,
             aes(x = DATE, 
                 y = value, 
                 colour = name)) +
@@ -319,7 +306,7 @@ plot_ne <-
         axis.text.x = element_text(),
         legend.position = "bottom")
 
-plot(plot_ne)
+plot(plot_obj)
 
 
 }
@@ -492,200 +479,6 @@ rm(step)
 
 
 
-
-
-if (FALSE) {
-
-### ======================================== ###
-### Real Return Rates
-### ======================================== ###
-## We are interested on stock/t-bill real returns over a specific
-## period of time. Lets calculate them with the deflated indexes.
-
-## Sets the number of days over which returns will be calculated
-window_return <- 28L
-
-## Real tbill/stock returns calculation
-rates_real <- 
-  index_table %>% 
-  transmute(DATE,
-            RATE_TB_REAL_NE = lead(INDEX_TB_DEF_NE, n = window_return) - INDEX_TB_DEF_NE,
-            RATE_ST_REAL_NE = lead(INDEX_ST_DEF_NE, n = window_return) - INDEX_ST_DEF_NE,
-            RATE_TB_REAL_MW = lead(INDEX_TB_DEF_MW, n = window_return) - INDEX_TB_DEF_MW,
-            RATE_ST_REAL_MW = lead(INDEX_ST_DEF_MW, n = window_return) - INDEX_ST_DEF_MW,
-            RATE_TB_REAL_SO = lead(INDEX_TB_DEF_SO, n = window_return) - INDEX_TB_DEF_SO,
-            RATE_ST_REAL_SO = lead(INDEX_ST_DEF_SO, n = window_return) - INDEX_ST_DEF_SO,
-            RATE_TB_REAL_WE = lead(INDEX_TB_DEF_WE, n = window_return) - INDEX_TB_DEF_WE,
-            RATE_ST_REAL_WE = lead(INDEX_ST_DEF_WE, n = window_return) - INDEX_ST_DEF_WE)
-
-
-sprintf("Step %i: Finished calculating Real Return Rates", step)
-step <- step + 1
-
-
-### ======================================== ###
-### Smoothing Return Rates
-### ======================================== ###
-## Rates, specially stock returns, can be quite noisy due to market
-## fluctuations and crisis in the short term. This section will 
-## smooth the rates by applying moving averages.
-
-window_smoothing <- 5L
-spacing <- 7L
-
-rates_real_smooth <- 
-  rates_real %>% 
-  transmute(DATE,
-            RATE_TB_REAL_MW,
-            RATE_TB_REAL_MW_SMOOTH = rollapply(RATE_TB_REAL_MW,
-                                            window_smoothing,
-                                            mean,
-                                            partial = TRUE,
-                                            align = "center"),
-            RATE_ST_REAL_MW,
-            RATE_ST_REAL_MW_SMOOTH = rollapply(RATE_ST_REAL_MW,
-                                            window_smoothing,
-                                            mean,
-                                            partial = TRUE,
-                                            align = "center"))
-
-long_curve <- melt(rates_real_smooth %>% 
-                  select(DATE,
-                         RATE_ST_REAL_MW,
-                         RATE_ST_REAL_MW_SMOOTH),
-                  id = "DATE")
-
-
-long_points <- melt(rates_real_smooth %>%
-                      select(DATE, RATE_ST_REAL_MW_SMOOTH) %>%
-                      filter(row_number() %% spacing == 1),
-                    id = "DATE")
-
-
-ggplot() + 
-  geom_line(data = long_curve,
-            aes(x = DATE, 
-                y = value, 
-                colour = variable)) +
-  scale_x_date(date_breaks = "1 year",
-               date_labels = "%Y") +
-  theme(legend.position = "bottom") +
-  scale_color_manual(values = c(RATE_ST_REAL_MW = "gray", 
-                                RATE_ST_REAL_MW_SMOOTH = "darkgreen")) + 
-  geom_point(data = long_points,
-             aes(x = DATE,
-                 y = value,
-                 color = variable))
-
-
-long_curve_cut <- long_curve %>% 
-                  filter(between(DATE,
-                                 as.Date("2008-01-01"), 
-                                 as.Date("2010-01-01")))
-
-
-long_points_cut <- long_points %>% 
-                   filter(between(DATE,
-                                  as.Date("2008-01-01"), 
-                                  as.Date("2010-01-01")))
-
-ggplot() + 
-  geom_line(data = long_curve_cut,
-            aes(x = DATE, 
-                y = value, 
-                colour = variable)) +
-  scale_x_date(date_breaks = "1 year",
-               date_labels = "%Y") +
-  theme(legend.position = "bottom") +
-  scale_color_manual(values = c(RATE_ST_REAL_MW = "gray", 
-                                RATE_ST_REAL_MW_SMOOTH = "darkgreen")) + 
-  geom_point(data = long_points_cut,
-             aes(x = DATE,
-                 y = value,
-                 color = variable))
-
-rm(long_curve,long_curve_cut,long_points,long_points_cut)
-
-## Redo for TBills
-
-window_smoothing <- 28L
-spacing <- 28L
-
-rates_real_smooth <- 
-  rates_real %>% 
-  transmute(DATE,
-            RATE_TB_REAL_MW,
-            RATE_TB_REAL_MW_SMOOTH = rollapply(RATE_TB_REAL_MW,
-                                               window_smoothing,
-                                               mean,
-                                               partial = TRUE,
-                                               align = "center"),
-            RATE_ST_REAL_MW,
-            RATE_ST_REAL_MW_SMOOTH = rollapply(RATE_ST_REAL_MW,
-                                               window_smoothing,
-                                               mean,
-                                               partial = TRUE,
-                                               align = "center"))
-
-long_curve <- melt(rates_real_smooth %>% 
-                     select(DATE,
-                            RATE_TB_REAL_MW,
-                            RATE_TB_REAL_MW_SMOOTH),
-                   id = "DATE")
-
-
-long_points <- melt(rates_real_smooth %>%
-                      select(DATE, RATE_TB_REAL_MW_SMOOTH) %>%
-                      filter(row_number() %% spacing == 1),
-                    id = "DATE")
-
-
-ggplot() + 
-  geom_line(data = long_curve,
-            aes(x = DATE, 
-                y = value, 
-                colour = variable)) +
-  scale_x_date(date_breaks = "1 year",
-               date_labels = "%Y") +
-  theme(legend.position = "bottom") +
-  scale_color_manual(values = c(RATE_TB_REAL_MW = "gray", 
-                                RATE_TB_REAL_MW_SMOOTH = "darkgreen")) + 
-  geom_point(data = long_points,
-             aes(x = DATE,
-                 y = value,
-                 color = variable))
-
-
-long_curve_cut <- long_curve %>% 
-  filter(between(DATE,
-                 as.Date("2008-01-01"), 
-                 as.Date("2010-01-01")))
-
-
-long_points_cut <- long_points %>% 
-  filter(between(DATE,
-                 as.Date("2008-01-01"), 
-                 as.Date("2010-01-01")))
-
-ggplot() + 
-  geom_line(data = long_curve_cut,
-            aes(x = DATE, 
-                y = value, 
-                colour = variable)) +
-  scale_x_date(date_breaks = "1 year",
-               date_labels = "%Y") +
-  theme(legend.position = "bottom") +
-  scale_color_manual(values = c(RATE_TB_REAL_MW = "gray", 
-                                RATE_TB_REAL_MW_SMOOTH = "darkgreen")) + 
-  geom_point(data = long_points_cut,
-             aes(x = DATE,
-                 y = value,
-                 color = variable))
-
-rm(long_curve,long_curve_cut,long_points,long_points_cut)
-
-}
-
 ############# garbage bin
 if(FALSE) {
 
@@ -700,164 +493,107 @@ if(FALSE) {
   ### blablabla
   ### ======================================== ###
   
-  
-  
-  
-  
-  
-  
-  
-  
-  ### Run Some Sanity checks
-  
-  rates_nominal_daily_1d <- 
-    index_table %>% 
-    transmute(DATE,
-              RATE_TB_1 = lead(INDEX_TB,n=1L) - INDEX_TB,
-              RATE_ST_1 = lead(INDEX_ST,n=1L) - INDEX_ST)
-  
-  rates_nominal_daily_28d <- 
-    index_table %>% 
-    transmute(DATE,
-              RATE_TB_28 = lead(INDEX_TB,n=28L) - INDEX_TB,
-              RATE_ST_28 = lead(INDEX_ST,n=28L) - INDEX_ST)
-  
-  
-  rates_nominal_daily_360d <- 
-    index_table %>% 
-    transmute(DATE,
-              RATE_TB_360 = lead(INDEX_TB,n=360L) - INDEX_TB,
-              RATE_ST_360 = lead(INDEX_ST,n=360L) - INDEX_ST)
-  
-  rates_real_daily_360d <- 
-    index_table %>% 
-    transmute(DATE,
-              RATE_TB_DEF_NE_360 = lead(INDEX_TB_DEF_NE,n=360L) - INDEX_TB_DEF_NE,
-              RATE_TB_DEF_MW_360 = lead(INDEX_TB_DEF_MW,n=360L) - INDEX_TB_DEF_MW,
-              RATE_TB_DEF_SO_360 = lead(INDEX_TB_DEF_SO,n=360L) - INDEX_TB_DEF_SO,
-              RATE_TB_DEF_WE_360 = lead(INDEX_TB_DEF_WE,n=360L) - INDEX_TB_DEF_WE,
-              RATE_ST_DEF_NE_360 = lead(INDEX_ST_DEF_NE,n=360L) - INDEX_ST_DEF_NE,
-              RATE_ST_DEF_MW_360 = lead(INDEX_ST_DEF_MW,n=360L) - INDEX_ST_DEF_MW,
-              RATE_ST_DEF_SO_360 = lead(INDEX_ST_DEF_SO,n=360L) - INDEX_ST_DEF_SO,
-              RATE_ST_DEF_WE_360 = lead(INDEX_ST_DEF_WE,n=360L) - INDEX_ST_DEF_WE)
-  
-  rates_real_daily_1d <- 
-    index_table %>% 
-    transmute(DATE,
-              RATE_TB_DEF_NE_1 = lead(INDEX_TB_DEF_NE,n=1L) - INDEX_TB_DEF_NE,
-              RATE_ST_DEF_MW_1 = lead(INDEX_ST_DEF_NE,n=1L) - INDEX_ST_DEF_MW)
-  
-  
-  ggplot(data=rates_nominal_daily_360d, aes(x = DATE, y = RATE_TB_360)) + 
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_real_daily_28d, aes(x = DATE, y = RATE_TB_DEF_NE_28)) + geom_line() +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_real_daily_360d, aes(x = DATE, y = RATE_TB_DEF_NE_360)) + geom_line() +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_nominal_daily_28d, aes(x = DATE, y = RATE_TB_28)) +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_nominal_daily_1d, aes(x = DATE, y = RATE_TB_1)) +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_real_daily_1d, aes(x = DATE, y = RATE_TB_DEF_NE_1)) +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_nominal_daily_360d, aes(x = DATE, y = RATE_TB_360)) + 
-    geom_line(size = 1) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y",
-                 limits = as.Date(c('2007-06-01','2008-06-01')))
-  
-  ggplot(data=rates_real_daily_360d, aes(x = DATE, y = RATE_ST_DEF_NE_360)) +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  ggplot(data=rates_real_daily_28d, aes(x = DATE, y = RATE_ST_DEF_NE_28)) +
-    geom_line() +
-    scale_x_date(date_breaks = "1 year",date_labels = "%Y")
-  
-  
-  
-  
-  
-  
-week(raw_tbill_monthly$DATE)
-all.equal(A,stocks_weekly_dates)
-class(cpi_monthly$DATE)
-class(cpi_monthly$CPI_NORTHEAST)
-class(stocks_monthly$DATE)
-class(stocks_monthly$CLOSE)
-class(stocks_monthly$INDEX_ST)
-class(tbill_monthly$DATE)
-class(tbill_monthly$TB4WK)
-
 
 }
 
 if (FALSE) {
   
-  MonthlySeasonalDummiesLM <- function(x) {
-    
-    lm(Y ~ -1+
-         M01+M02+M03+M04+
-         M05+M06+M07+M08+
-         M09+M10+M11+M12,
-       data = x)
-  }
-  
-  
-  CPISeasonalityMatrix <- function(x,y) {
-    
-    x %>%
-      arrange(DATE) %>%
-      transmute(Y = !!y,
-                M01 = case_when(month(DATE) == 1 ~ 1, TRUE ~ 0),
-                M02 = case_when(month(DATE) == 2 ~ 1, TRUE ~ 0),
-                M03 = case_when(month(DATE) == 3 ~ 1, TRUE ~ 0),
-                M04 = case_when(month(DATE) == 4 ~ 1, TRUE ~ 0),
-                M05 = case_when(month(DATE) == 5 ~ 1, TRUE ~ 0),
-                M06 = case_when(month(DATE) == 6 ~ 1, TRUE ~ 0),
-                M07 = case_when(month(DATE) == 7 ~ 1, TRUE ~ 0),
-                M08 = case_when(month(DATE) == 8 ~ 1, TRUE ~ 0),
-                M09 = case_when(month(DATE) == 9 ~ 1, TRUE ~ 0),
-                M10 = case_when(month(DATE) == 10 ~ 1, TRUE ~ 0),
-                M11 = case_when(month(DATE) == 11 ~ 1, TRUE ~ 0),
-                M12 = case_when(month(DATE) == 12 ~ 1, TRUE ~ 0))
-  }
-  
-  
-  
-  library(lubridate)
-  library(zoo)
-  
-  trend_cpi <- 
-    cpi_monthly %>%
-    mutate(CPI_TREND_NE = rollapply(CPI_NE,
-                                    24,
-                                    mean,
-                                    partial = TRUE,
-                                    align = "center"),
-           REST = CPI_NE - CPI_TREND_NE)
-  
-  
-  
-  model <- 
-    MonthlySeasonalDummiesLM(
-      CPISeasonalityMatrix(
-        trend_cpi, 
-        as.name("CPI_TREND_NE")))
-  
-  summary(model)
+ 
   
   
 }  
+
+
+
+if (FALSE) {
+  
+  ## coerse data into montly time series object and decompose
+  data <- 
+    cpi_monthly %>% 
+    select(CPI_NE)
+  
+  ts_cpi_ne <- 
+    ts(data$CPI_NE,
+       start = c(2003, 1),
+       end = c(2016,12),
+       frequency = 12)
+  
+  fit_ne <- 
+    stl(ts_cpi_ne, 
+        s.window = "period")
+  
+  data <- 
+    cpi_monthly %>% 
+    select(CPI_MW)
+  
+  ts_cpi_mw <- 
+    ts(data$CPI_MW,
+       start = c(2003, 1),
+       end = c(2016,12),
+       frequency = 12)
+  
+  fit_mw <- 
+    stl(ts_cpi_mw, 
+        s.window = "period")
+  
+  data <- 
+    cpi_monthly %>% 
+    select(CPI_SO)
+  
+  ts_cpi_so <- 
+    ts(data$CPI_SO,
+       start = c(2003, 1),
+       end = c(2016,12),
+       frequency = 12)
+  
+  fit_so <- 
+    stl(ts_cpi_so, 
+        s.window = "period")
+  
+  data <- 
+    cpi_monthly %>% 
+    select(CPI_WE)
+  
+  ts_cpi_we <- 
+    ts(data$CPI_WE,
+       start = c(2003, 1),
+       end = c(2016,12),
+       frequency = 12)
+  
+  fit_we <- 
+    stl(ts_cpi_we, 
+        s.window = "period")
+  
+  ## rejoin deseasonalized data
+  
+  df_ne <- 
+    data.frame(fit_ne$time.series) %>% 
+    transmute(CPI_DS_NE = trend+remainder)
+  
+  df_mw <- 
+    data.frame(fit_mw$time.series) %>% 
+    transmute(CPI_DS_MW = trend+remainder)
+  
+  df_so <- 
+    data.frame(fit_so$time.series) %>% 
+    transmute(CPI_DS_SO = trend+remainder)
+  
+  df_we <- 
+    data.frame(fit_we$time.series) %>% 
+    transmute(CPI_DS_WE = trend+remainder)
+  
+  cpi_monthly <- 
+    cpi_monthly %>%
+    mutate(CPI_DS_NE = df_ne$CPI_DS_NE,
+           CPI_DS_MW = df_mw$CPI_DS_MW,
+           CPI_DS_SO = df_so$CPI_DS_SO,
+           CPI_DS_WE = df_we$CPI_DS_WE)
+  
+  rm(data)
+  rm(list=ls(pattern="^df"))
+  rm(list=ls(pattern="^ts"))
+  rm(list=ls(pattern="^fit"))
+  
+  
+  
+}
