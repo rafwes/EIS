@@ -1,14 +1,14 @@
 ## This code imports daily T-Bill rates, SP500 stock prices and
 ## regional CPI data to create deflated indexes for stocks and t-bills.
 
-#rm(list=ls())
+rm(list=ls())
 
-#library(tidyverse)
-#library(zoo)
-#library(reshape2)
+library(tidyverse)
+library(zoo)
+library(reshape2)
 
 #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 print("Let's Start")
 step=as.integer(1)
@@ -245,31 +245,19 @@ model_we <-
       cpi_monthly, 
       as.name("CPI_WE")))
 
+summary(model_mw)
+
 # reconstruct cpi index 
-
-sumfactor_ne <-
-  cpi_monthly$CPI_NE[1] - residuals(model_ne)[1]
-
-sumfactor_mw <-
-  cpi_monthly$CPI_MW[1] - residuals(model_mw)[1]
-
-sumfactor_so <-
-  cpi_monthly$CPI_SO[1] - residuals(model_so)[1]
-
-sumfactor_we <-
-  cpi_monthly$CPI_WE[1] - residuals(model_we)[1]
-
 
 cpi_monthly <- 
   cpi_monthly %>% 
-  bind_cols(CPI_DS_NE = residuals(model_ne) + sumfactor_ne,
-            CPI_DS_MW = residuals(model_mw) + sumfactor_mw,
-            CPI_DS_SO = residuals(model_so) + sumfactor_so,
-            CPI_DS_WE = residuals(model_we) + sumfactor_we)
+  mutate(CPI_DS_NE = residuals(model_ne) + mean(CPI_NE),
+         CPI_DS_MW = residuals(model_mw) + mean(CPI_MW),
+         CPI_DS_SO = residuals(model_so) + mean(CPI_SO),
+         CPI_DS_WE = residuals(model_we) + mean(CPI_WE))
 
 
 rm(list=ls(pattern="^model"))
-rm(list=ls(pattern="^sumfactor"))
 rm(MonthlySeasonalDummiesLM,
    CPISeasonalityMatrix)
 
@@ -498,7 +486,29 @@ if(FALSE) {
 
 if (FALSE) {
   
- 
+  df_plot <-
+    index_table %>%
+    select(DATE,
+           INDEX_CPI_MW,
+           INDEX_CPI_DS_MW) %>% 
+    filter(between(DATE,
+                   as.Date("2002-06-01"), 
+                   as.Date("2016-06-01"))) %>% 
+    pivot_longer(-DATE)
+  
+  plot_obj <- 
+    ggplot() + 
+    geom_line(data = df_plot,
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
+  
+  plot(plot_obj)
   
   
 }  
