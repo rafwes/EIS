@@ -1,14 +1,14 @@
 ## This code imports daily T-Bill rates, SP500 stock prices and
 ## regional CPI data to create deflated indexes for stocks and t-bills.
 
-rm(list=ls())
+#rm(list=ls())
 
-library(tidyverse)
-library(zoo)
-library(reshape2)
+#library(tidyverse)
+#library(zoo)
+#library(reshape2)
 
 #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 print("Let's Start")
 step=as.integer(1)
