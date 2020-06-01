@@ -5,8 +5,8 @@ library(zoo)
 library(reshape2)
 library(ISOweek)
 library(lubridate)
-library(grid)
-library(gridExtra)
+#library(grid)
+#library(gridExtra)
 
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 #base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"

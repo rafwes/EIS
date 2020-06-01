@@ -6,6 +6,7 @@
 #library(tidyverse)
 #library(zoo)
 #library(reshape2)
+#library(lubridate)
 
 #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 #base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -189,7 +190,7 @@ cpi_monthly$PERIOD <- NULL
 
 MonthlySeasonalDummiesLM <- function(x) {
   
-  lm(Y ~ -1+
+  lm(Y ~ -1+TIME+
        M01+M02+M03+M04+
        M05+M06+M07+M08+
        M09+M10+M11+M12,
@@ -197,11 +198,14 @@ MonthlySeasonalDummiesLM <- function(x) {
 }
 
 
+# Since CPI data is has a clear trend, a time
+# variable is needed to suppress it.
 CPISeasonalityMatrix <- function(x,y) {
   
   x %>%
     arrange(DATE) %>%
     transmute(Y = !!y,
+              TIME = as.integer(rownames(x)),
               M01 = case_when(month(DATE) == 1 ~ 1, TRUE ~ 0),
               M02 = case_when(month(DATE) == 2 ~ 1, TRUE ~ 0),
               M03 = case_when(month(DATE) == 3 ~ 1, TRUE ~ 0),
@@ -217,9 +221,6 @@ CPISeasonalityMatrix <- function(x,y) {
 }
 
 
-
-library(lubridate)
-library(zoo)
 
 model_ne <- 
   MonthlySeasonalDummiesLM(
@@ -245,16 +246,42 @@ model_we <-
       cpi_monthly, 
       as.name("CPI_WE")))
 
-summary(model_mw)
+summary(model_we)
 
 # reconstruct cpi index 
 
-cpi_monthly <- 
+
+
+# "mean(coefficients(model_xx)[-1])"
+# "as.numeric(coefficients(model_xx)[1])"
+# Refer in the code below respectively to:
+# 1. mean value of monthly dummies coefficients
+# 2. trend coefficient from regression
+
+# Reconstruct deseasonalized CPI
+
+cpi_monthly <-
   cpi_monthly %>% 
-  mutate(CPI_DS_NE = residuals(model_ne) + mean(CPI_NE),
-         CPI_DS_MW = residuals(model_mw) + mean(CPI_MW),
-         CPI_DS_SO = residuals(model_so) + mean(CPI_SO),
-         CPI_DS_WE = residuals(model_we) + mean(CPI_WE))
+  mutate(CPI_DS_NE = 
+           as.numeric(coefficients(model_ne)[1])
+         * as.integer(rownames(cpi_monthly))
+         + residuals(model_ne)
+         + mean(coefficients(model_ne)[-1]),
+         CPI_DS_MW = 
+           as.numeric(coefficients(model_mw)[1]) 
+         * as.integer(rownames(cpi_monthly))
+         + residuals(model_mw)
+         + mean(coefficients(model_mw)[-1]),
+         CPI_DS_SO = 
+           as.numeric(coefficients(model_so)[1]) 
+         * as.integer(rownames(cpi_monthly))
+         + residuals(model_so)
+         + mean(coefficients(model_so)[-1]),
+         CPI_DS_WE = 
+           as.numeric(coefficients(model_we)[1]) 
+         * as.integer(rownames(cpi_monthly))
+         + residuals(model_we)
+         + mean(coefficients(model_we)[-1]))
 
 
 rm(list=ls(pattern="^model"))
@@ -275,8 +302,8 @@ plot(fit_we)
 df_plot <-
   cpi_monthly %>%
   select(DATE,
-         CPI_WE,
-         CPI_DS_WE) %>% 
+         CPI_MW,
+         CPI_DS_MW) %>% 
   filter(between(DATE,
                  as.Date("2004-06-01"), 
                  as.Date("2016-06-01"))) %>% 
