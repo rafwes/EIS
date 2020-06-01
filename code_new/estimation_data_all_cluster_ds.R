@@ -8,10 +8,10 @@ library(lubridate)
 #library(grid)
 #library(gridExtra)
 
-base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
-source(file.path(base_path,"EIS/code_new/deflate_then_deseason.R"))
+source(file.path(base_path,"EIS/code_new/deflate_then_deseason_ds.R"))
 
 #####################################################################
 ## ESTIMATIONS FOR 4 WEEKS 
@@ -189,11 +189,6 @@ Weekly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
-    mutate(SUM_SPENT_DS_DEF =
-             SUM_SPENT_DS_DEF
-           - min(SUM_SPENT_DS_DEF, 
-                 na.rm = TRUE) 
-           + 1) %>%
     complete(ISOWEEK,
              HOUSEHOLD_CODE) %>%
     group_by(HOUSEHOLD_CODE) %>%
@@ -573,21 +568,6 @@ rates_log_avg <-
   na.exclude()
 
 
-# Sums consumption over given period
-# Calculates lagged variables, drops observations for which no
-# lags could be calculated and then joins them with rates and
-# then delivers a proper date column since.
-# Y     = log(C_t) - log(C_{t-4})   ,where C_t is consumption for time t 
-# X_TB  = log(1+r)                  ,where r is the real rate for t-bills
-# X_ST  = log(1+r)                  ,same for stock returns
-# Z1    = Y_{t-2} = log(C_{t-2} - log{C_{t-6}}
-# Z2_TB = X_TB_{t-2} 
-# Z2_ST = X_ST_{t-2}
-# Z3    = log(1+\pi)_{t-2}          ,where \pi is the inflation rate
-#
-# Y calculation is prone to generate NA, therefore it's done earlier.
-
-
 Monthly_Estimation_DataDS <- function(x) {
   
   # Extract region from dataframe name
@@ -604,11 +584,6 @@ Monthly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
-    mutate(SUM_SPENT_DS_DEF =
-             SUM_SPENT_DS_DEF
-           - min(SUM_SPENT_DS_DEF, 
-                 na.rm = TRUE) 
-           + 1) %>%
     complete(YEAR,
              MONTH,
              HOUSEHOLD_CODE) %>%
@@ -848,11 +823,6 @@ Quarterly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
-    mutate(SUM_SPENT_DS_DEF =
-             SUM_SPENT_DS_DEF
-           - min(SUM_SPENT_DS_DEF, 
-                 na.rm = TRUE) 
-           + 1) %>%
     complete(YEAR,
              QUARTER,
              HOUSEHOLD_CODE) %>%

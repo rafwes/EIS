@@ -7,9 +7,9 @@
   # library(lubridate)
   # library(grid)
   # library(gridExtra)
-
-  #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-  #base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+  # 
+  # #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+  # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
   
   source(file.path(base_path,"EIS/code_new/interest_rates.R"))
   source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -182,67 +182,84 @@ if (FALSE) {
   }
   
   # Creates deseasonalized consumption data
+  # We need positive consumption data, therefore take max(coeff)
+  
+  ds_model_ne <- 
+    SeasonalDummiesLM(
+      ConsumptionSeasonalityMatrix(
+        consumption_def_ne))
 
   consumption_ds_def_ne <- 
     consumption_def_ne %>%
     arrange(HOUSEHOLD_CODE, 
             PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, 
-           PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT_DS_DEF = 
-             residuals(
-               SeasonalDummiesLM(
-                 ConsumptionSeasonalityMatrix(
-                   consumption_def_ne))))
+    transmute(HOUSEHOLD_CODE,
+              PURCHASE_DATE,
+              TOTAL_SPENT_DS_DEF = 
+                residuals(ds_model_ne)
+              + max(coefficients(ds_model_ne)))
+    
+  rm(consumption_def_ne,
+     ds_model_ne)
   
-  rm(consumption_def_ne)
+  ds_model_mw <- 
+    SeasonalDummiesLM(
+      ConsumptionSeasonalityMatrix(
+        consumption_def_mw))
   
   consumption_ds_def_mw <- 
     consumption_def_mw %>%
     arrange(HOUSEHOLD_CODE, 
             PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, 
-           PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT_DS_DEF = 
-             residuals(
-               SeasonalDummiesLM(
-                 ConsumptionSeasonalityMatrix(
-                   consumption_def_mw))))
-
-  rm(consumption_def_mw)
+    transmute(HOUSEHOLD_CODE,
+              PURCHASE_DATE,
+              TOTAL_SPENT_DS_DEF = 
+                residuals(ds_model_mw)
+              + max(coefficients(ds_model_mw)))
+  
+  rm(consumption_def_mw,
+     ds_model_mw)
+  
+  ds_model_so <- 
+    SeasonalDummiesLM(
+      ConsumptionSeasonalityMatrix(
+        consumption_def_so))
   
   consumption_ds_def_so <- 
     consumption_def_so %>%
     arrange(HOUSEHOLD_CODE, 
             PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, 
-           PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT_DS_DEF = 
-             residuals(
-               SeasonalDummiesLM(
-                 ConsumptionSeasonalityMatrix(
-                   consumption_def_so))))
-
-  rm(consumption_def_so)
+    transmute(HOUSEHOLD_CODE,
+              PURCHASE_DATE,
+              TOTAL_SPENT_DS_DEF = 
+                residuals(ds_model_so)
+              + max(coefficients(ds_model_so)))
+  
+  rm(consumption_def_so,
+     ds_model_so)
+  
+  ds_model_we <- 
+    SeasonalDummiesLM(
+      ConsumptionSeasonalityMatrix(
+        consumption_def_we))
   
   consumption_ds_def_we <- 
     consumption_def_we %>%
     arrange(HOUSEHOLD_CODE, 
             PURCHASE_DATE) %>%
-    select(HOUSEHOLD_CODE, 
-           PURCHASE_DATE) %>% 
-    mutate(TOTAL_SPENT_DS_DEF = 
-             residuals(
-               SeasonalDummiesLM(
-                 ConsumptionSeasonalityMatrix(
-                   consumption_def_we))))
+    transmute(HOUSEHOLD_CODE,
+              PURCHASE_DATE,
+              TOTAL_SPENT_DS_DEF = 
+                residuals(ds_model_we)
+              + max(coefficients(ds_model_we)))
   
-  rm(consumption_def_we)
+  rm(consumption_def_we,
+     ds_model_we)
   
-  #rm(DeflateConsumption,
-  #   SeasonalDummiesLM,
-  #   SeasonalityMatrix
-  #   )
+  
+  rm(DeflateConsumption,
+     SeasonalDummiesLM,
+     ConsumptionSeasonalityMatrix)
 
 if (FALSE) {
 
