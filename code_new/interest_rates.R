@@ -29,7 +29,6 @@ step=as.integer(1)
 ## Retrival Date: March 17, 2020
 
 
-
 raw_tbill_daily <-
   read.csv(file.path(base_path,"EIS/data_raw/fred_tbill_rates_daily.csv"),
            col.names = c("DATE","RATE_360"),

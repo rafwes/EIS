@@ -162,10 +162,10 @@ rates_log_avg <-
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
 # then delivers a proper date column since.
-# Y     = log(C_t) - log(C_{t-4})   ,where C_t is consumption for time t 
+# Y     = log(C_t) - log(C_{t-1})   ,where C_t is consumption for time t 
 # X_TB  = log(1+r)                  ,where r is the real rate for t-bills
 # X_ST  = log(1+r)                  ,same for stock returns
-# Z1    = Y_{t-2} = log(C_{t-2} - log{C_{t-6}}
+# Z1    = Y_{t-2} = log(C_{t-2} - log{C_{t-3}}
 # Z2_TB = X_TB_{t-2} 
 # Z2_ST = X_ST_{t-2}
 # Z3    = log(1+\pi)_{t-2}          ,where \pi is the inflation rate
