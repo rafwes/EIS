@@ -353,7 +353,7 @@ if (FALSE) {
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
   
-  print(ummary(ds_model_we))
+  print(summary(ds_model_we))
   rm(consumption_zeromean_def_we,
      ds_model_we)
   
