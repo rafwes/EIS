@@ -10,10 +10,10 @@
   # 
   # #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
   # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
-  
+  # 
   source(file.path(base_path,"EIS/code_new/interest_rates.R"))
   source(file.path(base_path,"EIS/code_new/grocery_data.R"))
-  
+   
   
   # Gathers inflation data and deflates consumption by region
   # Consumption data is too sparse, condense into weekly data
@@ -37,7 +37,7 @@
              TOTAL_SPENT_DEF)
   }
 
-  
+  # Deflating consumption
   consumption_def_ne <- 
     DeflateConsumption(consumption_ne)
   rm(consumption_ne)
@@ -53,37 +53,130 @@
   consumption_def_we <- 
     DeflateConsumption(consumption_we)
   rm(consumption_we)
-  
-  
-# plots deflation of data  
-if (FALSE) {
-    
-  daily <-
-    consumption_ne %>%
+
+  # averages daily consumption and creates a yearly moving average
+  daily_trips_def_ne <- 
+    consumption_def_ne %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP = mean(TOTAL_SPENT)) %>%
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>% 
     ungroup() %>% 
-    transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP = rollapply(AVG_TRIP,
-                                   3*28,
+    transmute(PURCHASE_DATE,
+              AVG_ROLL = rollapply(AVG,
+                                   366,
                                    mean,
                                    partial = TRUE,
                                    align = "center"))
   
-  daily_def <-
-    consumption_def_ne %>%
+  daily_trips_def_mw <- 
+    consumption_def_mw %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DEF = mean(TOTAL_SPENT_DEF)) %>%
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>% 
     ungroup() %>% 
-    transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DEF = rollapply(AVG_TRIP_DEF,
-                                       3*28,
-                                       mean,
-                                       partial = TRUE,
-                                       align = "center"))
-    
+    transmute(PURCHASE_DATE,
+              AVG_ROLL = rollapply(AVG,
+                                   366,
+                                   mean,
+                                   partial = TRUE,
+                                   align = "center"))
+  
+  daily_trips_def_so <- 
+    consumption_def_so %>%
+    group_by(PURCHASE_DATE) %>% 
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>% 
+    ungroup() %>% 
+    transmute(PURCHASE_DATE,
+              AVG_ROLL = rollapply(AVG,
+                                   366,
+                                   mean,
+                                   partial = TRUE,
+                                   align = "center"))
+  
+  daily_trips_def_we <- 
+    consumption_def_we %>%
+    group_by(PURCHASE_DATE) %>% 
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>% 
+    ungroup() %>% 
+    transmute(PURCHASE_DATE,
+              AVG_ROLL = rollapply(AVG,
+                                   366,
+                                   mean,
+                                   partial = TRUE,
+                                   align = "center"))
+            
+  
+  # creates a zero-mean consumption in order to achieve 
+  # stationary series using 1-year rolling averages
+  consumption_zeromean_def_ne <- 
+    consumption_def_ne %>% 
+    left_join(daily_trips_def_ne,
+              by = "PURCHASE_DATE") %>% 
+    mutate(TSD_AR = 
+             TOTAL_SPENT_DEF 
+           - AVG_ROLL)
+  
+  consumption_zeromean_def_mw <- 
+    consumption_def_mw %>% 
+    left_join(daily_trips_def_mw,
+              by = "PURCHASE_DATE") %>% 
+    mutate(TSD_AR = 
+             TOTAL_SPENT_DEF 
+           - AVG_ROLL)
+  
+  consumption_zeromean_def_so <- 
+    consumption_def_so %>% 
+    left_join(daily_trips_def_so,
+              by = "PURCHASE_DATE") %>% 
+    mutate(TSD_AR = 
+             TOTAL_SPENT_DEF 
+           - AVG_ROLL)
+  
+  consumption_zeromean_def_we <- 
+    consumption_def_we %>% 
+    left_join(daily_trips_def_we,
+              by = "PURCHASE_DATE") %>% 
+    mutate(TSD_AR = 
+             TOTAL_SPENT_DEF 
+           - AVG_ROLL)
+  
+  rm(list=ls(pattern="^daily_trips"))
+  rm(list=ls(pattern="^consumption_def"))
+  
+  
+# plots deflation of data
+if (FALSE) {
+  
+  consumption_zeromean <- 
+    consumption_def_we %>% 
+    left_join(daily_trips_def_we,
+              by = "PURCHASE_DATE") %>% 
+    mutate(TSD = TOTAL_SPENT_DEF,
+           TSD_AR = TOTAL_SPENT_DEF - AVG_ROLL)
+  
+  plt_daily <-
+    consumption_zeromean %>%
+    group_by(PURCHASE_DATE) %>% 
+    summarize(AVG_TSD = mean(TSD),
+              AVG_TSD_AR = mean(TSD_AR)) %>%
+    ungroup() %>% 
+    mutate(DATE = PURCHASE_DATE,
+           ROLL_TSD = rollapply(AVG_TSD,
+                                3*28,
+                                mean,
+                                partial = TRUE,
+                                align = "center"),
+           ROLL_TSD_AR = rollapply(AVG_TSD_AR,
+                                  3*28,
+                                  mean,
+                                  partial = TRUE,
+                                  align = "center")
+          )
+
+
   ggplot() + 
-    geom_line(data = daily %>%
+    geom_line(data = plt_daily %>%
+                select(DATE,
+                       ROLL_TSD,
+                       ROLL_TSD_AR) %>% 
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 
@@ -91,14 +184,6 @@ if (FALSE) {
               aes(x = DATE, 
                   y = value, 
                   colour = name)) +
-    geom_line(data = daily_def %>%
-                filter(between(DATE,
-                               as.Date("2004-06-01"), 
-                               as.Date("2014-06-01"))) %>% 
-                pivot_longer(-DATE),
-              aes(x = DATE, 
-                  y = value, 
-                  colour = name))+
     scale_x_date(date_breaks = "1 year",
                  date_labels = "%Y") +
     theme(axis.title.x = element_blank(), 
@@ -125,7 +210,7 @@ if (FALSE) {
     
     x %>%
       arrange(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
-      transmute(Y = TOTAL_SPENT_DEF,
+      transmute(Y = TSD_AR,
                 W01 = case_when(isoweek(PURCHASE_DATE) == 1 ~ 1, TRUE ~ 0),
                 W02 = case_when(isoweek(PURCHASE_DATE) == 2 ~ 1, TRUE ~ 0),
                 W03 = case_when(isoweek(PURCHASE_DATE) == 3 ~ 1, TRUE ~ 0),
@@ -181,95 +266,123 @@ if (FALSE) {
                 W53 = case_when(isoweek(PURCHASE_DATE) == 53 ~ 1, TRUE ~ 0))
   }
   
-  # Creates deseasonalized consumption data
+  # Create deseasonalized consumption data and add rollmean back
   # We need positive consumption data, therefore take max(coeff)
   
   ds_model_ne <- 
     SeasonalDummiesLM(
       ConsumptionSeasonalityMatrix(
-        consumption_def_ne))
+        consumption_zeromean_def_ne))
 
   consumption_ds_def_ne <- 
-    consumption_def_ne %>%
+    consumption_zeromean_def_ne %>%
     arrange(HOUSEHOLD_CODE, 
-            PURCHASE_DATE) %>%
-    transmute(HOUSEHOLD_CODE,
-              PURCHASE_DATE,
-              TOTAL_SPENT_DS_DEF = 
-                residuals(ds_model_ne)
-              + max(coefficients(ds_model_ne)))
+            PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(ds_model_ne)
+           + max(coefficients(ds_model_ne))
+           + AVG_ROLL) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT_DS_DEF)
     
-  rm(consumption_def_ne,
+  print(summary(ds_model_ne))
+  rm(consumption_zeromean_def_ne,
      ds_model_ne)
+  
+  
   
   ds_model_mw <- 
     SeasonalDummiesLM(
       ConsumptionSeasonalityMatrix(
-        consumption_def_mw))
-  
+        consumption_zeromean_def_mw))
+ 
   consumption_ds_def_mw <- 
-    consumption_def_mw %>%
+    consumption_zeromean_def_mw %>%
     arrange(HOUSEHOLD_CODE, 
-            PURCHASE_DATE) %>%
-    transmute(HOUSEHOLD_CODE,
-              PURCHASE_DATE,
-              TOTAL_SPENT_DS_DEF = 
-                residuals(ds_model_mw)
-              + max(coefficients(ds_model_mw)))
+            PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(ds_model_mw)
+           + max(coefficients(ds_model_mw))
+           + AVG_ROLL) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT_DS_DEF)
   
-  rm(consumption_def_mw,
+  print(summary(ds_model_mw))
+  rm(consumption_zeromean_def_mw,
      ds_model_mw)
+  
   
   ds_model_so <- 
     SeasonalDummiesLM(
       ConsumptionSeasonalityMatrix(
-        consumption_def_so))
-  
+        consumption_zeromean_def_so))
+
   consumption_ds_def_so <- 
-    consumption_def_so %>%
+    consumption_zeromean_def_so %>%
     arrange(HOUSEHOLD_CODE, 
-            PURCHASE_DATE) %>%
-    transmute(HOUSEHOLD_CODE,
-              PURCHASE_DATE,
-              TOTAL_SPENT_DS_DEF = 
-                residuals(ds_model_so)
-              + max(coefficients(ds_model_so)))
+            PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(ds_model_so)
+           + max(coefficients(ds_model_so))
+           + AVG_ROLL) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT_DS_DEF)
   
-  rm(consumption_def_so,
+  print(summary(ds_model_so))
+  rm(consumption_zeromean_def_so,
      ds_model_so)
+  
   
   ds_model_we <- 
     SeasonalDummiesLM(
       ConsumptionSeasonalityMatrix(
-        consumption_def_we))
+        consumption_zeromean_def_we))
   
   consumption_ds_def_we <- 
-    consumption_def_we %>%
+    consumption_zeromean_def_we %>%
     arrange(HOUSEHOLD_CODE, 
-            PURCHASE_DATE) %>%
-    transmute(HOUSEHOLD_CODE,
-              PURCHASE_DATE,
-              TOTAL_SPENT_DS_DEF = 
-                residuals(ds_model_we)
-              + max(coefficients(ds_model_we)))
+            PURCHASE_DATE) %>% 
+    mutate(TOTAL_SPENT_DS_DEF = 
+             residuals(ds_model_we)
+           + max(coefficients(ds_model_we))
+           + AVG_ROLL) %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT_DS_DEF)
   
-  rm(consumption_def_we,
+  print(ummary(ds_model_we))
+  rm(consumption_zeromean_def_we,
      ds_model_we)
   
   
   rm(DeflateConsumption,
      SeasonalDummiesLM,
      ConsumptionSeasonalityMatrix)
+  
+
 
 if (FALSE) {
 
+  
+  hist(consumption_ds_def_so$TOTAL_SPENT_DS_DEF,
+       breaks=500,
+       xlim = c(0,250))
+  
+  hist(consumption_ds_def_we$TOTAL_SPENT_DS_DEF,
+       breaks=2000,
+       xlim = c(0,30))
+  
+  
   daily_def_ne <-
     consumption_def_ne %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DEF = mean(TOTAL_SPENT_DEF)) %>%
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DEF = scale(rollapply(AVG_TRIP_DEF,
+              AVG = scale(rollapply(AVG,
                                              3*28,
                                              mean,
                                              partial = TRUE,
@@ -277,10 +390,10 @@ if (FALSE) {
   daily_ds_def_ne <-
     consumption_ds_def_ne %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
+    summarize(AVG_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DS_DEF = scale(rollapply(AVG_TRIP_DS_DEF,
+              AVG_DS_DEF = scale(rollapply(AVG_DS_DEF,
                                                 3*28,
                                                 mean,
                                                 partial = TRUE,
@@ -314,10 +427,10 @@ if (FALSE) {
   daily_def_mw <-
     consumption_def_mw %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DEF = mean(TOTAL_SPENT_DEF)) %>%
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DEF = scale(rollapply(AVG_TRIP_DEF,
+              AVG = scale(rollapply(AVG,
                                              3*28,
                                              mean,
                                              partial = TRUE,
@@ -325,10 +438,10 @@ if (FALSE) {
   daily_ds_def_mw <-
     consumption_ds_def_mw %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
+    summarize(AVG_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DS_DEF = scale(rollapply(AVG_TRIP_DS_DEF,
+              AVG_DS_DEF = scale(rollapply(AVG_DS_DEF,
                                                 3*28,
                                                 mean,
                                                 partial = TRUE,
@@ -362,10 +475,10 @@ if (FALSE) {
   daily_def_so <-
     consumption_def_so %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DEF = mean(TOTAL_SPENT_DEF)) %>%
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DEF = scale(rollapply(AVG_TRIP_DEF,
+              AVG = scale(rollapply(AVG,
                                              3*28,
                                              mean,
                                              partial = TRUE,
@@ -373,10 +486,10 @@ if (FALSE) {
   daily_ds_def_so <-
     consumption_ds_def_so %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
+    summarize(AVG_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DS_DEF = scale(rollapply(AVG_TRIP_DS_DEF,
+              AVG_DS_DEF = scale(rollapply(AVG_DS_DEF,
                                                 3*28,
                                                 mean,
                                                 partial = TRUE,
@@ -411,10 +524,10 @@ if (FALSE) {
   daily_def_we <-
     consumption_def_we %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DEF = mean(TOTAL_SPENT_DEF)) %>%
+    summarize(AVG = mean(TOTAL_SPENT_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DEF = scale(rollapply(AVG_TRIP_DEF,
+              AVG = scale(rollapply(AVG,
                                              3*28,
                                              mean,
                                              partial = TRUE,
@@ -422,10 +535,10 @@ if (FALSE) {
   daily_ds_def_we <-
     consumption_ds_def_we %>%
     group_by(PURCHASE_DATE) %>% 
-    summarize(AVG_TRIP_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
+    summarize(AVG_DS_DEF = mean(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>% 
     transmute(DATE = PURCHASE_DATE,
-              AVG_TRIP_DS_DEF = scale(rollapply(AVG_TRIP_DS_DEF,
+              AVG_DS_DEF = scale(rollapply(AVG_DS_DEF,
                                                 3*28,
                                                 mean,
                                                 partial = TRUE,

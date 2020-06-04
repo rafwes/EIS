@@ -245,7 +245,7 @@ model_we <-
       cpi_monthly, 
       as.name("CPI_WE")))
 
-summary(model_we)
+#summary(model_we)
 
 # reconstruct cpi index 
 

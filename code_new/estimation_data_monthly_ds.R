@@ -188,11 +188,6 @@ Monthly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
-    mutate(SUM_SPENT_DS_DEF =
-             SUM_SPENT_DS_DEF
-           - min(SUM_SPENT_DS_DEF, 
-                 na.rm = TRUE) 
-           + 1) %>%
     complete(YEAR,
              MONTH,
              HOUSEHOLD_CODE) %>%
