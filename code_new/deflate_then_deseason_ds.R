@@ -281,7 +281,9 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(ds_model_ne)
            + max(coefficients(ds_model_ne))
-           + AVG_ROLL) %>% 
+           + AVG_ROLL
+           + 3
+           ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
@@ -304,7 +306,9 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(ds_model_mw)
            + max(coefficients(ds_model_mw))
-           + AVG_ROLL) %>% 
+           + AVG_ROLL
+           + 3
+           ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
@@ -326,7 +330,9 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(ds_model_so)
            + max(coefficients(ds_model_so))
-           + AVG_ROLL) %>% 
+           + AVG_ROLL
+           + 3 
+           ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
@@ -348,7 +354,9 @@ if (FALSE) {
     mutate(TOTAL_SPENT_DS_DEF = 
              residuals(ds_model_we)
            + max(coefficients(ds_model_we))
-           + AVG_ROLL) %>% 
+           + AVG_ROLL
+           + 3
+           ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
