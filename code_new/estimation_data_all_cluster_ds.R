@@ -189,6 +189,10 @@ Weekly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
+    # drop very small trips that cause big percentage changes
+    filter(SUM_SPENT_DS_DEF > quantile(SUM_SPENT_DS_DEF, 0.003),
+           #SUM_SPENT_DS_DEF < quantile(SUM_SPENT_DS_DEF, 0.997)
+           ) %>% 
     complete(ISOWEEK,
              HOUSEHOLD_CODE) %>%
     group_by(HOUSEHOLD_CODE) %>%
@@ -584,6 +588,10 @@ Monthly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
+    # drop very small trips that cause big percentage changes
+    filter(SUM_SPENT_DS_DEF > quantile(SUM_SPENT_DS_DEF, 0.003),
+           #SUM_SPENT_DS_DEF < quantile(SUM_SPENT_DS_DEF, 0.997)
+    ) %>% 
     complete(YEAR,
              MONTH,
              HOUSEHOLD_CODE) %>%
@@ -611,10 +619,9 @@ Monthly_Estimation_DataDS <- function(x) {
               Z3 = lag(!!RATE_INFL_DS_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
-    rename(HOUSEHOLD = HOUSEHOLD_CODE) 
+    rename(HOUSEHOLD = HOUSEHOLD_CODE)
   
 }
-
 
 estimation_data_1m <-
   bind_rows(Monthly_Estimation_DataDS(consumption_ds_def_ne),
@@ -823,6 +830,9 @@ Quarterly_Estimation_DataDS <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
+    filter(SUM_SPENT_DS_DEF > quantile(SUM_SPENT_DS_DEF, 0.003),
+#          SUM_SPENT_DS_DEF < quantile(SUM_SPENT_DS_DEF, 0.997)
+    ) %>% 
     complete(YEAR,
              QUARTER,
              HOUSEHOLD_CODE) %>%

@@ -286,7 +286,7 @@ if (FALSE) {
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
     
-  print(summary(ds_model_ne))
+  #print(summary(ds_model_ne))
   rm(consumption_zeromean_def_ne,
      ds_model_ne)
   
@@ -309,7 +309,7 @@ if (FALSE) {
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
   
-  print(summary(ds_model_mw))
+  #print(summary(ds_model_mw))
   rm(consumption_zeromean_def_mw,
      ds_model_mw)
   
@@ -331,7 +331,7 @@ if (FALSE) {
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
   
-  print(summary(ds_model_so))
+  #print(summary(ds_model_so))
   rm(consumption_zeromean_def_so,
      ds_model_so)
   
@@ -353,7 +353,7 @@ if (FALSE) {
            PURCHASE_DATE,
            TOTAL_SPENT_DS_DEF)
   
-  print(summary(ds_model_we))
+  #print(summary(ds_model_we))
   rm(consumption_zeromean_def_we,
      ds_model_we)
   
