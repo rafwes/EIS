@@ -282,7 +282,6 @@ if (FALSE) {
              residuals(ds_model_ne)
            + max(coefficients(ds_model_ne))
            + AVG_ROLL
-           + 3
            ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
@@ -307,7 +306,6 @@ if (FALSE) {
              residuals(ds_model_mw)
            + max(coefficients(ds_model_mw))
            + AVG_ROLL
-           + 3
            ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
@@ -331,7 +329,6 @@ if (FALSE) {
              residuals(ds_model_so)
            + max(coefficients(ds_model_so))
            + AVG_ROLL
-           + 3 
            ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
@@ -355,7 +352,6 @@ if (FALSE) {
              residuals(ds_model_we)
            + max(coefficients(ds_model_we))
            + AVG_ROLL
-           + 3
            ) %>% 
     select(HOUSEHOLD_CODE,
            PURCHASE_DATE,
