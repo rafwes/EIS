@@ -10,7 +10,7 @@
 # 
 # #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
-# 
+
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
@@ -25,7 +25,8 @@ DeflateConsumption <- function(x) {
   x %>%
     left_join(index_table %>%
                 select(DATE,!!INDEX_CPI_REGION),
-              by = c("PURCHASE_DATE" = "DATE")) %>% 
+              by = c("PURCHASE_DATE" = "DATE")
+              ) %>% 
     mutate(TOTAL_SPENT_DEF := 
              100 * TOTAL_SPENT 
            / !!INDEX_CPI_REGION) %>% 
@@ -278,9 +279,9 @@ consumption_ds_def_ne <-
           PURCHASE_DATE) %>% 
   mutate(TOTAL_SPENT_DS_DEF = 
            residuals(ds_model_ne)
-         + max(coefficients(ds_model_ne))
+         + mean(coefficients(ds_model_ne))
          + AVG_ROLL
-  ) %>% 
+         ) %>% 
   select(HOUSEHOLD_CODE,
          PURCHASE_DATE,
          TOTAL_SPENT_DS_DEF)
@@ -302,9 +303,9 @@ consumption_ds_def_mw <-
           PURCHASE_DATE) %>% 
   mutate(TOTAL_SPENT_DS_DEF = 
            residuals(ds_model_mw)
-         + max(coefficients(ds_model_mw))
+         + mean(coefficients(ds_model_mw))
          + AVG_ROLL
-  ) %>% 
+         ) %>% 
   select(HOUSEHOLD_CODE,
          PURCHASE_DATE,
          TOTAL_SPENT_DS_DEF)
@@ -325,9 +326,9 @@ consumption_ds_def_so <-
           PURCHASE_DATE) %>% 
   mutate(TOTAL_SPENT_DS_DEF = 
            residuals(ds_model_so)
-         + max(coefficients(ds_model_so))
+         + mean(coefficients(ds_model_so))
          + AVG_ROLL
-  ) %>% 
+         ) %>% 
   select(HOUSEHOLD_CODE,
          PURCHASE_DATE,
          TOTAL_SPENT_DS_DEF)
@@ -348,16 +349,61 @@ consumption_ds_def_we <-
           PURCHASE_DATE) %>% 
   mutate(TOTAL_SPENT_DS_DEF = 
            residuals(ds_model_we)
-         + max(coefficients(ds_model_we))
+         + mean(coefficients(ds_model_we))
          + AVG_ROLL
-  ) %>% 
+         ) %>% 
   select(HOUSEHOLD_CODE,
          PURCHASE_DATE,
          TOTAL_SPENT_DS_DEF)
 
-#print(summary(ds_model_we))
-rm(consumption_zeromean_def_we,
-   ds_model_we)
+# print(summary(ds_model_we))
+# rm(consumption_zeromean_def_we,
+#    ds_model_we)
+
+
+# plots reconstructed consumption data
+if (FALSE) {
+  
+  plt_daily <-
+    consumption_ds_def_ne %>%
+    group_by(PURCHASE_DATE) %>% 
+    summarize(AVG_TSD = mean(TOTAL_SPENT_DEF),
+              AVG_TSDD = mean(TOTAL_SPENT_DS_DEF)) %>%
+    ungroup() %>% 
+    mutate(DATE = PURCHASE_DATE,
+           ROLL_TSD = rollapply(AVG_TSD,
+                                3*28,
+                                mean,
+                                partial = TRUE,
+                                align = "center"),
+           ROLL_TSDD = rollapply(AVG_TSDD,
+                                3*28,
+                                mean,
+                                partial = TRUE,
+                                align = "center")
+           )
+  
+  
+  ggplot() + 
+    geom_line(data = plt_daily %>%
+                select(DATE,
+                       ROLL_TSD,
+                       ROLL_TSDD
+                       ) %>% 
+                filter(between(DATE,
+                               as.Date("2004-06-01"), 
+                               as.Date("2014-06-01"))) %>% 
+                pivot_longer(-DATE),
+              aes(x = DATE, 
+                  y = value, 
+                  colour = name)) +
+    scale_x_date(date_breaks = "1 year",
+                 date_labels = "%Y") +
+    theme(axis.title.x = element_blank(), 
+          axis.text.x = element_text(),
+          legend.position = "bottom")
+}
+
 
 
 rm(DeflateConsumption,

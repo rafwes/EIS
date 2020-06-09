@@ -8,8 +8,8 @@ library(lubridate)
 #library(grid)
 #library(gridExtra)
 
-base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/deflate_then_deseason.R"))
 
@@ -189,6 +189,7 @@ WeeklyEstimationData <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
+    filter(SUM_SPENT_DS_DEF > 0) %>%
     complete(ISOWEEK,
              HOUSEHOLD_CODE) %>%
     group_by(HOUSEHOLD_CODE) %>%
@@ -212,7 +213,7 @@ WeeklyEstimationData <- function(x) {
               Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
-    rename(HOUSEHOLD = HOUSEHOLD_CODE) 
+    rename(HOUSEHOLD = HOUSEHOLD_CODE)
   
 }
 
@@ -584,6 +585,7 @@ MonthlyEstimationData <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
+    filter(SUM_SPENT_DS_DEF > 0) %>%
     complete(YEAR,
              MONTH,
              HOUSEHOLD_CODE) %>%
@@ -822,6 +824,7 @@ QuarterlyEstimationData <- function(x) {
     summarise(SUM_SPENT_DS_DEF = 
                 sum(TOTAL_SPENT_DS_DEF)) %>%
     ungroup() %>%
+    filter(SUM_SPENT_DS_DEF > 0) %>%
     complete(YEAR,
              QUARTER,
              HOUSEHOLD_CODE) %>%
