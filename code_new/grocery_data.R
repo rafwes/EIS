@@ -1,13 +1,25 @@
-#rm(list=ls())
-
-#library(tidyverse)
-#library(lubridate)
-#library(ISOweek)
-#library(visdat)
-#library(naniar)
-
-#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+# rm(list=ls())
+# 
+# library(dplyr)
+# library(tidyr)
+# library(tibble)
+# library(readr)
+# library(stringr)
+# library(zoo)
+# library(reshape2)
+# library(ISOweek)
+# library(lubridate)
+# library(conflicted)
+# #library(grid)
+# #library(gridExtra)
+# 
+# conflict_prefer("filter", "dplyr")
+# conflict_prefer("lag", "dplyr")
+# conflict_prefer("as.Date", "base")
+# conflict_prefer("as.Date.numeric", "base")
+# 
+# #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+# base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # We have data from 2004 to 2017
 years <- seq(2004, 2017)
@@ -169,6 +181,7 @@ retailers <-
 # Rename column names for consistency
 colnames(retailers) <- retailers_cols_new
 
+
 ## Import all consumption data over the years
 for (i in 1:length(years)) {
   
@@ -231,7 +244,7 @@ for (i in 1:length(years)) {
            PURCHASE_DATE, 
            PANEL_YEAR, 
            TOTAL_SPENT) %>%
-    group_by(HOUSEHOLD_CODE, PANEL_YEAR, PURCHASE_DATE) %>%
+    group_by(HOUSEHOLD_CODE, PURCHASE_DATE) %>%
     summarise(TOTAL_SPENT = sum(TOTAL_SPENT)) %>%
     ungroup() %>% 
     filter(TOTAL_SPENT != 0)

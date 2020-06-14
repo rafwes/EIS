@@ -1,12 +1,22 @@
 # rm(list=ls())
 # 
-# library(tidyverse)
+# library(dplyr)
+# library(tidyr)
+# library(tibble)
+# library(readr)
+# library(stringr)
 # library(zoo)
 # library(reshape2)
 # library(ISOweek)
 # library(lubridate)
-# library(grid)
-# library(gridExtra)
+# library(conflicted)
+# #library(grid)
+# #library(gridExtra)
+# 
+# conflict_prefer("filter", "dplyr")
+# conflict_prefer("lag", "dplyr")
+# conflict_prefer("as.Date", "base")
+# conflict_prefer("as.Date.numeric", "base")
 # 
 # #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -357,8 +367,8 @@ consumption_ds_def_we <-
          TOTAL_SPENT_DS_DEF)
 
 # print(summary(ds_model_we))
-# rm(consumption_zeromean_def_we,
-#    ds_model_we)
+rm(consumption_zeromean_def_we,
+   ds_model_we)
 
 
 # plots reconstructed consumption data
