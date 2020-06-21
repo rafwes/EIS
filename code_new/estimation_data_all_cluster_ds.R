@@ -240,7 +240,6 @@ write_csv(estimation_data_4w,
           file.path(base_path, 
                     "csv_output/estimation_data_weekly_ds_4w.csv"))
 
-library(plm)
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_4w,
           model = "pooling",
@@ -249,7 +248,6 @@ zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
 print("Estimation for 4 Weeks")
 print("======================================================")
 print(summary(zz))
-detach("package:plm", unload=TRUE)
 rm(estimation_data_4w,
    zz,
    rates_log_avg_wkly)
@@ -413,7 +411,6 @@ write_csv(estimation_data_1w,
           file.path(base_path, 
                     "csv_output/estimation_data_weekly_ds_1w.csv"))
 
-library(plm)
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_1w,
           model = "pooling",
@@ -422,7 +419,6 @@ zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
 print("Estimation for 1 Week")
 print("======================================================")
 print(summary(zz))
-detach("package:plm", unload=TRUE)
 rm(estimation_data_1w,
    zz,
    rates_log_avg_wkly)
@@ -640,7 +636,6 @@ write_csv(estimation_data_1m,
           file.path(base_path, 
                     "csv_output/estimation_data_monthly_ds_1m.csv"))
 
-library(plm)
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_1m,
           model = "pooling",
@@ -649,7 +644,6 @@ zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
 print("Estimation for 1 Month")
 print("======================================================")
 print(summary(zz))
-detach("package:plm", unload=TRUE)
 rm(estimation_data_1m,
    zz,
    rates_log_avg_mthly)
@@ -884,7 +878,6 @@ write_csv(estimation_data_1q,
           file.path(base_path, 
                     "csv_output/estimation_data_quarterly_ds_1q.csv"))
 
-library(plm)
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_1q,
           model = "pooling",
@@ -893,7 +886,6 @@ zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
 print("Estimation for 1 Quarter")
 print("======================================================")
 print(summary(zz))
-detach("package:plm", unload=TRUE)
 rm(estimation_data_1q,
    zz,
    rates_log_avg_qrtly)
