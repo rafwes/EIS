@@ -10,7 +10,8 @@ dataset <- "monthly_ds_1m"
 base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # Label rates
-rateTypes <- c("TB", "ST")
+#rateTypes <- c("TB", "ST")
+rateTypes <- c("TB")
 # Label Period
 period <- c("ALL")
 # The code was originally set up to split the data as desired

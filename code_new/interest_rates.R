@@ -12,6 +12,8 @@
 # library(reshape2)
 # library(ISOweek)
 # library(lubridate)
+# library(prophet)
+# library(plm)
 # library(conflicted)
 # #library(grid)
 # #library(gridExtra)
@@ -20,6 +22,7 @@
 # conflict_prefer("lag", "dplyr")
 # conflict_prefer("as.Date", "base")
 # conflict_prefer("as.Date.numeric", "base")
+# conflict_prefer("between", "dplyr")
 # 
 # #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
@@ -199,6 +202,86 @@ cpi_monthly$PERIOD <- NULL
 ######delete down####################
 ######delete down####################
 
+# setup data as expected by prophet
+data_model_ne <- 
+  cpi_monthly %>%
+  transmute(ds = DATE,
+            y = CPI_NE)
+
+data_model_mw <- 
+  cpi_monthly %>%
+  transmute(ds = DATE,
+            y = CPI_MW)
+
+data_model_so <- 
+  cpi_monthly %>%
+  transmute(ds = DATE,
+            y = CPI_SO)
+
+data_model_we <- 
+  cpi_monthly %>%
+  transmute(ds = DATE,
+            y = CPI_WE)
+
+# fit model and decompose by issuing predict
+model_ne <- prophet()
+model_ne <- fit.prophet(model_ne, data_model_ne)
+data_decomposed_ne <- predict(model_ne)
+
+model_mw <- prophet()
+model_mw <- fit.prophet(model_mw, data_model_mw)
+data_decomposed_mw <- predict(model_mw)
+
+model_so <- prophet()
+model_so <- fit.prophet(model_so, data_model_so)
+data_decomposed_so <- predict(model_so)
+
+model_we <- prophet()
+model_we <- fit.prophet(model_we, data_model_we)
+data_decomposed_we <- predict(model_we)
+
+
+
+# reconstruct de-seasonal trip data from trend and residuals
+
+cpi_ds_ne <- 
+  data_decomposed_ne %>%
+  left_join(data_model_ne, by="ds") %>% 
+  transmute(DATE = as.Date(ds),
+            CPI_DS_NE = trend + y - yhat)
+
+cpi_ds_mw <- 
+  data_decomposed_mw %>%
+  left_join(data_model_mw, by="ds") %>% 
+  transmute(DATE = as.Date(ds),
+            CPI_DS_MW = trend + y - yhat)
+
+cpi_ds_so <- 
+  data_decomposed_so %>%
+  left_join(data_model_so, by="ds") %>% 
+  transmute(DATE = as.Date(ds),
+            CPI_DS_SO = trend + y - yhat)
+
+cpi_ds_we <- 
+  data_decomposed_we %>%
+  left_join(data_model_we, by="ds") %>% 
+  transmute(DATE = as.Date(ds),
+            CPI_DS_WE = trend + y - yhat)
+
+
+cpi_monthly <-
+  cpi_monthly %>% 
+  left_join(cpi_ds_ne, by = "DATE") %>% 
+  left_join(cpi_ds_mw, by = "DATE") %>%
+  left_join(cpi_ds_so, by = "DATE") %>% 
+  left_join(cpi_ds_we, by = "DATE")
+
+rm(list=ls(pattern="^model"))
+rm(list=ls(pattern="^data_"))
+rm(list=ls(pattern="^cpi_ds"))
+
+
+if (FALSE) {
 
 MonthlySeasonalDummiesLM <- function(x) {
   
@@ -300,6 +383,7 @@ rm(list=ls(pattern="^model"))
 rm(MonthlySeasonalDummiesLM,
    CPISeasonalityMatrix)
 
+}
 
 if (FALSE)
 {
