@@ -3,7 +3,10 @@ library(plm)
 library(tidyverse)
 
 # Parameter to set
-dataset <- "monthly_ds_1m"
+#dataset <- "quarterly_1q"
+#dataset <- "monthly_1m"
+#dataset <- "weekly_1w"
+dataset <- "weekly_4w"
 
 # Set path
 #base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen"
