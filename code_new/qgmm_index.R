@@ -11,7 +11,7 @@ datasetTypes <- c("weekly_1w",
                   )
 
 # Set path
-base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen"
+base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 #base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # Label rates
