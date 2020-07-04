@@ -3,14 +3,16 @@ library(plm)
 library(tidyverse)
 
 # Parameter to set
-dataset <- "quarterly_1q"
-#dataset <- "monthly_1m"
-#dataset <- "weekly_4w"
-#dataset <- "weekly_1w"
+
+datasetTypes <- c("weekly_1w",
+                  "weekly_4w",
+                  "monthly_1m",
+                  "quarterly_1q"
+                  )
 
 # Set path
-#base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen"
-base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen"
+#base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # Label rates
 #rateTypes <- c("TB", "ST")
@@ -25,6 +27,14 @@ dateSplits <- cbind(period, dateSplitStarts, dateSplitEnds)
 
 # Source Kaplan code
 source(file.path(base.path, "EIS/code_new/gmmq.R"))
+
+
+# Loop over types of Rates
+for (ii in 1:length(datasetTypes)) {
+  
+  dataset <- datasetTypes[ii]
+  
+  cat("\n", "Results for", dataset, ":\n")
 
 # Read in Dataset
 #estimationDataFileName <- file.path(base.path, paste0("rafael/csv_output/seasonal_consumption_newest/estimation_data_", dataset, ".csv"))
@@ -169,4 +179,4 @@ for (ii in 1:length(rateTypes)) {
 }
 
 
-
+}
