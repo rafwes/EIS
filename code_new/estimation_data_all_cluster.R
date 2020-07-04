@@ -212,7 +212,7 @@ WeeklyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_weeks)),
            Z1 = 
-             lag(Y, n = 2)) %>%
+             lag(Y, n = 1)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_wkly,
               by = "ISOWEEK") %>%
@@ -221,9 +221,9 @@ WeeklyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 2), 
-              Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z2_TB = lag(RATE_TB, n = 1), 
+              Z2_ST = lag(RATE_ST, n = 1),
+              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -605,7 +605,7 @@ MonthlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_months)),
            Z1 = 
-             lag(Y, n = 2)) %>%
+             lag(Y, n = 1)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_mthly,
               by = c("YEAR","MONTH")) %>%
@@ -617,9 +617,9 @@ MonthlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 2), 
-              Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z2_TB = lag(RATE_TB, n = 1), 
+              Z2_ST = lag(RATE_ST, n = 1),
+              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -842,7 +842,7 @@ QuarterlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_quarters)),
            Z1 = 
-             lag(Y, n = 2)) %>%
+             lag(Y, n = 1)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_qrtly,
               by = c("YEAR","QUARTER")) %>%
@@ -859,9 +859,9 @@ QuarterlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 2), 
-              Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z2_TB = lag(RATE_TB, n = 1), 
+              Z2_ST = lag(RATE_ST, n = 1),
+              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 
