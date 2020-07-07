@@ -239,7 +239,7 @@ estimation_data_4w <-
 
 write_csv(estimation_data_4w,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_ds_4w.csv"))
+                    "csv_output/estimation_data_weekly_4w.csv"))
 
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_4w,
@@ -410,7 +410,7 @@ estimation_data_1w <-
 
 write_csv(estimation_data_1w,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_ds_1w.csv"))
+                    "csv_output/estimation_data_weekly_1w.csv"))
 
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_1w,
@@ -635,7 +635,7 @@ estimation_data_1m <-
 
 write_csv(estimation_data_1m,
           file.path(base_path, 
-                    "csv_output/estimation_data_monthly_ds_1m.csv"))
+                    "csv_output/estimation_data_monthly_1m.csv"))
 
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_1m,
