@@ -21,8 +21,8 @@ conflict_prefer("as.Date", "base")
 conflict_prefer("as.Date.numeric", "base")
 conflict_prefer("between", "dplyr")
 
-#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/deflate_then_deseason_ds.R"))
 
@@ -213,7 +213,7 @@ WeeklyEstimationData <- function(x) {
                      n = lag_in_weeks)),
            Z1 = 
              lag(Y, n = 2)) %>%
-    na.exclude() %>%
+    #na.exclude() %>%
     left_join(rates_log_avg_wkly,
               by = "ISOWEEK") %>%
     transmute(DATE = as.Date(ISOweek2date(paste(ISOWEEK, "1", sep = "-"))),
@@ -606,7 +606,7 @@ MonthlyEstimationData <- function(x) {
                      n = lag_in_months)),
            Z1 = 
              lag(Y, n = 2)) %>%
-    na.exclude() %>%
+    #na.exclude() %>%
     left_join(rates_log_avg_mthly,
               by = c("YEAR","MONTH")) %>%
     unite(YEAR_MONTH,
@@ -843,7 +843,7 @@ QuarterlyEstimationData <- function(x) {
                      n = lag_in_quarters)),
            Z1 = 
              lag(Y, n = 2)) %>%
-    na.exclude() %>%
+    #na.exclude() %>%
     left_join(rates_log_avg_qrtly,
               by = c("YEAR","QUARTER")) %>%
     mutate(MONTH = case_when(QUARTER == 1 ~ 1,
