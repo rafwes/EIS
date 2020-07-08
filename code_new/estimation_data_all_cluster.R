@@ -27,10 +27,10 @@ base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 source(file.path(base_path,"EIS/code_new/deflate_then_deseason.R"))
 
 #####################################################################
-## ESTIMATIONS FOR 4 WEEKS 
+## ESTIMATIONS FOR 1 WEEKS 
 #####################################################################
 
-lag_in_weeks = 4L
+lag_in_weeks = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks"
@@ -212,7 +212,7 @@ WeeklyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_weeks)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_wkly,
               by = "ISOWEEK") %>%
@@ -221,44 +221,44 @@ WeeklyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
   
 }
 
-estimation_data_4w <-
+estimation_data_1w <-
   bind_rows(WeeklyEstimationData(consumption_ds_def_ne),
             WeeklyEstimationData(consumption_ds_def_mw),
             WeeklyEstimationData(consumption_ds_def_so),
             WeeklyEstimationData(consumption_ds_def_we)) %>% 
   arrange(HOUSEHOLD,DATE)
 
-write_csv(estimation_data_4w,
+write_csv(estimation_data_1w,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_4w.csv"))
+                    "csv_output/estimation_data_weekly_1w.csv"))
 
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-          data = estimation_data_4w,
+          data = estimation_data_1w,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 4 Weeks")
+print("Estimation for 1 Week")
 print("======================================================")
 print(summary(zz))
-rm(estimation_data_4w,
+rm(estimation_data_1w,
    zz,
    rates_log_avg_wkly)
 
 
 #####################################################################
-## ESTIMATIONS FOR 1 WEEK 
+## ESTIMATIONS FOR 4 WEEK 
 #####################################################################
 
-lag_in_weeks = 1L
+lag_in_weeks = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_weeks"
@@ -401,26 +401,26 @@ rates_log_avg_wkly <-
   ) %>%
   na.exclude()
 
-estimation_data_1w <-
+estimation_data_4w <-
   bind_rows(WeeklyEstimationData(consumption_ds_def_ne),
             WeeklyEstimationData(consumption_ds_def_mw),
             WeeklyEstimationData(consumption_ds_def_so),
             WeeklyEstimationData(consumption_ds_def_we)) %>% 
   arrange(HOUSEHOLD,DATE)
 
-write_csv(estimation_data_1w,
+write_csv(estimation_data_4w,
           file.path(base_path, 
-                    "csv_output/estimation_data_weekly_1w.csv"))
+                    "csv_output/estimation_data_weekly_4w.csv"))
 
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-          data = estimation_data_1w,
+          data = estimation_data_4w,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 1 Week")
+print("Estimation for 4 Week")
 print("======================================================")
 print(summary(zz))
-rm(estimation_data_1w,
+rm(estimation_data_4w,
    zz,
    rates_log_avg_wkly)
 
@@ -605,7 +605,7 @@ MonthlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_months)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_mthly,
               by = c("YEAR","MONTH")) %>%
@@ -617,9 +617,9 @@ MonthlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -842,7 +842,7 @@ QuarterlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_quarters)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_qrtly,
               by = c("YEAR","QUARTER")) %>%
@@ -859,9 +859,9 @@ QuarterlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 

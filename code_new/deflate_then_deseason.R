@@ -70,25 +70,25 @@ rm(consumption_we)
 
 
 
-# prophet needs single daily consumption value
-# save percentage of total spent for each household in a given day
+# prophet needs single daily consumption value, we shall use mean consumption.
+# save data parameters to reconstruct it later
 perc_ne <- 
   consumption_def_ne %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
-# setup data as expected by prophet
+# setup data as expected by prophet, 
 data_model_ne <- 
   consumption_def_ne %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_ne <- prophet()
+#model_ne <- prophet(seasonality.mode = 'multiplicative')
 model_ne <- fit.prophet(model_ne, data_model_ne)
 data_decomposed_ne <- predict(model_ne)
 
@@ -100,7 +100,7 @@ consumption_ds_def_ne <-
             DESEASONED = trend + y - yhat
             ) %>% 
   left_join(perc_ne, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
@@ -119,19 +119,19 @@ rm(perc_ne,
 perc_mw <- 
   consumption_def_mw %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 data_model_mw <- 
   consumption_def_mw %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_mw <- prophet()
+#model_mw <- prophet(seasonality.mode = 'multiplicative')
 model_mw <- fit.prophet(model_mw, data_model_mw)
 data_decomposed_mw <- predict(model_mw)
 
@@ -143,11 +143,13 @@ consumption_ds_def_mw <-
             DESEASONED = trend + y - yhat
   ) %>% 
   left_join(perc_mw, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
          TOTAL_SPENT_DS_DEF)
+
+
 
 rm(perc_mw,
    model_mw,
@@ -162,19 +164,19 @@ rm(perc_mw,
 perc_so <- 
   consumption_def_so %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 data_model_so <- 
   consumption_def_so %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_so <- prophet()
+#model_so <- prophet(seasonality.mode = 'multiplicative')
 model_so <- fit.prophet(model_so, data_model_so)
 data_decomposed_so <- predict(model_so)
 
@@ -186,7 +188,7 @@ consumption_ds_def_so <-
             DESEASONED = trend + y - yhat
   ) %>% 
   left_join(perc_so, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
@@ -206,19 +208,19 @@ rm(perc_so,
 perc_we <- 
   consumption_def_we %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 data_model_we <- 
   consumption_def_we %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_we <- prophet()
+#model_we <- prophet(seasonality.mode = 'multiplicative')
 model_we <- fit.prophet(model_we, data_model_we)
 data_decomposed_we <- predict(model_we)
 
@@ -230,7 +232,7 @@ consumption_ds_def_we <-
             DESEASONED = trend + y - yhat
   ) %>% 
   left_join(perc_we, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
