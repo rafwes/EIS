@@ -224,19 +224,19 @@ data_model_we <-
             y = CPI_WE)
 
 # fit model and decompose by issuing predict
-model_ne <- prophet()
+model_ne <- prophet(seasonality.mode = 'multiplicative')
 model_ne <- fit.prophet(model_ne, data_model_ne)
 data_decomposed_ne <- predict(model_ne)
 
-model_mw <- prophet()
+model_mw <- prophet(seasonality.mode = 'multiplicative')
 model_mw <- fit.prophet(model_mw, data_model_mw)
 data_decomposed_mw <- predict(model_mw)
 
-model_so <- prophet()
+model_so <- prophet(seasonality.mode = 'multiplicative')
 model_so <- fit.prophet(model_so, data_model_so)
 data_decomposed_so <- predict(model_so)
 
-model_we <- prophet()
+model_we <- prophet(seasonality.mode = 'multiplicative')
 model_we <- fit.prophet(model_we, data_model_we)
 data_decomposed_we <- predict(model_we)
 
@@ -388,6 +388,8 @@ rm(MonthlySeasonalDummiesLM,
 if (FALSE)
 {
 
+library(ggplot2)
+  
 plot(fit_ne)
 plot(fit_mw)
 plot(fit_so)

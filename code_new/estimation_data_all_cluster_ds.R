@@ -877,7 +877,7 @@ estimation_data_1q <-
 
 write_csv(estimation_data_1q,
           file.path(base_path, 
-                    "csv_output/estimation_data_quarterly_ds_1q.csv"))
+                    "csv_output/estimation_data_quarterly_1q.csv"))
 
 zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
           data = estimation_data_1q,
