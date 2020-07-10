@@ -87,8 +87,8 @@ data_model_ne <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_ne <- prophet()
-model_ne <- prophet(seasonality.mode = 'multiplicative')
+model_ne <- prophet()
+#model_ne <- prophet(seasonality.mode = 'multiplicative')
 model_ne <- fit.prophet(model_ne, data_model_ne)
 data_decomposed_ne <- predict(model_ne)
 
@@ -130,8 +130,8 @@ data_model_mw <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_mw <- prophet()
-model_mw <- prophet(seasonality.mode = 'multiplicative')
+model_mw <- prophet()
+#model_mw <- prophet(seasonality.mode = 'multiplicative')
 model_mw <- fit.prophet(model_mw, data_model_mw)
 data_decomposed_mw <- predict(model_mw)
 
@@ -175,8 +175,8 @@ data_model_so <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_so <- prophet()
-model_so <- prophet(seasonality.mode = 'multiplicative')
+model_so <- prophet()
+#model_so <- prophet(seasonality.mode = 'multiplicative')
 model_so <- fit.prophet(model_so, data_model_so)
 data_decomposed_so <- predict(model_so)
 
@@ -219,8 +219,8 @@ data_model_we <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_we <- prophet()
-model_we <- prophet(seasonality.mode = 'multiplicative')
+model_we <- prophet()
+#model_we <- prophet(seasonality.mode = 'multiplicative')
 model_we <- fit.prophet(model_we, data_model_we)
 data_decomposed_we <- predict(model_we)
 
