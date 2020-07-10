@@ -180,17 +180,18 @@ rm(raw_cpi_northeast,
 ## Drops yearly and half-yearly CPI data leaving only monthly data.
 cpi_monthly <-
   cpi_full %>%
-  filter( ! ((PERIOD == "M13") |
-               (PERIOD == "S01") |
-               (PERIOD == "S02")))
+  filter( ! ((PERIOD == "M13") 
+             | (PERIOD == "S01") 
+             | (PERIOD == "S02")))
 
 rm(cpi_full)
 
-## Adds a proper date column for CPI data and drops strange year/period/month columns
+## Adds a proper date column for CPI data. Since inflation is realized over a given month, 
+## assign index value the first day of next month.
 cpi_monthly <- 
   add_column(cpi_monthly,
              DATE = seq(from = as.Date("2003-01-01"),
-                        to = as.Date("2016-12-31"),
+                        to = as.Date("2017-01-01"),
                         by = "month"),
              .before=1)
 
@@ -427,6 +428,13 @@ plot(plot_obj)
 ######delete up####################
 ######delete up####################
 ######delete up####################
+
+## set last date one day back in order not to lose December data later
+cpi_monthly <- 
+  cpi_monthly %>%
+  mutate(DATE = replace(DATE,
+                        DATE == "2017-01-01", 
+                        "2016-12-31"))
 
 
 sprintf("Step %i: Finished Data Sanitization", step)
