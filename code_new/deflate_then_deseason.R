@@ -304,8 +304,8 @@ data_model_ne <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_ne <- prophet()
-model_ne <- prophet(holidays = holidays_df)
+model_ne <- prophet()
+#model_ne <- prophet(holidays = holidays_df)
 #model_ne <- add_country_holidays(model_ne, country_name = 'US')
 #model_ne <- prophet(seasonality.mode = 'multiplicative')
 model_ne <- fit.prophet(model_ne, data_model_ne)
@@ -349,8 +349,8 @@ data_model_mw <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_mw <- prophet()
-model_mw <- prophet(holidays = holidays_df)
+model_mw <- prophet()
+#model_mw <- prophet(holidays = holidays_df)
 #model_mw <- add_country_holidays(model_mw, country_name = 'US')
 #model_mw <- prophet(seasonality.mode = 'multiplicative')
 model_mw <- fit.prophet(model_mw, data_model_mw)
@@ -395,8 +395,8 @@ data_model_so <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_so <- prophet()
-model_so <- prophet(holidays = holidays_df)
+model_so <- prophet()
+#model_so <- prophet(holidays = holidays_df)
 #model_so <- add_country_holidays(model_so, country_name = 'US')
 #model_so <- prophet(seasonality.mode = 'multiplicative')
 model_so <- fit.prophet(model_so, data_model_so)
@@ -441,8 +441,8 @@ data_model_we <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-#model_we <- prophet()
-model_we <- prophet(holidays = holidays_df)
+model_we <- prophet()
+#model_we <- prophet(holidays = holidays_df)
 #model_we <- add_country_holidays(model_we, country_name = 'US')
 #model_we <- prophet(seasonality.mode = 'multiplicative')
 model_we <- fit.prophet(model_we, data_model_we)
