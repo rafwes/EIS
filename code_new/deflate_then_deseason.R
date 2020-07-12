@@ -65,9 +65,226 @@ rm(consumption_we)
 
 
 #################
-##### delete down
+##### delete down holidays
 #################
 
+holidays <- prophet:::make_holidays_df(c(seq(2004,2017)),"US")
+
+black_friday <- 
+  holidays %>%
+  filter(holiday == "Thanksgiving") %>% 
+  mutate(holiday = "Black Friday",
+         ds = ds + 1)
+
+black_saturday <- 
+  holidays %>%
+  filter(holiday == "Thanksgiving") %>% 
+  mutate(holiday = "Black Saturday",
+         ds = ds + 2)
+
+black_sunday <- 
+  holidays %>%
+  filter(holiday == "Thanksgiving") %>% 
+  mutate(holiday = "Black Sunday",
+         ds = ds + 3)
+
+black_monday <- 
+  holidays %>%
+  filter(holiday == "Thanksgiving") %>% 
+  mutate(holiday = "Cybermonday",
+         ds = ds + 4)
+
+mothers_day <- 
+  data.frame(
+    ds = as.Date(
+      c("2004-05-09",
+        "2005-05-08",
+        "2006-05-14",
+        "2007-05-13",
+        "2008-05-11",
+        "2009-05-10",
+        "2010-05-09",
+        "2011-05-08",
+        "2012-05-13",
+        "2013-05-12",
+        "2014-05-11",
+        "2015-05-10",
+        "2016-05-08",
+        "2017-05-14"
+      )),
+    holiday = "Mothers Day")
+
+mothers_day_minus1 <- 
+  mothers_day %>%
+  mutate(holiday = "Mothers Day Minus1",
+         ds = ds - 1)
+
+mothers_day_minus2 <- 
+  mothers_day %>%
+  mutate(holiday = "Mothers Day Minus2",
+         ds = ds - 2)
+
+fathers_day <- 
+  data.frame(
+    ds = as.Date(
+      c("2004-06-20",
+        "2005-06-19",
+        "2006-06-18",
+        "2007-06-17",
+        "2008-06-15",
+        "2009-06-21",
+        "2010-06-20",
+        "2011-06-19",
+        "2012-06-17",
+        "2013-06-16",
+        "2014-06-15",
+        "2015-06-21",
+        "2016-06-19",
+        "2017-06-18"
+      )),
+    holiday = "Fathers Day")
+
+fathers_day_minus1 <- 
+  fathers_day %>%
+  mutate(holiday = "Fathers Day Minus1",
+         ds = ds - 1)
+
+fathers_day_minus2 <- 
+  fathers_day %>%
+  mutate(holiday = "Fathers Day Minus2",
+         ds = ds - 2)
+
+
+xmas_saturday_minus1 <- 
+  data.frame(
+    ds = as.Date(
+      c("2004-12-18",
+        "2005-12-17",
+        "2006-12-23",
+        "2007-12-22",
+        "2008-12-20",
+        "2009-12-19",
+        "2010-12-18",
+        "2011-12-17",
+        "2012-12-22",
+        "2013-12-21",
+        "2014-12-20",
+        "2015-12-19",
+        "2016-12-17",
+        "2017-12-23"
+      )),
+    holiday = "Christmas Saturday Minus1")
+
+xmas_saturday_minus2 <- 
+  xmas_saturday_minus1 %>% 
+  mutate(holiday = "Christmas Saturday Minus2",
+         ds = ds - 7)
+
+xmas_saturday_minus3 <- 
+  xmas_saturday_minus1 %>% 
+  mutate(holiday = "Christmas Saturday Minus3",
+         ds = ds - 14)
+
+xmas_sunday_minus1 <- 
+  xmas_saturday_minus1 %>% 
+  mutate(holiday = "Christmas Sunday Minus1",
+         ds = ds + 1)
+
+xmas_sunday_minus2 <- 
+  xmas_sunday_minus1 %>% 
+  mutate(holiday = "Christmas Sunday Minus2",
+         ds = ds - 7)
+
+xmas_sunday_minus3 <- 
+  xmas_sunday_minus1 %>% 
+  mutate(holiday = "Christmas Sunday Minus3",
+         ds = ds - 14)
+
+xmas_saturday_plus1 <- 
+  data.frame(
+    ds = as.Date(
+      c("2005-12-31",
+        "2006-12-30",
+        "2007-12-29",
+        "2008-12-27",
+        "2009-12-26",
+        #"2010-12-25",
+        "2011-12-31",
+        "2012-12-29",
+        "2013-12-28",
+        "2014-12-27",
+        "2015-12-26",
+        "2016-12-31",
+        "2017-12-30"
+      )),
+    holiday = "Christmas Saturday Plus1")
+
+xmas_saturday_plus2 <- 
+  xmas_saturday_plus1 %>% 
+  mutate(holiday = "Christmas Saturday Plus2",
+         ds = ds + 7)
+
+xmas_sunday_plus1 <- 
+  xmas_saturday_plus1 %>% 
+  mutate(holiday = "Christmas Sunday Plus1",
+         ds = ds + 1)
+
+xmas_sunday_plus2 <- 
+  xmas_saturday_plus1 %>% 
+  mutate(holiday = "Christmas Sunday Plus2",
+         ds = ds + 8)
+
+holidays_df <- 
+  bind_rows(holidays,
+            black_friday,
+            black_saturday,
+            black_sunday,
+            black_monday,
+            mothers_day,
+            mothers_day_minus1,
+            mothers_day_minus2,
+            fathers_day,
+            fathers_day_minus1,
+            fathers_day_minus2,
+            xmas_saturday_minus1,
+            xmas_saturday_minus2,
+            xmas_saturday_minus3,
+            xmas_saturday_plus1,
+            xmas_saturday_plus2,
+            xmas_sunday_minus1,
+            xmas_sunday_minus2,
+            xmas_sunday_minus3,
+            xmas_sunday_plus1,
+            xmas_sunday_plus2
+  ) %>% 
+  arrange(ds)
+
+rm(black_friday,
+   black_saturday,
+   black_sunday,
+   black_monday,
+   mothers_day,
+   mothers_day_minus1,
+   mothers_day_minus2,
+   fathers_day,
+   fathers_day_minus1,
+   fathers_day_minus2,
+   xmas_saturday_minus1,
+   xmas_saturday_minus2,
+   xmas_saturday_minus3,
+   xmas_saturday_plus1,
+   xmas_saturday_plus2,
+   xmas_sunday_minus1,
+   xmas_sunday_minus2,
+   xmas_sunday_minus3,
+   xmas_sunday_plus1,
+   xmas_sunday_plus2
+)
+
+
+#################
+##### delete up holidays
+#################
 
 
 # prophet needs single daily consumption value, we shall use mean consumption.
@@ -87,7 +304,9 @@ data_model_ne <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-model_ne <- prophet()
+#model_ne <- prophet()
+model_ne <- prophet(holidays = holidays_df)
+#model_ne <- add_country_holidays(model_ne, country_name = 'US')
 #model_ne <- prophet(seasonality.mode = 'multiplicative')
 model_ne <- fit.prophet(model_ne, data_model_ne)
 data_decomposed_ne <- predict(model_ne)
@@ -130,7 +349,9 @@ data_model_mw <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-model_mw <- prophet()
+#model_mw <- prophet()
+model_mw <- prophet(holidays = holidays_df)
+#model_mw <- add_country_holidays(model_mw, country_name = 'US')
 #model_mw <- prophet(seasonality.mode = 'multiplicative')
 model_mw <- fit.prophet(model_mw, data_model_mw)
 data_decomposed_mw <- predict(model_mw)
@@ -148,7 +369,6 @@ consumption_ds_def_mw <-
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
          TOTAL_SPENT_DS_DEF)
-
 
 
 rm(perc_mw,
@@ -175,7 +395,9 @@ data_model_so <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-model_so <- prophet()
+#model_so <- prophet()
+model_so <- prophet(holidays = holidays_df)
+#model_so <- add_country_holidays(model_so, country_name = 'US')
 #model_so <- prophet(seasonality.mode = 'multiplicative')
 model_so <- fit.prophet(model_so, data_model_so)
 data_decomposed_so <- predict(model_so)
@@ -219,7 +441,9 @@ data_model_we <-
          y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
-model_we <- prophet()
+#model_we <- prophet()
+model_we <- prophet(holidays = holidays_df)
+#model_we <- add_country_holidays(model_we, country_name = 'US')
 #model_we <- prophet(seasonality.mode = 'multiplicative')
 model_we <- fit.prophet(model_we, data_model_we)
 data_decomposed_we <- predict(model_we)
