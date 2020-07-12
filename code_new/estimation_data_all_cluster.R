@@ -17,12 +17,13 @@ library(conflicted)
 
 conflict_prefer("filter", "dplyr")
 conflict_prefer("lag", "dplyr")
+conflict_prefer("lead", "dplyr")
 conflict_prefer("as.Date", "base")
 conflict_prefer("as.Date.numeric", "base")
 conflict_prefer("between", "dplyr")
 
-base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/deflate_then_deseason.R"))
 
@@ -625,74 +626,6 @@ MonthlyEstimationData <- function(x) {
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
   
 }
-
-
-
-
-
-
-
-###############
-#### deletedown
-###############
-
-if (FALSE) {
-
-a <- 
-  rates_log_avg_mthly %>% 
-  mutate_at(vars(starts_with("RATE")), .funs = funs(12*100*(exp(.)-1))) %>% 
-  select(YEAR, MONTH, RATE_TB, RATE_INFL_NE, RATE_TB_DEF_NE) %>% 
-  mutate(TEST = abs(RATE_TB - RATE_INFL_NE - RATE_TB_DEF_NE))
-
-a <- 
-  rates_log_avg_mthly %>% 
-  mutate_at(vars(starts_with("RATE")), .funs = funs(100*(exp(.)-1))) %>% 
-  select(YEAR, MONTH, RATE_TB, RATE_INFL_NE, RATE_TB_DEF_NE)
-
-
-b <- 
-  index_table %>%
-  group_by(YEAR = year(DATE),
-           MONTH = month(DATE)) %>% 
-  summarise(AVG_INDEX_TB = first(INDEX_TB),
-            AVG_INDEX_ST = first(INDEX_ST),
-            AVG_INDEX_CPI_NE = first(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = first(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = first(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = first(INDEX_CPI_WE),
-            AVG_INDEX_CPI_DS_NE = first(INDEX_CPI_DS_NE),
-            AVG_INDEX_CPI_DS_MW = first(INDEX_CPI_DS_MW),
-            AVG_INDEX_CPI_DS_SO = first(INDEX_CPI_DS_SO),
-            AVG_INDEX_CPI_DS_WE = first(INDEX_CPI_DS_WE),
-            AVG_INDEX_TB_DEF_NE = first(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = first(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = first(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = first(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = first(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = first(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = first(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = first(INDEX_ST_DEF_WE),
-            AVG_INDEX_TB_DS_DEF_NE = first(INDEX_TB_DS_DEF_NE),
-            AVG_INDEX_TB_DS_DEF_MW = first(INDEX_TB_DS_DEF_MW),
-            AVG_INDEX_TB_DS_DEF_SO = first(INDEX_TB_DS_DEF_SO),
-            AVG_INDEX_TB_DS_DEF_WE = first(INDEX_TB_DS_DEF_WE),
-            AVG_INDEX_ST_DS_DEF_NE = first(INDEX_ST_DS_DEF_NE),
-            AVG_INDEX_ST_DS_DEF_MW = first(INDEX_ST_DS_DEF_MW),
-            AVG_INDEX_ST_DS_DEF_SO = first(INDEX_ST_DS_DEF_SO),
-            AVG_INDEX_ST_DS_DEF_WE = first(INDEX_ST_DS_DEF_WE))
-}
-
-###############
-#### deleteup
-###############
-
-
-
-
-
-
-
-
 
 estimation_data_1m <-
   bind_rows(MonthlyEstimationData(consumption_ds_def_ne),
