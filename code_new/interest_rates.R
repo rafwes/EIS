@@ -20,6 +20,7 @@
 # 
 # conflict_prefer("filter", "dplyr")
 # conflict_prefer("lag", "dplyr")
+# conflict_prefer("lead", "dplyr")
 # conflict_prefer("as.Date", "base")
 # conflict_prefer("as.Date.numeric", "base")
 # conflict_prefer("between", "dplyr")
@@ -537,7 +538,7 @@ index_table_monthcpi <-
 
 rm(index_table_nocpi)
 
-
+if (FALSE) {
 ## Interpolates CPI index linearly to create daily CPI index, 
 ## since we only have data for the first day of the month.
 index_table <-
@@ -560,6 +561,22 @@ index_table <-
                                   na.rm=FALSE))
 
 rm(index_table_monthcpi)
+}
+
+#######################
+###### on - TEST HARD CPI pls redo properly
+######################
+
+index_table <-
+  index_table_monthcpi %>%
+  mutate_at(vars(starts_with("INDEX_CPI_")), funs(lead(. , n = 1))) %>% 
+  mutate_at(vars(starts_with("INDEX_CPI_")), funs(na.locf(., na.rm=FALSE, fromLast = TRUE))) %>%
+  mutate_at(vars(starts_with("INDEX_CPI_")), funs(100*./.[1]))
+
+rm(index_table_monthcpi)
+######################
+###### off - TEST HARD CPI
+######################
 
 ## Primitives not needed anymore and can be dropped
 rm(cpi_monthly,
@@ -571,20 +588,20 @@ rm(cpi_monthly,
 index_table <- 
   index_table %>% 
   mutate(INDEX_TB_DEF_NE = 100 * INDEX_TB / INDEX_CPI_NE,
-         INDEX_ST_DEF_NE = 100 * INDEX_ST / INDEX_CPI_NE,
          INDEX_TB_DEF_MW = 100 * INDEX_TB / INDEX_CPI_MW,
-         INDEX_ST_DEF_MW = 100 * INDEX_ST / INDEX_CPI_MW,
          INDEX_TB_DEF_SO = 100 * INDEX_TB / INDEX_CPI_SO,
-         INDEX_ST_DEF_SO = 100 * INDEX_ST / INDEX_CPI_SO,
          INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE,
+         INDEX_ST_DEF_NE = 100 * INDEX_ST / INDEX_CPI_NE,
+         INDEX_ST_DEF_MW = 100 * INDEX_ST / INDEX_CPI_MW,
+         INDEX_ST_DEF_SO = 100 * INDEX_ST / INDEX_CPI_SO,
          INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE,
          INDEX_TB_DS_DEF_NE = 100 * INDEX_TB / INDEX_CPI_DS_NE,
-         INDEX_ST_DS_DEF_NE = 100 * INDEX_ST / INDEX_CPI_DS_NE,
          INDEX_TB_DS_DEF_MW = 100 * INDEX_TB / INDEX_CPI_DS_MW,
-         INDEX_ST_DS_DEF_MW = 100 * INDEX_ST / INDEX_CPI_DS_MW,
          INDEX_TB_DS_DEF_SO = 100 * INDEX_TB / INDEX_CPI_DS_SO,
-         INDEX_ST_DS_DEF_SO = 100 * INDEX_ST / INDEX_CPI_DS_SO,
          INDEX_TB_DS_DEF_WE = 100 * INDEX_TB / INDEX_CPI_DS_WE,
+         INDEX_ST_DS_DEF_NE = 100 * INDEX_ST / INDEX_CPI_DS_NE,
+         INDEX_ST_DS_DEF_MW = 100 * INDEX_ST / INDEX_CPI_DS_MW,
+         INDEX_ST_DS_DEF_SO = 100 * INDEX_ST / INDEX_CPI_DS_SO,
          INDEX_ST_DS_DEF_WE = 100 * INDEX_ST / INDEX_CPI_DS_WE) %>%
   drop_na()
 
