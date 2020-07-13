@@ -38,32 +38,32 @@ lag_in_weeks = 1L
 rates_log_avg_wkly <- 
   index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
-  summarise(AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
-            AVG_INDEX_CPI_DS_NE = mean(INDEX_CPI_DS_NE),
-            AVG_INDEX_CPI_DS_MW = mean(INDEX_CPI_DS_MW),
-            AVG_INDEX_CPI_DS_SO = mean(INDEX_CPI_DS_SO),
-            AVG_INDEX_CPI_DS_WE = mean(INDEX_CPI_DS_WE),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE),
-            AVG_INDEX_TB_DS_DEF_NE = mean(INDEX_TB_DS_DEF_NE),
-            AVG_INDEX_TB_DS_DEF_MW = mean(INDEX_TB_DS_DEF_MW),
-            AVG_INDEX_TB_DS_DEF_SO = mean(INDEX_TB_DS_DEF_SO),
-            AVG_INDEX_TB_DS_DEF_WE = mean(INDEX_TB_DS_DEF_WE),
-            AVG_INDEX_ST_DS_DEF_NE = mean(INDEX_ST_DS_DEF_NE),
-            AVG_INDEX_ST_DS_DEF_MW = mean(INDEX_ST_DS_DEF_MW),
-            AVG_INDEX_ST_DS_DEF_SO = mean(INDEX_ST_DS_DEF_SO),
-            AVG_INDEX_ST_DS_DEF_WE = mean(INDEX_ST_DS_DEF_WE)) %>%
+  summarise(AVG_INDEX_TB = last(INDEX_TB),
+            AVG_INDEX_ST = last(INDEX_ST),
+            AVG_INDEX_CPI_NE = last(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = last(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = last(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = last(INDEX_CPI_WE),
+            AVG_INDEX_CPI_DS_NE = last(INDEX_CPI_DS_NE),
+            AVG_INDEX_CPI_DS_MW = last(INDEX_CPI_DS_MW),
+            AVG_INDEX_CPI_DS_SO = last(INDEX_CPI_DS_SO),
+            AVG_INDEX_CPI_DS_WE = last(INDEX_CPI_DS_WE),
+            AVG_INDEX_TB_DEF_NE = last(INDEX_TB_DEF_NE),
+            AVG_INDEX_TB_DEF_MW = last(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = last(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = last(INDEX_TB_DEF_WE),
+            AVG_INDEX_ST_DEF_NE = last(INDEX_ST_DEF_NE),
+            AVG_INDEX_ST_DEF_MW = last(INDEX_ST_DEF_MW),
+            AVG_INDEX_ST_DEF_SO = last(INDEX_ST_DEF_SO),
+            AVG_INDEX_ST_DEF_WE = last(INDEX_ST_DEF_WE),
+            AVG_INDEX_TB_DS_DEF_NE = last(INDEX_TB_DS_DEF_NE),
+            AVG_INDEX_TB_DS_DEF_MW = last(INDEX_TB_DS_DEF_MW),
+            AVG_INDEX_TB_DS_DEF_SO = last(INDEX_TB_DS_DEF_SO),
+            AVG_INDEX_TB_DS_DEF_WE = last(INDEX_TB_DS_DEF_WE),
+            AVG_INDEX_ST_DS_DEF_NE = last(INDEX_ST_DS_DEF_NE),
+            AVG_INDEX_ST_DS_DEF_MW = last(INDEX_ST_DS_DEF_MW),
+            AVG_INDEX_ST_DS_DEF_SO = last(INDEX_ST_DS_DEF_SO),
+            AVG_INDEX_ST_DS_DEF_WE = last(INDEX_ST_DS_DEF_WE)) %>%
   ungroup() %>% 
   arrange(ISOWEEK) %>% 
   transmute(ISOWEEK = ISOWEEK,
@@ -213,7 +213,7 @@ WeeklyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_weeks)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_wkly,
               by = "ISOWEEK") %>%
@@ -222,9 +222,9 @@ WeeklyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -266,32 +266,32 @@ lag_in_weeks = 4L
 rates_log_avg_wkly <- 
   index_table %>%
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
-  summarise(AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
-            AVG_INDEX_CPI_DS_NE = mean(INDEX_CPI_DS_NE),
-            AVG_INDEX_CPI_DS_MW = mean(INDEX_CPI_DS_MW),
-            AVG_INDEX_CPI_DS_SO = mean(INDEX_CPI_DS_SO),
-            AVG_INDEX_CPI_DS_WE = mean(INDEX_CPI_DS_WE),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE),
-            AVG_INDEX_TB_DS_DEF_NE = mean(INDEX_TB_DS_DEF_NE),
-            AVG_INDEX_TB_DS_DEF_MW = mean(INDEX_TB_DS_DEF_MW),
-            AVG_INDEX_TB_DS_DEF_SO = mean(INDEX_TB_DS_DEF_SO),
-            AVG_INDEX_TB_DS_DEF_WE = mean(INDEX_TB_DS_DEF_WE),
-            AVG_INDEX_ST_DS_DEF_NE = mean(INDEX_ST_DS_DEF_NE),
-            AVG_INDEX_ST_DS_DEF_MW = mean(INDEX_ST_DS_DEF_MW),
-            AVG_INDEX_ST_DS_DEF_SO = mean(INDEX_ST_DS_DEF_SO),
-            AVG_INDEX_ST_DS_DEF_WE = mean(INDEX_ST_DS_DEF_WE)) %>%
+  summarise(AVG_INDEX_TB = last(INDEX_TB),
+            AVG_INDEX_ST = last(INDEX_ST),
+            AVG_INDEX_CPI_NE = last(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = last(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = last(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = last(INDEX_CPI_WE),
+            AVG_INDEX_CPI_DS_NE = last(INDEX_CPI_DS_NE),
+            AVG_INDEX_CPI_DS_MW = last(INDEX_CPI_DS_MW),
+            AVG_INDEX_CPI_DS_SO = last(INDEX_CPI_DS_SO),
+            AVG_INDEX_CPI_DS_WE = last(INDEX_CPI_DS_WE),
+            AVG_INDEX_TB_DEF_NE = last(INDEX_TB_DEF_NE),
+            AVG_INDEX_TB_DEF_MW = last(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = last(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = last(INDEX_TB_DEF_WE),
+            AVG_INDEX_ST_DEF_NE = last(INDEX_ST_DEF_NE),
+            AVG_INDEX_ST_DEF_MW = last(INDEX_ST_DEF_MW),
+            AVG_INDEX_ST_DEF_SO = last(INDEX_ST_DEF_SO),
+            AVG_INDEX_ST_DEF_WE = last(INDEX_ST_DEF_WE),
+            AVG_INDEX_TB_DS_DEF_NE = last(INDEX_TB_DS_DEF_NE),
+            AVG_INDEX_TB_DS_DEF_MW = last(INDEX_TB_DS_DEF_MW),
+            AVG_INDEX_TB_DS_DEF_SO = last(INDEX_TB_DS_DEF_SO),
+            AVG_INDEX_TB_DS_DEF_WE = last(INDEX_TB_DS_DEF_WE),
+            AVG_INDEX_ST_DS_DEF_NE = last(INDEX_ST_DS_DEF_NE),
+            AVG_INDEX_ST_DS_DEF_MW = last(INDEX_ST_DS_DEF_MW),
+            AVG_INDEX_ST_DS_DEF_SO = last(INDEX_ST_DS_DEF_SO),
+            AVG_INDEX_ST_DS_DEF_WE = last(INDEX_ST_DS_DEF_WE)) %>%
   ungroup() %>% 
   arrange(ISOWEEK) %>% 
   transmute(ISOWEEK = ISOWEEK,
@@ -440,32 +440,32 @@ rates_log_avg_mthly <-
   index_table %>%
   group_by(YEAR = year(DATE),
            MONTH = month(DATE)) %>% 
-  summarise(AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
-            AVG_INDEX_CPI_DS_NE = mean(INDEX_CPI_DS_NE),
-            AVG_INDEX_CPI_DS_MW = mean(INDEX_CPI_DS_MW),
-            AVG_INDEX_CPI_DS_SO = mean(INDEX_CPI_DS_SO),
-            AVG_INDEX_CPI_DS_WE = mean(INDEX_CPI_DS_WE),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE),
-            AVG_INDEX_TB_DS_DEF_NE = mean(INDEX_TB_DS_DEF_NE),
-            AVG_INDEX_TB_DS_DEF_MW = mean(INDEX_TB_DS_DEF_MW),
-            AVG_INDEX_TB_DS_DEF_SO = mean(INDEX_TB_DS_DEF_SO),
-            AVG_INDEX_TB_DS_DEF_WE = mean(INDEX_TB_DS_DEF_WE),
-            AVG_INDEX_ST_DS_DEF_NE = mean(INDEX_ST_DS_DEF_NE),
-            AVG_INDEX_ST_DS_DEF_MW = mean(INDEX_ST_DS_DEF_MW),
-            AVG_INDEX_ST_DS_DEF_SO = mean(INDEX_ST_DS_DEF_SO),
-            AVG_INDEX_ST_DS_DEF_WE = mean(INDEX_ST_DS_DEF_WE)) %>%
+  summarise(AVG_INDEX_TB = last(INDEX_TB),
+            AVG_INDEX_ST = last(INDEX_ST),
+            AVG_INDEX_CPI_NE = last(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = last(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = last(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = last(INDEX_CPI_WE),
+            AVG_INDEX_CPI_DS_NE = last(INDEX_CPI_DS_NE),
+            AVG_INDEX_CPI_DS_MW = last(INDEX_CPI_DS_MW),
+            AVG_INDEX_CPI_DS_SO = last(INDEX_CPI_DS_SO),
+            AVG_INDEX_CPI_DS_WE = last(INDEX_CPI_DS_WE),
+            AVG_INDEX_TB_DEF_NE = last(INDEX_TB_DEF_NE),
+            AVG_INDEX_TB_DEF_MW = last(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = last(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = last(INDEX_TB_DEF_WE),
+            AVG_INDEX_ST_DEF_NE = last(INDEX_ST_DEF_NE),
+            AVG_INDEX_ST_DEF_MW = last(INDEX_ST_DEF_MW),
+            AVG_INDEX_ST_DEF_SO = last(INDEX_ST_DEF_SO),
+            AVG_INDEX_ST_DEF_WE = last(INDEX_ST_DEF_WE),
+            AVG_INDEX_TB_DS_DEF_NE = last(INDEX_TB_DS_DEF_NE),
+            AVG_INDEX_TB_DS_DEF_MW = last(INDEX_TB_DS_DEF_MW),
+            AVG_INDEX_TB_DS_DEF_SO = last(INDEX_TB_DS_DEF_SO),
+            AVG_INDEX_TB_DS_DEF_WE = last(INDEX_TB_DS_DEF_WE),
+            AVG_INDEX_ST_DS_DEF_NE = last(INDEX_ST_DS_DEF_NE),
+            AVG_INDEX_ST_DS_DEF_MW = last(INDEX_ST_DS_DEF_MW),
+            AVG_INDEX_ST_DS_DEF_SO = last(INDEX_ST_DS_DEF_SO),
+            AVG_INDEX_ST_DS_DEF_WE = last(INDEX_ST_DS_DEF_WE)) %>%
   ungroup() %>%
   arrange(YEAR,
           MONTH) %>%
@@ -606,7 +606,7 @@ MonthlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_months)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_mthly,
               by = c("YEAR","MONTH")) %>%
@@ -618,9 +618,9 @@ MonthlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -668,32 +668,32 @@ rates_log_avg_qrtly <-
   index_table %>%
   group_by(YEAR = year(DATE),
            QUARTER = quarter(DATE)) %>% 
-  summarise(AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
-            AVG_INDEX_CPI_DS_NE = mean(INDEX_CPI_DS_NE),
-            AVG_INDEX_CPI_DS_MW = mean(INDEX_CPI_DS_MW),
-            AVG_INDEX_CPI_DS_SO = mean(INDEX_CPI_DS_SO),
-            AVG_INDEX_CPI_DS_WE = mean(INDEX_CPI_DS_WE),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE),
-            AVG_INDEX_TB_DS_DEF_NE = mean(INDEX_TB_DS_DEF_NE),
-            AVG_INDEX_TB_DS_DEF_MW = mean(INDEX_TB_DS_DEF_MW),
-            AVG_INDEX_TB_DS_DEF_SO = mean(INDEX_TB_DS_DEF_SO),
-            AVG_INDEX_TB_DS_DEF_WE = mean(INDEX_TB_DS_DEF_WE),
-            AVG_INDEX_ST_DS_DEF_NE = mean(INDEX_ST_DS_DEF_NE),
-            AVG_INDEX_ST_DS_DEF_MW = mean(INDEX_ST_DS_DEF_MW),
-            AVG_INDEX_ST_DS_DEF_SO = mean(INDEX_ST_DS_DEF_SO),
-            AVG_INDEX_ST_DS_DEF_WE = mean(INDEX_ST_DS_DEF_WE)) %>%
+  summarise(AVG_INDEX_TB = last(INDEX_TB),
+            AVG_INDEX_ST = last(INDEX_ST),
+            AVG_INDEX_CPI_NE = last(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = last(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = last(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = last(INDEX_CPI_WE),
+            AVG_INDEX_CPI_DS_NE = last(INDEX_CPI_DS_NE),
+            AVG_INDEX_CPI_DS_MW = last(INDEX_CPI_DS_MW),
+            AVG_INDEX_CPI_DS_SO = last(INDEX_CPI_DS_SO),
+            AVG_INDEX_CPI_DS_WE = last(INDEX_CPI_DS_WE),
+            AVG_INDEX_TB_DEF_NE = last(INDEX_TB_DEF_NE),
+            AVG_INDEX_TB_DEF_MW = last(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = last(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = last(INDEX_TB_DEF_WE),
+            AVG_INDEX_ST_DEF_NE = last(INDEX_ST_DEF_NE),
+            AVG_INDEX_ST_DEF_MW = last(INDEX_ST_DEF_MW),
+            AVG_INDEX_ST_DEF_SO = last(INDEX_ST_DEF_SO),
+            AVG_INDEX_ST_DEF_WE = last(INDEX_ST_DEF_WE),
+            AVG_INDEX_TB_DS_DEF_NE = last(INDEX_TB_DS_DEF_NE),
+            AVG_INDEX_TB_DS_DEF_MW = last(INDEX_TB_DS_DEF_MW),
+            AVG_INDEX_TB_DS_DEF_SO = last(INDEX_TB_DS_DEF_SO),
+            AVG_INDEX_TB_DS_DEF_WE = last(INDEX_TB_DS_DEF_WE),
+            AVG_INDEX_ST_DS_DEF_NE = last(INDEX_ST_DS_DEF_NE),
+            AVG_INDEX_ST_DS_DEF_MW = last(INDEX_ST_DS_DEF_MW),
+            AVG_INDEX_ST_DS_DEF_SO = last(INDEX_ST_DS_DEF_SO),
+            AVG_INDEX_ST_DS_DEF_WE = last(INDEX_ST_DS_DEF_WE)) %>%
   ungroup() %>% 
   arrange(YEAR,
           QUARTER) %>% 
@@ -847,7 +847,7 @@ QuarterlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_quarters)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_qrtly,
               by = c("YEAR","QUARTER")) %>%
@@ -864,9 +864,9 @@ QuarterlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 
@@ -909,32 +909,32 @@ lag_in_years = 1L
 rates_log_avg_yearly <- 
   index_table %>%
   group_by(YEAR = year(DATE)) %>% 
-  summarise(AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_ST = mean(INDEX_ST),
-            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
-            AVG_INDEX_CPI_DS_NE = mean(INDEX_CPI_DS_NE),
-            AVG_INDEX_CPI_DS_MW = mean(INDEX_CPI_DS_MW),
-            AVG_INDEX_CPI_DS_SO = mean(INDEX_CPI_DS_SO),
-            AVG_INDEX_CPI_DS_WE = mean(INDEX_CPI_DS_WE),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE),
-            AVG_INDEX_TB_DS_DEF_NE = mean(INDEX_TB_DS_DEF_NE),
-            AVG_INDEX_TB_DS_DEF_MW = mean(INDEX_TB_DS_DEF_MW),
-            AVG_INDEX_TB_DS_DEF_SO = mean(INDEX_TB_DS_DEF_SO),
-            AVG_INDEX_TB_DS_DEF_WE = mean(INDEX_TB_DS_DEF_WE),
-            AVG_INDEX_ST_DS_DEF_NE = mean(INDEX_ST_DS_DEF_NE),
-            AVG_INDEX_ST_DS_DEF_MW = mean(INDEX_ST_DS_DEF_MW),
-            AVG_INDEX_ST_DS_DEF_SO = mean(INDEX_ST_DS_DEF_SO),
-            AVG_INDEX_ST_DS_DEF_WE = mean(INDEX_ST_DS_DEF_WE)) %>%
+  summarise(AVG_INDEX_TB = last(INDEX_TB),
+            AVG_INDEX_ST = last(INDEX_ST),
+            AVG_INDEX_CPI_NE = last(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = last(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = last(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = last(INDEX_CPI_WE),
+            AVG_INDEX_CPI_DS_NE = last(INDEX_CPI_DS_NE),
+            AVG_INDEX_CPI_DS_MW = last(INDEX_CPI_DS_MW),
+            AVG_INDEX_CPI_DS_SO = last(INDEX_CPI_DS_SO),
+            AVG_INDEX_CPI_DS_WE = last(INDEX_CPI_DS_WE),
+            AVG_INDEX_TB_DEF_NE = last(INDEX_TB_DEF_NE),
+            AVG_INDEX_TB_DEF_MW = last(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = last(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = last(INDEX_TB_DEF_WE),
+            AVG_INDEX_ST_DEF_NE = last(INDEX_ST_DEF_NE),
+            AVG_INDEX_ST_DEF_MW = last(INDEX_ST_DEF_MW),
+            AVG_INDEX_ST_DEF_SO = last(INDEX_ST_DEF_SO),
+            AVG_INDEX_ST_DEF_WE = last(INDEX_ST_DEF_WE),
+            AVG_INDEX_TB_DS_DEF_NE = last(INDEX_TB_DS_DEF_NE),
+            AVG_INDEX_TB_DS_DEF_MW = last(INDEX_TB_DS_DEF_MW),
+            AVG_INDEX_TB_DS_DEF_SO = last(INDEX_TB_DS_DEF_SO),
+            AVG_INDEX_TB_DS_DEF_WE = last(INDEX_TB_DS_DEF_WE),
+            AVG_INDEX_ST_DS_DEF_NE = last(INDEX_ST_DS_DEF_NE),
+            AVG_INDEX_ST_DS_DEF_MW = last(INDEX_ST_DS_DEF_MW),
+            AVG_INDEX_ST_DS_DEF_SO = last(INDEX_ST_DS_DEF_SO),
+            AVG_INDEX_ST_DS_DEF_WE = last(INDEX_ST_DS_DEF_WE)) %>%
   ungroup() %>% 
   arrange(YEAR) %>% 
   transmute(YEAR,
@@ -1086,7 +1086,7 @@ YearlyEstimationData <- function(x) {
            - log(lag(SUM_SPENT_DS_DEF,
                      n = lag_in_years)),
            Z1 = 
-             lag(Y, n = 1)) %>%
+             lag(Y, n = 2)) %>%
     #na.exclude() %>%
     left_join(rates_log_avg_yearly,
               by = c("YEAR")) %>%
@@ -1100,9 +1100,9 @@ YearlyEstimationData <- function(x) {
               X_TB = !!RATE_TB_DEF_REGION,
               X_ST = !!RATE_ST_DEF_REGION,
               Z1 = Z1,
-              Z2_TB = lag(RATE_TB, n = 1), 
-              Z2_ST = lag(RATE_ST, n = 1),
-              Z3 = lag(!!RATE_INFL_REGION, n = 1)) %>% 
+              Z2_TB = lag(RATE_TB, n = 2), 
+              Z2_ST = lag(RATE_ST, n = 2),
+              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 
