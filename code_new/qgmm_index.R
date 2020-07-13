@@ -7,10 +7,11 @@ library(tidyverse)
 datasetTypes <- c("weekly_1w",
                   "weekly_4w",
                   "monthly_1m",
-                  "quarterly_1q"
+                  "quarterly_1q",
+                  "yearly_1y"
                   )
 
-#datasetTypes <- c("monthly_1m")
+#datasetTypes <- c("yearly_1y")
 
 
 # datasetTypes <- c("weekly_ds_1w",
