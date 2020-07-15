@@ -538,7 +538,7 @@ index_table_monthcpi <-
 
 rm(index_table_nocpi)
 
-if (FALSE) {
+#if (FALSE) {
 ## Interpolates CPI index linearly to create daily CPI index, 
 ## since we only have data for the first day of the month.
 index_table <-
@@ -561,9 +561,9 @@ index_table <-
                                   na.rm=FALSE))
 
 rm(index_table_monthcpi)
-}
+#}
 
-#if (FALSE) {
+if (FALSE) {
 #######################
 ###### on - TEST HARD CPI pls redo properly
 ######################
@@ -578,7 +578,7 @@ rm(index_table_monthcpi)
 ######################
 ###### off - TEST HARD CPI
 ######################
-#}
+}
 
 ## Primitives not needed anymore and can be dropped
 rm(cpi_monthly,

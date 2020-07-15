@@ -13,13 +13,10 @@ datasetTypes <- c("weekly_1w",
 
 #datasetTypes <- c("yearly_1y")
 
-
-# datasetTypes <- c("weekly_ds_1w",
-#                   "weekly_ds_4w",
-#                   "monthly_ds_1m",
-#                   "quarterly_ds_1q"
-# )
-
+datasetTypes <- c("monthly_1m",
+                  "quarterly_1q",
+                  "yearly_1y"
+                  )
 
 
 # Set path
