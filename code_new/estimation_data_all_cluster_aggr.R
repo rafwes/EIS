@@ -28,6 +28,7 @@ base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
 
+lag_in_months = 12L
 
 index_table_monthly <- 
   index_table %>% 
@@ -74,7 +75,7 @@ x %>%
                   INDEX_CPI,
                   INDEX_TB_DEF,
                   INDEX_ST_DEF),
-                ~ log(.) - log(lag(., n = 1)), )) %>%
+                ~ log(.) - log(lag(., n = lag_in_months)), )) %>%
   # twice lagged instruments
   mutate(across(c(SUM_SPENT_DEF,
                   INDEX_TB,
@@ -138,6 +139,8 @@ rm(estimation_data_1m, zz, index_table_monthly)
 ###############################################################################################
 
 
+lag_in_quarters = 4L
+
 index_table_quarterly <- 
   index_table %>% 
   group_by(YEAR = year(DATE),
@@ -183,7 +186,7 @@ QuarterlyEstimationData <- function(x) {
                     INDEX_CPI,
                     INDEX_TB_DEF,
                     INDEX_ST_DEF),
-                  ~ log(.) - log(lag(., n = 1)), )) %>%
+                  ~ log(.) - log(lag(., n = lag_in_quarters)), )) %>%
     # twice lagged instruments
     mutate(across(c(SUM_SPENT_DEF,
                     INDEX_TB,
@@ -252,6 +255,7 @@ rm(estimation_data_1q, zz, index_table_quarterly)
 
 ###############################################################################################
 
+lag_in_years = 1L
 
 index_table_yearly <- 
   index_table %>% 
@@ -294,7 +298,7 @@ YearlyEstimationData <- function(x) {
                     INDEX_CPI,
                     INDEX_TB_DEF,
                     INDEX_ST_DEF),
-                  ~ log(.) - log(lag(., n = 1)), )) %>%
+                  ~ log(.) - log(lag(., n = lag_in_years)), )) %>%
     # twice lagged instruments
     mutate(across(c(SUM_SPENT_DEF,
                     INDEX_TB,
