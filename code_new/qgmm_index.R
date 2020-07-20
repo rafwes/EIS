@@ -4,14 +4,14 @@ library(tidyverse)
 
 # Parameter to set
 
-datasetTypes <- c("weekly_1w",
-                  "weekly_4w",
-                  "monthly_1m",
-                  "quarterly_1q",
-                  "yearly_1y"
-                  )
+# datasetTypes <- c("weekly_1w",
+#                   "weekly_4w",
+#                   "monthly_1m",
+#                   "quarterly_1q",
+#                   "yearly_1y"
+#                   )
 
-#datasetTypes <- c("yearly_1y")
+# datasetTypes <- c("yearly_1y")
 
 datasetTypes <- c("monthly_1m",
                   "quarterly_1q",

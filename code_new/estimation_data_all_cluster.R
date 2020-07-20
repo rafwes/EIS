@@ -27,6 +27,8 @@ base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 
 source(file.path(base_path,"EIS/code_new/deflate_then_deseason.R"))
 
+if (FALSE) {
+
 #####################################################################
 ## ESTIMATIONS FOR 1 WEEKS 
 #####################################################################
@@ -426,13 +428,13 @@ rm(estimation_data_4w,
    rates_log_avg_wkly)
 
 
-
+}
 
 #####################################################################
 ## ESTIMATIONS FOR 1 MONTH 
 #####################################################################
 
-lag_in_months = 1L
+lag_in_months = 12L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over over "lag_in_months"
@@ -660,7 +662,7 @@ rm(estimation_data_1m,
 #####################################################################
 
 
-lag_in_quarters = 1L
+lag_in_quarters = 4L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_quarters"
