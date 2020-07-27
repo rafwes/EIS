@@ -4,28 +4,30 @@ library(tidyverse)
 
 # Parameter to set
 
-# datasetTypes <- c("weekly_1w",
-#                   "weekly_4w",
-#                   "monthly_1m",
-#                   "quarterly_1q",
-#                   "yearly_1y"
-#                   )
-
-# datasetTypes <- c("yearly_1y")
-
-datasetTypes <- c("monthly_1m",
+datasetTypes <- c("weekly_1w",
+                  "weekly_4w",
+                  "monthly_1m",
                   "quarterly_1q",
                   "yearly_1y"
                   )
 
+# datasetTypes <- c("quarterly_1q")
+
+# datasetTypes <- c("monthly_1m",
+#                   "quarterly_1q",
+#                   "yearly_1y"
+#                   )
+
+
+
 
 # Set path
 base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # Label rates
-#rateTypes <- c("TB", "ST")
-rateTypes <- c("TB")
+rateTypes <- c("TB", "ST")
+#rateTypes <- c("TB")
 # Label Period
 period <- c("ALL")
 # The code was originally set up to split the data as desired
@@ -55,6 +57,8 @@ for (ii in 1:length(rateTypes)) {
   
   rateVar <- rateTypes[ii]
   
+  cat("\n", "Rate type is", rateVar, ":\n")
+  
   # Loop over data splits
   # Currently there is nothing to loop since we 
   # are looking at AL periods
@@ -80,9 +84,9 @@ for (ii in 1:length(rateTypes)) {
     D <- as.matrix(eval(parse(text=paste0("estimationDataSubset$X_",rateVar))))
     
     # Instruments
-    Z1.formula <- as.formula(paste0("Y~Z1+Z2_", rateVar, "+Z3"))
+    Z1.formula <- as.formula(paste0("Y~Z1+Z2_", rateVar, "+Z3+Z4_", rateVar))
     Z.inst1 <- lm(Z1.formula, data=estimationDataSubset)$fitted
-    Z2.formula <- as.formula(paste0("X_",rateVar, "~Z1+Z2_", rateVar, "+Z3"))
+    Z2.formula <- as.formula(paste0("X_",rateVar, "~Z1+Z2_", rateVar, "+Z3+Z4_", rateVar))
     Z.inst2 <- lm(Z2.formula, data=estimationDataSubset)$fitted
     
     # Combine Instruments
@@ -93,7 +97,7 @@ for (ii in 1:length(rateTypes)) {
     X <- cbind(D, X.excl)
     
     # Pooled Panel to get starting point
-    PLM.formula <- as.formula(paste0("Y~X_", rateVar, " | Z1 + Z2_", rateVar, "+Z3"))
+    PLM.formula <- as.formula(paste0("Y~X_", rateVar, " | Z1 + Z2_", rateVar, "+Z3+Z4_", rateVar))
     PLM <- plm(PLM.formula, data=estimationDataSubset, model='pooling', index=c('HOUSEHOLD', 'DATE'))
     summary(PLM)
     StartingPointReg <- c(PLM$coef[2], PLM$coef[1])

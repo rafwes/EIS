@@ -22,12 +22,11 @@ conflict_prefer("as.Date", "base")
 conflict_prefer("as.Date.numeric", "base")
 conflict_prefer("between", "dplyr")
 
-base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/deflate_then_deseason.R"))
 
-if (FALSE) {
 
 #####################################################################
 ## ESTIMATIONS FOR 1 WEEKS 
@@ -42,6 +41,7 @@ rates_log_avg_wkly <-
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
   summarise(AVG_INDEX_TB = mean(INDEX_TB),
             AVG_INDEX_ST = mean(INDEX_ST),
+            AVG_INDEX_DY = mean(INDEX_DY),
             AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
             AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
             AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
@@ -76,6 +76,10 @@ rates_log_avg_wkly <-
             RATE_ST = 
               log(AVG_INDEX_ST) 
             - log(lag(AVG_INDEX_ST,
+                      n = lag_in_weeks)),
+            RATE_DY = 
+              log(AVG_INDEX_DY) 
+            - log(lag(AVG_INDEX_DY,
                       n = lag_in_weeks)),
             RATE_INFL_NE =
               log(AVG_INDEX_CPI_NE) 
@@ -226,7 +230,9 @@ WeeklyEstimationData <- function(x) {
               Z1 = Z1,
               Z2_TB = lag(RATE_TB, n = 2), 
               Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z3 = lag(!!RATE_INFL_REGION, n = 2),
+              Z4_TB = 0,
+              Z4_ST = RATE_DY) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -244,16 +250,25 @@ write_csv(estimation_data_1w,
           file.path(base_path, 
                     "csv_output/estimation_data_weekly_1w.csv"))
 
-zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3 + Z4_TB,
           data = estimation_data_1w,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 1 Week")
-print("======================================================")
-print(summary(zz))
+zz_st <- plm(Y ~ X_ST | Z1 + Z2_ST + Z3 + Z4_ST,
+             data = estimation_data_1w,
+             model = "pooling",
+             index = c("HOUSEHOLD", "DATE"))
+
+cat("==============================================================\n")
+cat("Estimation for 1 Week\n")
+cat("-------------------------- TBILLS ----------------------------\n")
+print(summary(zz_tb))
+cat("-------------------------- STOCKS ----------------------------\n")
+print(summary(zz_st))
+
 rm(estimation_data_1w,
-   zz,
+   zz_tb, zz_st,
    rates_log_avg_wkly)
 
 
@@ -270,6 +285,7 @@ rates_log_avg_wkly <-
   group_by(ISOWEEK = ISOweek(DATE)) %>% 
   summarise(AVG_INDEX_TB = mean(INDEX_TB),
             AVG_INDEX_ST = mean(INDEX_ST),
+            AVG_INDEX_DY = mean(INDEX_DY),
             AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
             AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
             AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
@@ -304,6 +320,10 @@ rates_log_avg_wkly <-
             RATE_ST = 
               log(AVG_INDEX_ST) 
             - log(lag(AVG_INDEX_ST,
+                      n = lag_in_weeks)),
+            RATE_DY = 
+              log(AVG_INDEX_DY) 
+            - log(lag(AVG_INDEX_DY,
                       n = lag_in_weeks)),
             RATE_INFL_NE =
               log(AVG_INDEX_CPI_NE) 
@@ -415,26 +435,34 @@ write_csv(estimation_data_4w,
           file.path(base_path, 
                     "csv_output/estimation_data_weekly_4w.csv"))
 
-zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3 + Z4_TB,
           data = estimation_data_4w,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 4 Week")
-print("======================================================")
-print(summary(zz))
+zz_st <- plm(Y ~ X_ST | Z1 + Z2_ST + Z3 + Z4_ST,
+             data = estimation_data_4w,
+             model = "pooling",
+             index = c("HOUSEHOLD", "DATE"))
+
+cat("==============================================================\n")
+cat("Estimation for 4 Weeks\n")
+cat("-------------------------- TBILLS ----------------------------\n")
+print(summary(zz_tb))
+cat("-------------------------- STOCKS ----------------------------\n")
+print(summary(zz_st))
+
 rm(estimation_data_4w,
-   zz,
+   zz_tb, zz_st,
    rates_log_avg_wkly)
 
-
-}
 
 #####################################################################
 ## ESTIMATIONS FOR 1 MONTH 
 #####################################################################
 
 lag_in_months = 12L
+lag_in_months = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over over "lag_in_months"
@@ -444,6 +472,7 @@ rates_log_avg_mthly <-
            MONTH = month(DATE)) %>% 
   summarise(AVG_INDEX_TB = mean(INDEX_TB),
             AVG_INDEX_ST = mean(INDEX_ST),
+            AVG_INDEX_DY = mean(INDEX_DY),
             AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
             AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
             AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
@@ -480,6 +509,10 @@ rates_log_avg_mthly <-
             RATE_ST = 
               log(AVG_INDEX_ST) 
             - log(lag(AVG_INDEX_ST,
+                      n = lag_in_months)),
+            RATE_DY = 
+              log(AVG_INDEX_DY) 
+            - log(lag(AVG_INDEX_DY,
                       n = lag_in_months)),
             RATE_INFL_NE =
               log(AVG_INDEX_CPI_NE) 
@@ -622,7 +655,9 @@ MonthlyEstimationData <- function(x) {
               Z1 = Z1,
               Z2_TB = lag(RATE_TB, n = 2), 
               Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z3 = lag(!!RATE_INFL_REGION, n = 2),
+              Z4_TB = 0,
+              Z4_ST = RATE_DY) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE)
@@ -640,18 +675,26 @@ write_csv(estimation_data_1m,
           file.path(base_path, 
                     "csv_output/estimation_data_monthly_1m.csv"))
 
-zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3 + Z4_TB,
           data = estimation_data_1m,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 1 Month")
-print("======================================================")
-print(summary(zz))
-rm(estimation_data_1m,
-   zz,
-   rates_log_avg_mthly)
+zz_st <- plm(Y ~ X_ST | Z1 + Z2_ST + Z3 + Z4_ST,
+             data = estimation_data_1m,
+             model = "pooling",
+             index = c("HOUSEHOLD", "DATE"))
 
+cat("==============================================================\n")
+cat("Estimation for 1 Month\n")
+cat("-------------------------- TBILLS ----------------------------\n")
+print(summary(zz_tb))
+cat("-------------------------- STOCKS ----------------------------\n")
+print(summary(zz_st))
+
+rm(estimation_data_1m,
+   zz_tb, zz_st,
+   rates_log_avg_mthly)
 
 
 
@@ -663,6 +706,7 @@ rm(estimation_data_1m,
 
 
 lag_in_quarters = 4L
+lag_in_quarters = 1L
 
 # For each week, take the average observed tbill/stock index
 # and create a log rate over "lag_in_quarters"
@@ -672,6 +716,7 @@ rates_log_avg_qrtly <-
            QUARTER = quarter(DATE)) %>% 
   summarise(AVG_INDEX_TB = mean(INDEX_TB),
             AVG_INDEX_ST = mean(INDEX_ST),
+            AVG_INDEX_DY = mean(INDEX_DY),
             AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
             AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
             AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
@@ -708,6 +753,10 @@ rates_log_avg_qrtly <-
             RATE_ST = 
               log(AVG_INDEX_ST) 
             - log(lag(AVG_INDEX_ST,
+                      n = lag_in_quarters)),
+            RATE_DY = 
+              log(AVG_INDEX_DY) 
+            - log(lag(AVG_INDEX_DY,
                       n = lag_in_quarters)),
             RATE_INFL_NE =
               log(AVG_INDEX_CPI_NE) 
@@ -868,7 +917,9 @@ QuarterlyEstimationData <- function(x) {
               Z1 = Z1,
               Z2_TB = lag(RATE_TB, n = 2), 
               Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z3 = lag(!!RATE_INFL_REGION, n = 2),
+              Z4_TB = 0,
+              Z4_ST = RATE_DY) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 
@@ -886,16 +937,25 @@ write_csv(estimation_data_1q,
           file.path(base_path, 
                     "csv_output/estimation_data_quarterly_1q.csv"))
 
-zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3 + Z4_TB,
           data = estimation_data_1q,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 1 Quarter")
-print("======================================================")
-print(summary(zz))
+zz_st <- plm(Y ~ X_ST | Z1 + Z2_ST + Z3 + Z4_ST,
+             data = estimation_data_1q,
+             model = "pooling",
+             index = c("HOUSEHOLD", "DATE"))
+
+cat("==============================================================\n")
+cat("Estimation for 1 Quarter\n")
+cat("-------------------------- TBILLS ----------------------------\n")
+print(summary(zz_tb))
+cat("-------------------------- STOCKS ----------------------------\n")
+print(summary(zz_st))
+
 rm(estimation_data_1q,
-   zz,
+   zz_tb, zz_st,
    rates_log_avg_qrtly)
 
 
@@ -913,6 +973,7 @@ rates_log_avg_yearly <-
   group_by(YEAR = year(DATE)) %>% 
   summarise(AVG_INDEX_TB = mean(INDEX_TB),
             AVG_INDEX_ST = mean(INDEX_ST),
+            AVG_INDEX_DY = mean(INDEX_DY),
             AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
             AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
             AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
@@ -947,6 +1008,10 @@ rates_log_avg_yearly <-
             RATE_ST = 
               log(AVG_INDEX_ST) 
             - log(lag(AVG_INDEX_ST,
+                      n = lag_in_years)),
+            RATE_DY = 
+              log(AVG_INDEX_DY) 
+            - log(lag(AVG_INDEX_DY,
                       n = lag_in_years)),
             RATE_INFL_NE =
               log(AVG_INDEX_CPI_NE) 
@@ -1104,7 +1169,9 @@ YearlyEstimationData <- function(x) {
               Z1 = Z1,
               Z2_TB = lag(RATE_TB, n = 2), 
               Z2_ST = lag(RATE_ST, n = 2),
-              Z3 = lag(!!RATE_INFL_REGION, n = 2)) %>% 
+              Z3 = lag(!!RATE_INFL_REGION, n = 2),
+              Z4_TB = 0,
+              Z4_ST = RATE_DY) %>% 
     na.exclude() %>% 
     ungroup() %>%
     rename(HOUSEHOLD = HOUSEHOLD_CODE) 
@@ -1122,14 +1189,39 @@ write_csv(estimation_data_1y,
           file.path(base_path, 
                     "csv_output/estimation_data_yearly_1y.csv"))
 
-zz <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3 + Z4_TB,
           data = estimation_data_1y,
           model = "pooling",
           index = c("HOUSEHOLD", "DATE"))
 
-print("Estimation for 1 Year")
-print("======================================================")
-print(summary(zz))
+zz_st <- plm(Y ~ X_ST | Z1 + Z2_ST + Z3 + Z4_ST,
+             data = estimation_data_1y,
+             model = "pooling",
+             index = c("HOUSEHOLD", "DATE"))
+
+cat("==============================================================\n")
+cat("Estimation for 1 Year\n")
+cat("-------------------------- TBILLS ----------------------------\n")
+print(summary(zz_tb))
+cat("-------------------------- STOCKS ----------------------------\n")
+print(summary(zz_st))
+
 rm(estimation_data_1y,
-   zz,
+   zz_tb, zz_st,
    rates_log_avg_yearly)
+
+
+
+
+
+
+if (FALSE) {
+  
+  mutate(across(c(SUM_SPENT_DEF,
+                  INDEX_TB,
+                  INDEX_ST,
+                  INDEX_CPI,
+                  INDEX_TB_DEF,
+                  INDEX_ST_DEF),
+                ~ log(.) - log(lag(., n = lag_in_years)), ))
+}
