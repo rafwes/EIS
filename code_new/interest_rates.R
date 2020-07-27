@@ -1,32 +1,32 @@
 ## This code imports daily T-Bill rates, SP500 stock prices and
 ## regional CPI data to create deflated indexes for stocks and t-bills.
 
-# rm(list=ls())
-# 
-# library(dplyr)
-# library(tidyr)
-# library(tibble)
-# library(readr)
-# library(stringr)
-# library(zoo)
-# library(reshape2)
-# library(ISOweek)
-# library(lubridate)
-# library(prophet)
-# library(plm)
-# library(conflicted)
-# #library(grid)
-# #library(gridExtra)
-# 
-# conflict_prefer("filter", "dplyr")
-# conflict_prefer("lag", "dplyr")
-# conflict_prefer("lead", "dplyr")
-# conflict_prefer("as.Date", "base")
-# conflict_prefer("as.Date.numeric", "base")
-# conflict_prefer("between", "dplyr")
-# 
-# #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-# base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+rm(list=ls())
+
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(readr)
+library(stringr)
+library(zoo)
+library(reshape2)
+library(ISOweek)
+library(lubridate)
+library(prophet)
+library(plm)
+library(conflicted)
+#library(grid)
+#library(gridExtra)
+
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+conflict_prefer("lead", "dplyr")
+conflict_prefer("as.Date", "base")
+conflict_prefer("as.Date.numeric", "base")
+conflict_prefer("between", "dplyr")
+
+#base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 print("Let's Start")
 step=as.integer(1)
@@ -57,7 +57,7 @@ raw_tbill_daily <-
 ## amount of the discount, and a 360-day year.
 
 
-## Imports Daily S&P500 Stock Prices
+## Imports Daily S&P500 Stock Index
 ## Description: S&P 500 (^GSPC)
 ## Frequency: Daily
 ## Unit: USD
@@ -68,6 +68,19 @@ raw_tbill_daily <-
 
 raw_stock_prices <-
   read.csv(file.path(base_path,"EIS/data_raw/yahoo_sp500_stockprices_daily.csv"),
+           colClasses = c("Date", rep("numeric", 6)))
+
+## Imports Daily S&P500 Total Return Index
+## Description: S&P 500 (TR) (^SP500TR)
+## Frequency: Daily
+## Unit: USD
+## Dates: January 2003 - December 2016
+## Source: https://finance.yahoo.com/quote/^SP500TR/history
+## Primary Source: ICE Data Services
+## Retrival Date: July 26, 2020
+
+raw_total_return <-
+  read.csv(file.path(base_path,"EIS/data_raw/yahoo_sp500_totalreturn_daily.csv"),
            colClasses = c("Date", rep("numeric", 6)))
 
 
@@ -127,24 +140,28 @@ step <- step + 1
 ## After this section we shall have saved all raw data into
 ## coherent standardized dataframes and dropped unneeded dataframes.
 
-## Drops all stock data columns except "Date" and "Adjusted Close"
-raw_stocks_daily_close <-
+## Drops all stock data columns except "Date" and "Adjusted Close" and
+## fills missing dates of stock data (weekends and holidays) with last available data
+stocks_daily <-
   raw_stock_prices %>% 
-  select(Date, Adj.Close)
-
-rm(raw_stock_prices)
-
-colnames(raw_stocks_daily_close) <- 
-  c("DATE", "CLOSE")
-
-## Creates missing stock prices dates (weekends and holidays) with last available data from column CLOSE
-stocks_daily <- 
-  raw_stocks_daily_close %>% 
+  select(Date, Adj.Close) %>% 
+  rename("DATE" = "Date",
+         "CLOSE" = "Adj.Close") %>% 
   complete(DATE = seq.Date(min(DATE), 
                            max(DATE), 
                            by = "day")) %>% fill(CLOSE)
 
-rm(raw_stocks_daily_close)
+tr_daily <-
+  raw_total_return %>% 
+  select(Date, Adj.Close) %>% 
+  rename("DATE" = "Date",
+         "CLOSE" = "Adj.Close") %>% 
+  complete(DATE = seq.Date(min(DATE), 
+                           max(DATE), 
+                           by = "day")) %>% fill(CLOSE)
+
+rm(raw_stock_prices, raw_total_return)
+
 
 ## Creates missing daily t-bill rate with last available data from column RATE_360 
 tbill_daily <- 
@@ -245,7 +262,6 @@ data_decomposed_we <- predict(model_we)
 
 
 # reconstruct de-seasonal trip data from trend and residuals
-
 cpi_ds_ne <- 
   data_decomposed_ne %>%
   left_join(data_model_ne, by="ds") %>% 
@@ -387,8 +403,7 @@ rm(MonthlySeasonalDummiesLM,
 
 }
 
-if (FALSE)
-{
+if (FALSE) {
 
 library(ggplot2)
   
@@ -488,6 +503,9 @@ stocks_daily <-
   stocks_daily %>% 
   mutate(INDEX_ST = 100 * CLOSE / CLOSE[DATE == base_date])
 
+tr_daily <- 
+  tr_daily %>% 
+  mutate(INDEX_TR = 100 * CLOSE / CLOSE[DATE == base_date])
 
 ## Creates a monthly CPI index per region.
 cpi_monthly <- 
@@ -512,13 +530,19 @@ step <- step+1
 ## stocks and t-bills for each geographic region of interest
 
 
-## From now on lets only work with indexes
+## The dividend yield (DY) index is calculated as the excess of 
+## total returns discounted by stock prices.
 index_table_nocpi <- 
-  left_join(tbill_daily %>% 
-              select(DATE, INDEX_TB), 
-            stocks_daily %>% 
-              select(DATE, INDEX_ST),
-            by = "DATE")
+  tbill_daily %>% 
+  left_join(stocks_daily,
+            by = "DATE") %>% 
+  left_join(tr_daily,
+            by = "DATE") %>% 
+  mutate(INDEX_DY = 100 * INDEX_TR / INDEX_ST) %>% 
+  select(DATE,
+         INDEX_TB,
+         INDEX_ST,
+         INDEX_DY)
 
 ## Since CPI indexes come monthly, not daily we need to 
 ## match monthly CPI indexes to the first of month
@@ -583,6 +607,7 @@ rm(index_table_monthcpi)
 ## Primitives not needed anymore and can be dropped
 rm(cpi_monthly,
    stocks_daily,
+   tr_daily,
    tbill_daily)
 
 ## Deflates T-Bills and Stock Indexes, cropping last month for
