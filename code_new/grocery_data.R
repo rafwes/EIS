@@ -184,6 +184,7 @@ colnames(retailers) <- retailers_cols_new
 
 ## Import all consumption data over the years
 for (i in 1:length(years)) {
+#i <- 6L
   
   # Select year
   year <- years[i]
@@ -239,7 +240,7 @@ for (i in 1:length(years)) {
   # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
-    filter(CHANNEL_TYPE == "Grocery") %>% 
+    #filter(CHANNEL_TYPE == "Grocery") %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
            PANEL_YEAR, 
@@ -253,11 +254,13 @@ for (i in 1:length(years)) {
   
   # Gather region from panelists and join to consumption
   consumption <-
-    consumption %>% 
+    consumption %>%
     left_join(panelists_year %>% 
+                #filter(HOUSEHOLD_INCOME >= 25) %>%
                 select(HOUSEHOLD_CODE,
                        FIPS_STATE_DESCR),
-              by = "HOUSEHOLD_CODE")
+              by = "HOUSEHOLD_CODE") %>% 
+    drop_na()
   
   # We need to deflate consumption by region, so separate them
   consumption_ne_year <- 
