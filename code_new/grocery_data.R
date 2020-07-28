@@ -240,7 +240,7 @@ for (i in 1:length(years)) {
   # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
-    filter(CHANNEL_TYPE == "Grocery") %>% 
+    #filter(CHANNEL_TYPE == "Grocery") %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
            PANEL_YEAR, 
