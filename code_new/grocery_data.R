@@ -127,6 +127,36 @@ west <-
     "OR", "CA", "AK", 
     "HI")
 
+# Retail channels for non-durable consumption
+non_durables <- 
+  c("Grocery",
+    "Drug Store",
+    "Convenience Store",
+    "Discount Store",
+    "Dollar Store",
+    "Gas Mini Mart",
+    "Pet Store",
+    "Warehouse Club",
+    "Bakery",
+    "Health Food Store",
+    "Liquor Store",
+    "Apparel Stores",
+    "Fruit Stand",
+    "Coop/Farm/Feed",
+    "Candy Store",
+    "Beverage Store",
+    "Dairy Store",
+    "Coffee Store/Gourmet Coffee Sh",
+    "Vending Machine",
+    "Restaurant",
+    "Cheese Stores",
+    "Delicatessen",
+    "Butcher",
+    "Quick Serve Restaurants",
+    "Fish Market",
+    "Pizzeria",
+    "Bodega")
+
 
 panelists_cols_type <- 
   cols(
@@ -240,7 +270,8 @@ for (i in 1:length(years)) {
   # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
-    filter(CHANNEL_TYPE == "Grocery") %>% 
+    #filter(CHANNEL_TYPE == "Grocery") %>% 
+    filter(CHANNEL_TYPE %in% non_durables) %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
            PANEL_YEAR, 
