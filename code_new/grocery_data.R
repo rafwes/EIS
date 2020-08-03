@@ -140,21 +140,16 @@ non_durables <-
     "Bakery",
     "Health Food Store",
     "Liquor Store",
-    "Apparel Stores",
     "Fruit Stand",
     "Coop/Farm/Feed",
     "Candy Store",
     "Beverage Store",
     "Dairy Store",
-    "Coffee Store/Gourmet Coffee Sh",
     "Vending Machine",
-    "Restaurant",
     "Cheese Stores",
     "Delicatessen",
     "Butcher",
-    "Quick Serve Restaurants",
     "Fish Market",
-    "Pizzeria",
     "Bodega")
 
 
@@ -270,8 +265,8 @@ for (i in 1:length(years)) {
   # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
-    #filter(CHANNEL_TYPE == "Grocery") %>% 
-    filter(CHANNEL_TYPE %in% non_durables) %>% 
+    filter(CHANNEL_TYPE == "Grocery") %>% 
+    #filter(CHANNEL_TYPE %in% non_durables) %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
            PANEL_YEAR, 

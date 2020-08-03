@@ -538,7 +538,9 @@ index_table_nocpi <-
             by = "DATE") %>% 
   left_join(tr_daily,
             by = "DATE") %>% 
-  mutate(INDEX_DY = 100 * INDEX_TR / INDEX_ST) %>% 
+  mutate(INDEX_DY = 100 * INDEX_TR / INDEX_ST) %>%
+  # use total return as stock return
+  mutate(INDEX_ST = INDEX_TR) %>% 
   select(DATE,
          INDEX_TB,
          INDEX_ST,
