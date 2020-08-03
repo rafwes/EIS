@@ -27,7 +27,7 @@ base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 
 # Label rates
 rateTypes <- c("TB", "ST")
-#rateTypes <- c("TB")
+rateTypes <- c("TB")
 # Label Period
 period <- c("ALL")
 # The code was originally set up to split the data as desired
