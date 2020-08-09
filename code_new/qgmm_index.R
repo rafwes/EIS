@@ -163,7 +163,7 @@ for (ii in 1:length(rateTypes)) {
     # Loop through quantiles
     for (i in 1:nt){
       
-      print(tau[i])
+      #print(tau[i])
       
       # GMMQ Function
       ret2b <- tryCatch(gmmq(tau=tau[i], dB=dimX, Y=cbind(Y,D), X=X.excl, Z.excl=Z.excl,

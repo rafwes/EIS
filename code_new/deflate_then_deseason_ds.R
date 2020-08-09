@@ -20,7 +20,7 @@
 # conflict_prefer("as.Date.numeric", "base")
 # conflict_prefer("between", "dplyr")
 # 
-# #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+# base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
@@ -65,7 +65,7 @@ rm(consumption_we)
 
 
 #################
-##### delete down
+##### delete down holidays
 #################
 
 holidays <- prophet:::make_holidays_df(c(seq(2004,2017)),"US")
@@ -93,7 +93,68 @@ black_monday <-
   filter(holiday == "Thanksgiving") %>% 
   mutate(holiday = "Cybermonday",
          ds = ds + 4)
-    
+
+mothers_day <- 
+  data.frame(
+    ds = as.Date(
+      c("2004-05-09",
+        "2005-05-08",
+        "2006-05-14",
+        "2007-05-13",
+        "2008-05-11",
+        "2009-05-10",
+        "2010-05-09",
+        "2011-05-08",
+        "2012-05-13",
+        "2013-05-12",
+        "2014-05-11",
+        "2015-05-10",
+        "2016-05-08",
+        "2017-05-14"
+      )),
+    holiday = "Mothers Day")
+
+mothers_day_minus1 <- 
+  mothers_day %>%
+  mutate(holiday = "Mothers Day Minus1",
+         ds = ds - 1)
+
+mothers_day_minus2 <- 
+  mothers_day %>%
+  mutate(holiday = "Mothers Day Minus2",
+         ds = ds - 2)
+
+fathers_day <- 
+  data.frame(
+    ds = as.Date(
+      c("2004-06-20",
+        "2005-06-19",
+        "2006-06-18",
+        "2007-06-17",
+        "2008-06-15",
+        "2009-06-21",
+        "2010-06-20",
+        "2011-06-19",
+        "2012-06-17",
+        "2013-06-16",
+        "2014-06-15",
+        "2015-06-21",
+        "2016-06-19",
+        "2017-06-18"
+      )),
+    holiday = "Fathers Day")
+
+fathers_day_minus1 <- 
+  fathers_day %>%
+  mutate(holiday = "Fathers Day Minus1",
+         ds = ds - 1)
+
+fathers_day_minus2 <- 
+  fathers_day %>%
+  mutate(holiday = "Fathers Day Minus2",
+         ds = ds - 2)
+
+
 xmas_saturday_minus1 <- 
   data.frame(
   ds = as.Date(
@@ -179,6 +240,12 @@ holidays_df <-
             black_saturday,
             black_sunday,
             black_monday,
+            mothers_day,
+            mothers_day_minus1,
+            mothers_day_minus2,
+            fathers_day,
+            fathers_day_minus1,
+            fathers_day_minus2,
             xmas_saturday_minus1,
             xmas_saturday_minus2,
             xmas_saturday_minus3,
@@ -189,13 +256,19 @@ holidays_df <-
             xmas_sunday_minus3,
             xmas_sunday_plus1,
             xmas_sunday_plus2
-            ) %>% 
+  ) %>% 
   arrange(ds)
 
 rm(black_friday,
    black_saturday,
    black_sunday,
    black_monday,
+   mothers_day,
+   mothers_day_minus1,
+   mothers_day_minus2,
+   fathers_day,
+   fathers_day_minus1,
+   fathers_day_minus2,
    xmas_saturday_minus1,
    xmas_saturday_minus2,
    xmas_saturday_minus3,
@@ -208,33 +281,36 @@ rm(black_friday,
    xmas_sunday_plus2
    )
 
+#################
+##### delete up holidays
+#################
 
 
-# prophet needs single daily consumption value
-# save percentage of total spent for each household in a given day
+# prophet needs single daily consumption value, we shall use mean consumption.
+# save data parameters to reconstruct it later
 perc_ne <- 
   consumption_def_ne %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 # setup data as expected by prophet
 data_model_ne <- 
   consumption_def_ne %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_ne <- prophet()
 #model_ne <- prophet(holidays = holidays_df)
 #model_ne <- add_country_holidays(model_ne, country_name = 'US')
+#model_ne <- prophet(seasonality.mode = 'multiplicative')
 model_ne <- fit.prophet(model_ne, data_model_ne)
 data_decomposed_ne <- predict(model_ne)
 
-# reconstruct de-seasonal trip data from trend and residuals
+# construct de-seasonal trip data from trend and residuals
 consumption_ds_def_ne <- 
   data_decomposed_ne %>% 
   left_join(data_model_ne, by="ds") %>% 
@@ -242,7 +318,7 @@ consumption_ds_def_ne <-
             DESEASONED = trend + y - yhat
             ) %>% 
   left_join(perc_ne, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
@@ -261,21 +337,21 @@ rm(perc_ne,
 perc_mw <- 
   consumption_def_mw %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 data_model_mw <- 
   consumption_def_mw %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_mw <- prophet()
 #model_mw <- prophet(holidays = holidays_df)
 #model_mw <- add_country_holidays(model_mw, country_name = 'US')
+#model_mw <- prophet(seasonality.mode = 'multiplicative')
 model_mw <- fit.prophet(model_mw, data_model_mw)
 data_decomposed_mw <- predict(model_mw)
 
@@ -287,7 +363,7 @@ consumption_ds_def_mw <-
             DESEASONED = trend + y - yhat
   ) %>% 
   left_join(perc_mw, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
@@ -306,21 +382,21 @@ rm(perc_mw,
 perc_so <- 
   consumption_def_so %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 data_model_so <- 
   consumption_def_so %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_so <- prophet()
 #model_so <- prophet(holidays = holidays_df)
 #model_so <- add_country_holidays(model_so, country_name = 'US')
+#model_so <- prophet(seasonality.mode = 'multiplicative')
 model_so <- fit.prophet(model_so, data_model_so)
 data_decomposed_so <- predict(model_so)
 
@@ -332,7 +408,7 @@ consumption_ds_def_so <-
             DESEASONED = trend + y - yhat
   ) %>% 
   left_join(perc_so, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
@@ -352,21 +428,21 @@ rm(perc_so,
 perc_we <- 
   consumption_def_we %>% 
   group_by(PURCHASE_DATE) %>% 
-  mutate(PERCENTAGE = 
-           TOTAL_SPENT_DEF
-         / sum(TOTAL_SPENT_DEF))
+  mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+         NUM_PANELISTS = n())
 
 data_model_we <- 
   consumption_def_we %>% 
   group_by(PURCHASE_DATE) %>% 
-  summarise(SUM_SPENT_DAY = sum(TOTAL_SPENT_DEF)) %>% 
+  summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>% 
   rename(ds = PURCHASE_DATE, 
-         y = SUM_SPENT_DAY)
+         y = MEAN_SPENT_DAY)
 
 # fit model and decompose by issuing predict
 model_we <- prophet()
 #model_we <- prophet(holidays = holidays_df)
 #model_we <- add_country_holidays(model_we, country_name = 'US')
+#model_we <- prophet(seasonality.mode = 'multiplicative')
 model_we <- fit.prophet(model_we, data_model_we)
 data_decomposed_we <- predict(model_we)
 
@@ -378,7 +454,7 @@ consumption_ds_def_we <-
             DESEASONED = trend + y - yhat
   ) %>% 
   left_join(perc_we, by="PURCHASE_DATE") %>% 
-  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED) %>%
+  mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
   filter(TOTAL_SPENT_DS_DEF > 0) %>% 
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
@@ -396,127 +472,127 @@ rm(perc_we,
 
 if (FALSE) {
   
-  plotdata <- aaa %>% 
-    group_by(PURCHASE_DATE) %>% 
-    summarize(SUM_TSD = mean(TOTAL_SPENT_DEF),
-              SUM_TSDD = mean(TOTAL_SPENT_DS_DEF)
-    ) %>% 
-    ungroup() %>%
-    transmute(DATE = PURCHASE_DATE,
-              ROLL_TSD = scale(rollapply(SUM_TSD,
-                                         3*28,
-                                         mean,
-                                         partial = TRUE,
-                                         align = "center")),
-              ROLL_TSDD = scale(rollapply(SUM_TSDD,
-                                          3*28,
-                                          mean,
-                                          partial = TRUE,
-                                          align = "center")),
-              
-    )
+plotdata <- aaa %>% 
+  group_by(PURCHASE_DATE) %>% 
+  summarize(SUM_TSD = mean(TOTAL_SPENT_DEF),
+            SUM_TSDD = mean(TOTAL_SPENT_DS_DEF)
+            ) %>% 
+  ungroup() %>%
+  transmute(DATE = PURCHASE_DATE,
+            ROLL_TSD = scale(rollapply(SUM_TSD,
+                                  3*28,
+                                  mean,
+                                  partial = TRUE,
+                                  align = "center")),
+            ROLL_TSDD = scale(rollapply(SUM_TSDD,
+                                  3*28,
+                                  mean,
+                                  partial = TRUE,
+                                  align = "center")),
+            
+            )
+
+
   
-  
-  
-  
-  # y - s = t + (y - yhat)
-  
-  library(ggplot2)
-  plot_1 <- 
-    ggplot() + 
-    geom_line(data = plotdata %>%
-                select(DATE,
-                       ROLL_TSD,
-                       ROLL_TSDD,
-                ) %>% 
-                filter(between(DATE,
-                               as.Date("2008-06-01"), 
-                               as.Date("2010-06-01"))) %>% 
-                pivot_longer(-DATE),
-              aes(x = DATE, 
-                  y = value, 
-                  colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y"
-    ) +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(),
-          legend.position = "bottom")
-  
-  plot_2 <- 
-    ggplot() + 
-    geom_line(data = plotdata %>%
-                select(DATE,
-                       ROLL_TSD,
-                       ROLL_TSDD,
-                ) %>% 
-                filter(between(DATE,
-                               as.Date("2010-06-01"), 
-                               as.Date("2012-06-01"))) %>% 
-                pivot_longer(-DATE),
-              aes(x = DATE, 
-                  y = value, 
-                  colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y"
-    ) +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(),
-          legend.position = "bottom")
-  
-  plot_3 <- 
-    ggplot() + 
-    geom_line(data = plotdata %>%
-                select(DATE,
-                       ROLL_TSD,
-                       ROLL_TSDD,
-                ) %>% 
-                filter(between(DATE,
-                               as.Date("2012-06-01"), 
-                               as.Date("2014-06-01"))) %>% 
-                pivot_longer(-DATE),
-              aes(x = DATE, 
-                  y = value, 
-                  colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y"
-    ) +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(),
-          legend.position = "bottom")
-  
-  plot_4 <- 
-    ggplot() + 
-    geom_line(data = plotdata %>%
-                select(DATE,
-                       ROLL_TSD,
-                       ROLL_TSDD,
-                ) %>% 
-                filter(between(DATE,
-                               as.Date("2014-06-01"), 
-                               as.Date("2016-06-01"))) %>% 
-                pivot_longer(-DATE),
-              aes(x = DATE, 
-                  y = value, 
-                  colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y"
-    ) +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(),
-          legend.position = "bottom")
-  
-  
-  library(grid)
-  library(gridExtra)
-  grid.newpage()
-  grid.draw(rbind(ggplotGrob(plot_1), 
-                  ggplotGrob(plot_2),
-                  ggplotGrob(plot_3), 
-                  ggplotGrob(plot_4),
-                  size = "last"))
-  
-  
+
+# y - s = t + (y - yhat)
+
+library(ggplot2)
+plot_1 <- 
+ggplot() + 
+  geom_line(data = plotdata %>%
+              select(DATE,
+                     ROLL_TSD,
+                     ROLL_TSDD,
+                     ) %>% 
+              filter(between(DATE,
+                             as.Date("2008-06-01"), 
+                             as.Date("2010-06-01"))) %>% 
+              pivot_longer(-DATE),
+            aes(x = DATE, 
+                y = value, 
+                colour = name)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y"
+               ) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(),
+        legend.position = "bottom")
+
+plot_2 <- 
+  ggplot() + 
+  geom_line(data = plotdata %>%
+              select(DATE,
+                     ROLL_TSD,
+                     ROLL_TSDD,
+              ) %>% 
+              filter(between(DATE,
+                             as.Date("2010-06-01"), 
+                             as.Date("2012-06-01"))) %>% 
+              pivot_longer(-DATE),
+            aes(x = DATE, 
+                y = value, 
+                colour = name)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y"
+  ) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(),
+        legend.position = "bottom")
+
+plot_3 <- 
+  ggplot() + 
+  geom_line(data = plotdata %>%
+              select(DATE,
+                     ROLL_TSD,
+                     ROLL_TSDD,
+              ) %>% 
+              filter(between(DATE,
+                             as.Date("2012-06-01"), 
+                             as.Date("2014-06-01"))) %>% 
+              pivot_longer(-DATE),
+            aes(x = DATE, 
+                y = value, 
+                colour = name)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y"
+  ) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(),
+        legend.position = "bottom")
+
+plot_4 <- 
+  ggplot() + 
+  geom_line(data = plotdata %>%
+              select(DATE,
+                     ROLL_TSD,
+                     ROLL_TSDD,
+              ) %>% 
+              filter(between(DATE,
+                             as.Date("2014-06-01"), 
+                             as.Date("2016-06-01"))) %>% 
+              pivot_longer(-DATE),
+            aes(x = DATE, 
+                y = value, 
+                colour = name)) +
+  scale_x_date(date_breaks = "1 year",
+               date_labels = "%Y"
+  ) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(),
+        legend.position = "bottom")
+
+
+library(grid)
+library(gridExtra)
+grid.newpage()
+grid.draw(rbind(ggplotGrob(plot_1), 
+                ggplotGrob(plot_2),
+                ggplotGrob(plot_3), 
+                ggplotGrob(plot_4),
+                size = "last"))
+
+
 }
 
 #################
@@ -540,11 +616,11 @@ if (FALSE) {
                                 partial = TRUE,
                                 align = "center"),
            ROLL_TSDD = rollapply(AVG_TSDD,
-                                 3*28,
-                                 mean,
-                                 partial = TRUE,
-                                 align = "center")
-    )
+                                3*28,
+                                mean,
+                                partial = TRUE,
+                                align = "center")
+           )
   
   
   ggplot() + 
@@ -552,7 +628,7 @@ if (FALSE) {
                 select(DATE,
                        ROLL_TSD,
                        ROLL_TSDD
-                ) %>% 
+                       ) %>% 
                 filter(between(DATE,
                                as.Date("2004-06-01"), 
                                as.Date("2014-06-01"))) %>% 

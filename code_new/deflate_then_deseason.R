@@ -1,26 +1,27 @@
-# rm(list=ls())
-# 
-# library(dplyr)
-# library(tidyr)
-# library(tibble)
-# library(readr)
-# library(stringr)
-# library(zoo)
-# library(reshape2)
-# library(ISOweek)
-# library(lubridate)
-# library(prophet)
-# library(conflicted)
-# #library(grid)
-# #library(gridExtra)
-# 
-# conflict_prefer("filter", "dplyr")
-# conflict_prefer("lag", "dplyr")
-# conflict_prefer("as.Date", "base")
-# conflict_prefer("as.Date.numeric", "base")
-# 
-# #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-# base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+rm(list=ls())
+
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(readr)
+library(stringr)
+library(zoo)
+library(reshape2)
+library(ISOweek)
+library(lubridate)
+library(prophet)
+library(conflicted)
+#library(grid)
+#library(gridExtra)
+
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+conflict_prefer("as.Date", "base")
+conflict_prefer("as.Date.numeric", "base")
+conflict_prefer("between", "dplyr")
+
+base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code_new/interest_rates.R"))
 source(file.path(base_path,"EIS/code_new/grocery_data.R"))
@@ -61,7 +62,6 @@ rm(consumption_so)
 consumption_def_we <- 
   DeflateConsumption(consumption_we)
 rm(consumption_we)
-
 
 
 #################
@@ -157,23 +157,23 @@ fathers_day_minus2 <-
 
 xmas_saturday_minus1 <- 
   data.frame(
-    ds = as.Date(
-      c("2004-12-18",
-        "2005-12-17",
-        "2006-12-23",
-        "2007-12-22",
-        "2008-12-20",
-        "2009-12-19",
-        "2010-12-18",
-        "2011-12-17",
-        "2012-12-22",
-        "2013-12-21",
-        "2014-12-20",
-        "2015-12-19",
-        "2016-12-17",
-        "2017-12-23"
+  ds = as.Date(
+    c("2004-12-18",
+      "2005-12-17",
+      "2006-12-23",
+      "2007-12-22",
+      "2008-12-20",
+      "2009-12-19",
+      "2010-12-18",
+      "2011-12-17",
+      "2012-12-22",
+      "2013-12-21",
+      "2014-12-20",
+      "2015-12-19",
+      "2016-12-17",
+      "2017-12-23"
       )),
-    holiday = "Christmas Saturday Minus1")
+  holiday = "Christmas Saturday Minus1")
 
 xmas_saturday_minus2 <- 
   xmas_saturday_minus1 %>% 
@@ -279,8 +279,7 @@ rm(black_friday,
    xmas_sunday_minus3,
    xmas_sunday_plus1,
    xmas_sunday_plus2
-)
-
+   )
 
 #################
 ##### delete up holidays
@@ -295,7 +294,7 @@ perc_ne <-
   mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
          NUM_PANELISTS = n())
 
-# setup data as expected by prophet, 
+# setup data as expected by prophet
 data_model_ne <- 
   consumption_def_ne %>% 
   group_by(PURCHASE_DATE) %>% 
@@ -369,7 +368,6 @@ consumption_ds_def_mw <-
   select(PURCHASE_DATE,
          HOUSEHOLD_CODE,
          TOTAL_SPENT_DS_DEF)
-
 
 rm(perc_mw,
    model_mw,
