@@ -49,7 +49,7 @@ for (ii in 1:length(datasetTypes)) {
 
 # Read in Dataset
 estimationDataFileName <- file.path(base.path, paste0("/csv_output/estimation_data_", dataset, ".csv"))
-estimationDataFileName <- file.path(base.path, paste0("/csv_output/grocery_channel_no_income_cut/estimation_data_", dataset, ".csv"))
+estimationDataFileName <- file.path(base.path, paste0("/csv_output/grocery_channel_income_cut/estimation_data_", dataset, ".csv"))
 estimationData <- read_csv(estimationDataFileName)
 
 # Loop over types of Rates
