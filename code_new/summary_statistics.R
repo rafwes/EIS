@@ -1,33 +1,28 @@
 rm(list=ls())
 
-library(tidyverse)
+library(dplyr)
 library(plotrix)
-#library(zoo)
-#library(reshape2)
-#library(ISOweek)
-#library(lubridate)
-#library(EnvStats)
 
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 #base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
-monthly_file <- file.path(base_path,"csv_output/estimation_data_monthly.csv")
-weekly_1w_file <- file.path(base_path,"csv_output/estimation_data_weekly_1w.csv")
-weekly_4w_file <- file.path(base_path,"csv_output/estimation_data_weekly_4w.csv")
+quarterly_1q_grocery_file <- file.path(base_path,"csv_output/grocery_channel_no_income_cut/estimation_data_quarterly_1q.csv")
+quarterly_1q_all_file <- file.path(base_path,"csv_output/all_channels_no_income_cut/estimation_data_quarterly_1q.csv")
 
+quarterly_1q_grocery_data <- read.csv(quarterly_1q_grocery_file)
+quarterly_1q_all_data <- read.csv(quarterly_1q_all_file)
 
-monthly_data <- read.csv(monthly_file)
-weekly_1w_data <- read.csv(weekly_1w_file)
-weekly_4w_data <- read.csv(weekly_4w_file)
+cat("\nQuarterly Data (Grocery)\n")
 
-rm(monthly_file,
-   weekly_1w_file,
-   weekly_4w_file)
+output_numhh_grocery <- 
+  quarterly_1q_grocery_data %>%
+  select(HOUSEHOLD) %>% 
+  unique %>% 
+  count()
 
-
-print("Montly Data")
-monthly_data %>%
-  select("Y","X_TB","X_ST") %>%
+output_sumest_grocery <-
+  quarterly_1q_grocery_data %>%
+  select("Y","X_TB") %>%
   summarise_all(list(mean = mean, 
                      se = std.error,
                      median = median,
@@ -35,9 +30,22 @@ monthly_data %>%
                      max = max,
                      observ = length))
 
-print("Weekly Data - 1 Week Aggregation")
-weekly_1w_data %>%
-  select("Y","X_TB","X_ST") %>%
+cat("Unique Housholds: ", output_numhh_grocery$n, "\n")
+cat("Summary Statistics:\n")
+print(output_sumest_grocery)
+
+
+cat("\nQuarterly Data (All)\n")
+
+output_numhh_all <- 
+  quarterly_1q_all_data %>%
+  select(HOUSEHOLD) %>% 
+  unique %>% 
+  count()
+
+output_sumest_all <-
+  quarterly_1q_all_data %>%
+  select("Y","X_TB") %>%
   summarise_all(list(mean = mean, 
                      se = std.error,
                      median = median,
@@ -45,12 +53,6 @@ weekly_1w_data %>%
                      max = max,
                      observ = length))
 
-print("Weekly Data - 4 Weeks Aggregation")
-weekly_4w_data %>%
-  select("Y","X_TB","X_ST") %>%
-  summarise_all(list(mean = mean, 
-                     se = std.error,
-                     median = median,
-                     min = min,
-                     max = max,
-                     observ = length))
+cat("Unique Housholds: ", output_numhh_all$n, "\n")
+cat("Summary Statistics:\n")
+print(output_sumest_all)
