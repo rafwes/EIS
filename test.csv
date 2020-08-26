@@ -1,7 +1,0 @@
-household_code,panel_year,projection_factor,projection_factor_magnet,household_income,household_size,type_of_residence,male_head_age,female_head_age,male_head_education,female_head_education,male_head_occupation,female_head_occupation,male_head_employment,female_head_employment,marital_status,race,hispanic_origin,fips_state_descr,trip_code_uc,retailer_code,purchase_date,total_spent
-2000351,2004,2858,19379,16,2,1,8,0,5,0,2,0,2,0,2,1,2,NY,20588,252,2003-12-29,7.56
-2000351,2004,2858,19379,16,2,1,8,0,5,0,2,0,2,0,2,1,2,NY,20589,4999,2003-12-29,2.38
-2000351,2004,2858,19379,16,2,1,8,0,5,0,2,0,2,0,2,1,2,NY,59145,4999,2003-12-31,4.65
-2000351,2004,2858,19379,16,2,1,8,0,5,0,2,0,2,0,2,1,2,NY,112207,252,2004-01-03,6.16
-2000351,2004,2858,19379,16,2,1,8,0,5,0,2,0,2,0,2,1,2,NY,133873,4999,2004-01-04,4.16
-2000351,2004,2858,19379,16,2,1,8,0,5,0,2,0,2,0,2,1,2,NY,172522,4999,2004-01-06,707.39
