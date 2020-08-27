@@ -23,9 +23,8 @@ conflict_prefer("between", "dplyr")
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
-# imports desired raw data
-source(file.path(base_path,"EIS/code/interest_rates.R"))
-source(file.path(base_path,"EIS/code/grocery_data.R"))
+source(file.path(base_path,"EIS/code/financial_indexes.R"))
+source(file.path(base_path,"EIS/code/consumption_data-grocery_channel-all.R"))
 
 #####################################################################
 ## DEFLATING AND DESEASONALIZING REGIONAL DAILY CONSUMPTION 
