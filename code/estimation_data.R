@@ -23,10 +23,93 @@ conflict_prefer("between", "dplyr")
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
-source(file.path(base_path,"EIS/code/deflate_then_deseason.R"))
+# imports desired raw data
+source(file.path(base_path,"EIS/code/interest_rates.R"))
+source(file.path(base_path,"EIS/code/grocery_data.R"))
 
 #####################################################################
-## ESTIMATIONS FOR 1 QUARTER 
+## DEFLATING AND DESEASONALIZING REGIONAL DAILY CONSUMPTION 
+#####################################################################
+
+# Gathers inflation data and deflates consumption by region
+DeflateConsumption <- function(x) {
+  
+  region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
+  INDEX_CPI_REGION = as.name(paste0("INDEX_CPI_",region))
+  
+  x %>%
+    left_join(index_table %>%
+                select(DATE, !!INDEX_CPI_REGION),
+              by = c("PURCHASE_DATE" = "DATE")) %>% 
+    mutate(TOTAL_SPENT_DEF := 
+             100 * TOTAL_SPENT 
+           / !!INDEX_CPI_REGION) %>% 
+    na.exclude() %>% 
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT_DEF)
+}
+
+# prophet needs a single daily consumption value to deseasonalize.
+# first save structure of the panel, then pass mean daily consumption.
+# later reconstruct panel from deseasonalized consumption.
+DeseasonalizeConsumption <- function(x) {
+  
+  perc <- 
+    x %>% 
+    group_by(PURCHASE_DATE) %>% 
+    mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
+           NUM_PANELISTS = n())
+  
+  data_model <-
+    x %>%
+    group_by(PURCHASE_DATE) %>%
+    summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>%
+    rename(ds = PURCHASE_DATE,
+           y = MEAN_SPENT_DAY)
+  
+  # fit model and decompose trend/seasonality
+  model <- prophet()
+  model_fitted <- fit.prophet(model, data_model)
+  data_decomposed <- predict(model_fitted)
+  
+  # reconstruct de-seasonal trip data from trend and residuals
+  data_decomposed %>%
+    left_join(data_model, by="ds") %>%
+    transmute(PURCHASE_DATE = as.Date(ds),
+              DESEASONED = trend + y - yhat
+    ) %>%
+    left_join(perc, by="PURCHASE_DATE") %>%
+    mutate(TOTAL_SPENT_DS_DEF = PERCENTAGE * DESEASONED * NUM_PANELISTS) %>%
+    filter(TOTAL_SPENT_DS_DEF > 0) %>%
+    select(PURCHASE_DATE,
+           HOUSEHOLD_CODE,
+           TOTAL_SPENT_DS_DEF)
+}
+
+consumption_ds_def_ne <- 
+  DeseasonalizeConsumption(
+    DeflateConsumption(consumption_ne))
+rm(consumption_ne)
+
+consumption_ds_def_mw <- 
+  DeseasonalizeConsumption(
+    DeflateConsumption(consumption_mw))
+rm(consumption_mw)
+
+consumption_ds_def_so <- 
+  DeseasonalizeConsumption(
+    DeflateConsumption(consumption_so))
+rm(consumption_so)
+
+consumption_ds_def_we <- 
+  DeseasonalizeConsumption(
+    DeflateConsumption(consumption_we))
+rm(consumption_we)
+
+
+#####################################################################
+## PREPARING DATA FOR QUARTER GROWTH 
 #####################################################################
 
 lag_in_quarters = 1L
