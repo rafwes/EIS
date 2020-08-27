@@ -127,11 +127,7 @@ rates_log_avg_qrtly <-
             AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
             AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
             AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE),
-            AVG_INDEX_ST_DEF_NE = mean(INDEX_ST_DEF_NE),
-            AVG_INDEX_ST_DEF_MW = mean(INDEX_ST_DEF_MW),
-            AVG_INDEX_ST_DEF_SO = mean(INDEX_ST_DEF_SO),
-            AVG_INDEX_ST_DEF_WE = mean(INDEX_ST_DEF_WE),
+            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE)
             ) %>%
   ungroup() %>% 
   arrange(YEAR,

@@ -1,5 +1,5 @@
-## This code imports daily T-Bill rates, SP500 stock data and
-## regional CPI data to create deflated indexes for stocks and t-bills.
+## This code imports daily T-Bill rates and regional CPI data
+## to create regionally deflated indexes for t-bills.
 
 # rm(list=ls())
 # 
@@ -15,8 +15,6 @@
 # library(prophet)
 # library(plm)
 # library(conflicted)
-# #library(grid)
-# #library(gridExtra)
 # 
 # conflict_prefer("filter", "dplyr")
 # conflict_prefer("lag", "dplyr")
@@ -25,11 +23,8 @@
 # conflict_prefer("as.Date.numeric", "base")
 # conflict_prefer("between", "dplyr")
 # 
-# #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+# base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
-
-print("Let's Start")
-step=as.integer(1)
 
 ### ======================================== ###
 ###   Raw Data Import
@@ -43,8 +38,7 @@ step=as.integer(1)
 ## Dates: January 2003 - December 2016
 ## Source: https://fred.stlouisfed.org/series/DTB4WK
 ## Primary Source: Board of Governors of the Federal Reserve System (US)
-## Retrival Date: March 17, 2020
-
+## Retrieval Date: March 17, 2020
 
 raw_tbill_daily <-
   read.csv(file.path(base_path,"EIS/rawdata/fred_tbill_rates_daily.csv"),
@@ -55,33 +49,6 @@ raw_tbill_daily <-
 ## Obs: The Bank Discount rate is the rate at which a Bill is quoted 
 ## in the secondary market and is based on the par value, 
 ## amount of the discount, and a 360-day year.
-
-
-## Imports Daily S&P500 Stock Index
-## Description: S&P 500 (^GSPC)
-## Frequency: Daily
-## Unit: USD
-## Dates: January 2003 - December 2016
-## Source: https://finance.yahoo.com/quote/^GSPC/history
-## Primary Source: ICE Data Services
-## Retrival Date: March 12, 2020
-
-raw_stock_prices <-
-  read.csv(file.path(base_path,"EIS/rawdata/yahoo_sp500_stockprices_daily.csv"),
-           colClasses = c("Date", rep("numeric", 6)))
-
-## Imports Daily S&P500 Total Return Index
-## Description: S&P 500 (TR) (^SP500TR)
-## Frequency: Daily
-## Unit: USD
-## Dates: January 2003 - December 2016
-## Source: https://finance.yahoo.com/quote/^SP500TR/history
-## Primary Source: ICE Data Services
-## Retrival Date: July 26, 2020
-
-raw_total_return <-
-  read.csv(file.path(base_path,"EIS/rawdata/yahoo_sp500_totalreturn_daily.csv"),
-           colClasses = c("Date", rep("numeric", 6)))
 
 
 ## Imports CPI Monthly Data
@@ -96,7 +63,7 @@ raw_total_return <-
 ## Series Id: CUUR0400SA0 -- West
 ## Source: U.S. Bureau of Labor Statistics
 ## Primary Source: U.S. Bureau of Labor Statistics
-## Retrival Date: March 12, 2020
+## Retrieval Date: March 12, 2020
 
 ## Sets column names and types for import
 c_names <- c("SERIES",
@@ -131,37 +98,11 @@ raw_cpi_west <-
 rm(c_names, c_classes)
 
 
-sprintf("Step %i: Finished Raw Data Import", step)
-step <- step + 1
-
 ### ======================================== ###
 ###   Data Sanitization
 ### ======================================== ###
 ## After this section we shall have saved all raw data into
 ## coherent standardized dataframes and dropped unneeded dataframes.
-
-## Drops all stock data columns except "Date" and "Adjusted Close" and
-## fills missing dates of stock data (weekends and holidays) with last available data
-stocks_daily <-
-  raw_stock_prices %>% 
-  select(Date, Adj.Close) %>% 
-  rename("DATE" = "Date",
-         "CLOSE" = "Adj.Close") %>% 
-  complete(DATE = seq.Date(min(DATE), 
-                           max(DATE), 
-                           by = "day")) %>% fill(CLOSE)
-
-tr_daily <-
-  raw_total_return %>% 
-  select(Date, Adj.Close) %>% 
-  rename("DATE" = "Date",
-         "CLOSE" = "Adj.Close") %>% 
-  complete(DATE = seq.Date(min(DATE), 
-                           max(DATE), 
-                           by = "day")) %>% fill(CLOSE)
-
-rm(raw_stock_prices, raw_total_return)
-
 
 ## Creates missing daily t-bill rate with last available data from column RATE_360 
 tbill_daily <- 
@@ -169,7 +110,6 @@ tbill_daily <-
   complete(DATE = seq.Date(min(DATE), 
                            max(DATE), 
                            by = "day")) %>% fill(RATE_360)
-
 rm(raw_tbill_daily)
 
 ## Drop SERIES column, we already differentiate CPI region using column names.
@@ -216,235 +156,6 @@ cpi_monthly <-
 cpi_monthly$YEAR <- NULL
 cpi_monthly$PERIOD <- NULL
 
-
-######delete down####################
-######delete down####################
-######delete down####################
-
-# setup data as expected by prophet
-data_model_ne <- 
-  cpi_monthly %>%
-  transmute(ds = DATE,
-            y = CPI_NE)
-
-data_model_mw <- 
-  cpi_monthly %>%
-  transmute(ds = DATE,
-            y = CPI_MW)
-
-data_model_so <- 
-  cpi_monthly %>%
-  transmute(ds = DATE,
-            y = CPI_SO)
-
-data_model_we <- 
-  cpi_monthly %>%
-  transmute(ds = DATE,
-            y = CPI_WE)
-
-# fit model and decompose by issuing predict
-model_ne <- prophet(seasonality.mode = 'multiplicative')
-model_ne <- fit.prophet(model_ne, data_model_ne)
-data_decomposed_ne <- predict(model_ne)
-
-model_mw <- prophet(seasonality.mode = 'multiplicative')
-model_mw <- fit.prophet(model_mw, data_model_mw)
-data_decomposed_mw <- predict(model_mw)
-
-model_so <- prophet(seasonality.mode = 'multiplicative')
-model_so <- fit.prophet(model_so, data_model_so)
-data_decomposed_so <- predict(model_so)
-
-model_we <- prophet(seasonality.mode = 'multiplicative')
-model_we <- fit.prophet(model_we, data_model_we)
-data_decomposed_we <- predict(model_we)
-
-
-
-# reconstruct de-seasonal trip data from trend and residuals
-cpi_ds_ne <- 
-  data_decomposed_ne %>%
-  left_join(data_model_ne, by="ds") %>% 
-  transmute(DATE = as.Date(ds),
-            CPI_DS_NE = trend + y - yhat)
-
-cpi_ds_mw <- 
-  data_decomposed_mw %>%
-  left_join(data_model_mw, by="ds") %>% 
-  transmute(DATE = as.Date(ds),
-            CPI_DS_MW = trend + y - yhat)
-
-cpi_ds_so <- 
-  data_decomposed_so %>%
-  left_join(data_model_so, by="ds") %>% 
-  transmute(DATE = as.Date(ds),
-            CPI_DS_SO = trend + y - yhat)
-
-cpi_ds_we <- 
-  data_decomposed_we %>%
-  left_join(data_model_we, by="ds") %>% 
-  transmute(DATE = as.Date(ds),
-            CPI_DS_WE = trend + y - yhat)
-
-
-cpi_monthly <-
-  cpi_monthly %>% 
-  left_join(cpi_ds_ne, by = "DATE") %>% 
-  left_join(cpi_ds_mw, by = "DATE") %>%
-  left_join(cpi_ds_so, by = "DATE") %>% 
-  left_join(cpi_ds_we, by = "DATE")
-
-rm(list=ls(pattern="^model"))
-rm(list=ls(pattern="^data_"))
-rm(list=ls(pattern="^cpi_ds"))
-
-
-if (FALSE) {
-
-MonthlySeasonalDummiesLM <- function(x) {
-  
-  lm(Y ~ -1+TIME+
-       M01+M02+M03+M04+
-       M05+M06+M07+M08+
-       M09+M10+M11+M12,
-     data = x)
-}
-
-
-# Since CPI data is has a clear trend, a time
-# variable is needed to suppress it.
-CPISeasonalityMatrix <- function(x,y) {
-  
-  x %>%
-    arrange(DATE) %>%
-    transmute(Y = !!y,
-              TIME = as.integer(rownames(x)),
-              M01 = case_when(month(DATE) == 1 ~ 1, TRUE ~ 0),
-              M02 = case_when(month(DATE) == 2 ~ 1, TRUE ~ 0),
-              M03 = case_when(month(DATE) == 3 ~ 1, TRUE ~ 0),
-              M04 = case_when(month(DATE) == 4 ~ 1, TRUE ~ 0),
-              M05 = case_when(month(DATE) == 5 ~ 1, TRUE ~ 0),
-              M06 = case_when(month(DATE) == 6 ~ 1, TRUE ~ 0),
-              M07 = case_when(month(DATE) == 7 ~ 1, TRUE ~ 0),
-              M08 = case_when(month(DATE) == 8 ~ 1, TRUE ~ 0),
-              M09 = case_when(month(DATE) == 9 ~ 1, TRUE ~ 0),
-              M10 = case_when(month(DATE) == 10 ~ 1, TRUE ~ 0),
-              M11 = case_when(month(DATE) == 11 ~ 1, TRUE ~ 0),
-              M12 = case_when(month(DATE) == 12 ~ 1, TRUE ~ 0))
-}
-
-
-
-model_ne <- 
-  MonthlySeasonalDummiesLM(
-    CPISeasonalityMatrix(
-      cpi_monthly, 
-      as.name("CPI_NE")))
-
-model_mw <- 
-  MonthlySeasonalDummiesLM(
-    CPISeasonalityMatrix(
-      cpi_monthly, 
-      as.name("CPI_MW")))
-
-model_so <- 
-  MonthlySeasonalDummiesLM(
-    CPISeasonalityMatrix(
-      cpi_monthly, 
-      as.name("CPI_SO")))
-
-model_we <- 
-  MonthlySeasonalDummiesLM(
-    CPISeasonalityMatrix(
-      cpi_monthly, 
-      as.name("CPI_WE")))
-
-#summary(model_we)
-
-# reconstruct cpi index 
-
-
-
-# "mean(coefficients(model_xx)[-1])"
-# "as.numeric(coefficients(model_xx)[1])"
-# Refer in the code below respectively to:
-# 1. mean value of monthly dummies coefficients
-# 2. trend coefficient from regression
-
-# Reconstruct deseasonalized CPI
-
-cpi_monthly <-
-  cpi_monthly %>% 
-  mutate(CPI_DS_NE = 
-           as.numeric(coefficients(model_ne)[1])
-         * as.integer(rownames(cpi_monthly))
-         + residuals(model_ne)
-         + mean(coefficients(model_ne)[-1]),
-         CPI_DS_MW = 
-           as.numeric(coefficients(model_mw)[1]) 
-         * as.integer(rownames(cpi_monthly))
-         + residuals(model_mw)
-         + mean(coefficients(model_mw)[-1]),
-         CPI_DS_SO = 
-           as.numeric(coefficients(model_so)[1]) 
-         * as.integer(rownames(cpi_monthly))
-         + residuals(model_so)
-         + mean(coefficients(model_so)[-1]),
-         CPI_DS_WE = 
-           as.numeric(coefficients(model_we)[1]) 
-         * as.integer(rownames(cpi_monthly))
-         + residuals(model_we)
-         + mean(coefficients(model_we)[-1]))
-
-
-rm(list=ls(pattern="^model"))
-rm(MonthlySeasonalDummiesLM,
-   CPISeasonalityMatrix)
-
-}
-
-if (FALSE) {
-
-library(ggplot2)
-  
-plot(fit_ne)
-plot(fit_mw)
-plot(fit_so)
-plot(fit_we)
-
-
-
-df_plot <-
-  cpi_monthly %>%
-  select(DATE,
-         CPI_MW,
-         CPI_DS_MW) %>% 
-  filter(between(DATE,
-                 as.Date("2004-06-01"), 
-                 as.Date("2016-06-01"))) %>% 
-  pivot_longer(-DATE)
-
-plot_obj <- 
-  ggplot() + 
-  geom_line(data = df_plot,
-            aes(x = DATE, 
-                y = value, 
-                colour = name)) +
-  scale_x_date(date_breaks = "1 year",
-               date_labels = "%Y") +
-  theme(axis.title.x = element_blank(), 
-        axis.text.x = element_text(),
-        legend.position = "bottom")
-
-plot(plot_obj)
-
-
-}
-
-######delete up####################
-######delete up####################
-######delete up####################
-
 ## set last date one day back in order not to lose December data later
 cpi_monthly <- 
   cpi_monthly %>%
@@ -452,18 +163,14 @@ cpi_monthly <-
                         DATE == "2017-01-01", 
                         "2016-12-31"))
 
-
-sprintf("Step %i: Finished Data Sanitization", step)
-step <- step + 1
-
 ### ======================================== ###
 ###   T-Bill Index Calculation
 ### ======================================== ###
-## Since each dataset for the tbill rates are based on a 360-day return, this section
+## Since each dataset for the t-bill rates are based on a 360-day return, this section
 ## will approximate this rate to a overnight rate and create a bond index.
-## A similar index for stock prices will be created in later sections.
 
-## Approximates daily overnight rates in (percent) -- See Supplementary Info for details.
+
+## Approximates daily overnight rates in (percent)
 tbill_daily <- 
   tbill_daily %>% 
   mutate(RATE_1 = RATE_360 / 360)
@@ -486,26 +193,14 @@ datapoints <- length(tbill_daily$INDEX_TB)
 for(i in 1:(datapoints-1)) {
   tbill_daily$INDEX_TB[i+1] <- 
     tbill_daily$INDEX_TB[i] * (1 + tbill_daily$RATE_1[i] / 100)
-}
+  }
 
 rm(i, datapoints)
 
-sprintf("Step %i: T-Bill Index Calculation", step)
-step <- step + 1
-
 ### ======================================== ###
-###   Stock and CPI Index Calculation
+###   CPI Index Calculation
 ### ======================================== ###
-## This section creates CPI and Stock indexes that match the t-bill index
-
-## Creates a daily stock index using "adjusted closing" prices.
-stocks_daily <- 
-  stocks_daily %>% 
-  mutate(INDEX_ST = 100 * CLOSE / CLOSE[DATE == base_date])
-
-tr_daily <- 
-  tr_daily %>% 
-  mutate(INDEX_TR = 100 * CLOSE / CLOSE[DATE == base_date])
+## This section creates CPI indexes that match the t-bill index
 
 ## Creates a monthly CPI index per region.
 cpi_monthly <- 
@@ -513,58 +208,28 @@ cpi_monthly <-
   mutate(INDEX_CPI_NE = 100 * CPI_NE / CPI_NE[DATE == base_date],
          INDEX_CPI_MW = 100 * CPI_MW / CPI_MW[DATE == base_date],
          INDEX_CPI_SO = 100 * CPI_SO / CPI_SO[DATE == base_date],
-         INDEX_CPI_WE = 100 * CPI_WE / CPI_WE[DATE == base_date],
-         INDEX_CPI_DS_NE = 100 * CPI_DS_NE / CPI_DS_NE[DATE == base_date],
-         INDEX_CPI_DS_MW = 100 * CPI_DS_MW / CPI_DS_MW[DATE == base_date],
-         INDEX_CPI_DS_SO = 100 * CPI_DS_SO / CPI_DS_SO[DATE == base_date],
-         INDEX_CPI_DS_WE = 100 * CPI_DS_WE / CPI_DS_WE[DATE == base_date])
-
-
-sprintf("Step %i: Finished Stock and CPI Index Calculation", step)
-step <- step+1
+         INDEX_CPI_WE = 100 * CPI_WE / CPI_WE[DATE == base_date])
 
 ### ======================================== ###
 ### Index Deflation
 ### ======================================== ###
-## By the end of this section we shall have deflated indexes for both
-## stocks and t-bills for each geographic region of interest
-
-
-## The dividend yield (DY) index is calculated as the excess of 
-## total returns discounted by stock prices.
-index_table_nocpi <- 
-  tbill_daily %>% 
-  left_join(stocks_daily,
-            by = "DATE") %>% 
-  left_join(tr_daily,
-            by = "DATE") %>% 
-  mutate(INDEX_DY = 100 * INDEX_TR / INDEX_ST) %>%
-  # use total return as stock return
-  #mutate(INDEX_ST = INDEX_TR) %>% 
-  select(DATE,
-         INDEX_TB,
-         INDEX_ST,
-         INDEX_DY)
+## By the end of this section we shall have deflated t-bill
+## indexes for each geographic region of interest.
 
 ## Since CPI indexes come monthly, not daily we need to 
 ## match monthly CPI indexes to the first of month
 index_table_monthcpi <-
-  left_join(index_table_nocpi,
-            cpi_monthly %>% 
+  tbill_daily %>% 
+  select(DATE,
+         INDEX_TB) %>% 
+  left_join(cpi_monthly %>%
               select(DATE, 
                      INDEX_CPI_NE,
-                     INDEX_CPI_DS_NE,
                      INDEX_CPI_MW,
-                     INDEX_CPI_DS_MW,
                      INDEX_CPI_SO,
-                     INDEX_CPI_DS_SO,
-                     INDEX_CPI_WE,
-                     INDEX_CPI_DS_WE),
+                     INDEX_CPI_WE),
             by = "DATE")
 
-rm(index_table_nocpi)
-
-#if (FALSE) {
 ## Interpolates CPI index linearly to create daily CPI index, 
 ## since we only have data for the first day of the month.
 index_table <-
@@ -576,213 +241,21 @@ index_table <-
          INDEX_CPI_SO = na.approx(INDEX_CPI_SO,
                                   na.rm=FALSE),
          INDEX_CPI_WE = na.approx(INDEX_CPI_WE,
-                                  na.rm=FALSE),
-         INDEX_CPI_DS_NE = na.approx(INDEX_CPI_DS_NE,
-                                  na.rm=FALSE),
-         INDEX_CPI_DS_MW = na.approx(INDEX_CPI_DS_MW,
-                                  na.rm=FALSE),
-         INDEX_CPI_DS_SO = na.approx(INDEX_CPI_DS_SO,
-                                  na.rm=FALSE),
-         INDEX_CPI_DS_WE = na.approx(INDEX_CPI_DS_WE,
                                   na.rm=FALSE))
 
 rm(index_table_monthcpi)
-#}
-
-if (FALSE) {
-#######################
-###### on - TEST HARD CPI pls redo properly
-######################
-
-index_table <-
-  index_table_monthcpi %>%
-  mutate_at(vars(starts_with("INDEX_CPI_")), funs(lead(. , n = 1))) %>% 
-  mutate_at(vars(starts_with("INDEX_CPI_")), funs(na.locf(., na.rm=FALSE, fromLast = TRUE))) %>%
-  mutate_at(vars(starts_with("INDEX_CPI_")), funs(100*./.[1]))
-
-rm(index_table_monthcpi)
-######################
-###### off - TEST HARD CPI
-######################
-}
 
 ## Primitives not needed anymore and can be dropped
 rm(cpi_monthly,
-   stocks_daily,
-   tr_daily,
    tbill_daily)
 
-## Deflates T-Bills and Stock Indexes, cropping last month for
+## Deflates T-Bills, cropping last month for
 ## which there is no inflation data.
 index_table <- 
   index_table %>% 
   mutate(INDEX_TB_DEF_NE = 100 * INDEX_TB / INDEX_CPI_NE,
          INDEX_TB_DEF_MW = 100 * INDEX_TB / INDEX_CPI_MW,
          INDEX_TB_DEF_SO = 100 * INDEX_TB / INDEX_CPI_SO,
-         INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE,
-         INDEX_ST_DEF_NE = 100 * INDEX_ST / INDEX_CPI_NE,
-         INDEX_ST_DEF_MW = 100 * INDEX_ST / INDEX_CPI_MW,
-         INDEX_ST_DEF_SO = 100 * INDEX_ST / INDEX_CPI_SO,
-         INDEX_ST_DEF_WE = 100 * INDEX_ST / INDEX_CPI_WE,
-         INDEX_TB_DS_DEF_NE = 100 * INDEX_TB / INDEX_CPI_DS_NE,
-         INDEX_TB_DS_DEF_MW = 100 * INDEX_TB / INDEX_CPI_DS_MW,
-         INDEX_TB_DS_DEF_SO = 100 * INDEX_TB / INDEX_CPI_DS_SO,
-         INDEX_TB_DS_DEF_WE = 100 * INDEX_TB / INDEX_CPI_DS_WE,
-         INDEX_ST_DS_DEF_NE = 100 * INDEX_ST / INDEX_CPI_DS_NE,
-         INDEX_ST_DS_DEF_MW = 100 * INDEX_ST / INDEX_CPI_DS_MW,
-         INDEX_ST_DS_DEF_SO = 100 * INDEX_ST / INDEX_CPI_DS_SO,
-         INDEX_ST_DS_DEF_WE = 100 * INDEX_ST / INDEX_CPI_DS_WE) %>%
+         INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE) %>%
   drop_na()
 
-sprintf("Step %i: Finished Index Deflation", step)
-step <- step + 1
-rm(step)
-
-
-
-
-
-
-
-
-
-############# garbage bin
-if(FALSE) {
-
-  ### ======================================== ###
-  ### blablabla
-  ### ======================================== ###
-  
-  
-  sprintf("Step %i: blablabla", step)
-  step <- step + 1
-  ### ======================================== ###
-  ### blablabla
-  ### ======================================== ###
-  
-
-}
-
-if (FALSE) {
-  
-  df_plot <-
-    index_table %>%
-    select(DATE,
-           INDEX_CPI_MW,
-           INDEX_CPI_DS_MW) %>% 
-    filter(between(DATE,
-                   as.Date("2002-06-01"), 
-                   as.Date("2016-06-01"))) %>% 
-    pivot_longer(-DATE)
-  
-  plot_obj <- 
-    ggplot() + 
-    geom_line(data = df_plot,
-              aes(x = DATE, 
-                  y = value, 
-                  colour = name)) +
-    scale_x_date(date_breaks = "1 year",
-                 date_labels = "%Y") +
-    theme(axis.title.x = element_blank(), 
-          axis.text.x = element_text(),
-          legend.position = "bottom")
-  
-  plot(plot_obj)
-  
-  
-}  
-
-
-
-if (FALSE) {
-  
-  ## coerse data into montly time series object and decompose
-  data <- 
-    cpi_monthly %>% 
-    select(CPI_NE)
-  
-  ts_cpi_ne <- 
-    ts(data$CPI_NE,
-       start = c(2003, 1),
-       end = c(2016,12),
-       frequency = 12)
-  
-  fit_ne <- 
-    stl(ts_cpi_ne, 
-        s.window = "period")
-  
-  data <- 
-    cpi_monthly %>% 
-    select(CPI_MW)
-  
-  ts_cpi_mw <- 
-    ts(data$CPI_MW,
-       start = c(2003, 1),
-       end = c(2016,12),
-       frequency = 12)
-  
-  fit_mw <- 
-    stl(ts_cpi_mw, 
-        s.window = "period")
-  
-  data <- 
-    cpi_monthly %>% 
-    select(CPI_SO)
-  
-  ts_cpi_so <- 
-    ts(data$CPI_SO,
-       start = c(2003, 1),
-       end = c(2016,12),
-       frequency = 12)
-  
-  fit_so <- 
-    stl(ts_cpi_so, 
-        s.window = "period")
-  
-  data <- 
-    cpi_monthly %>% 
-    select(CPI_WE)
-  
-  ts_cpi_we <- 
-    ts(data$CPI_WE,
-       start = c(2003, 1),
-       end = c(2016,12),
-       frequency = 12)
-  
-  fit_we <- 
-    stl(ts_cpi_we, 
-        s.window = "period")
-  
-  ## rejoin deseasonalized data
-  
-  df_ne <- 
-    data.frame(fit_ne$time.series) %>% 
-    transmute(CPI_DS_NE = trend+remainder)
-  
-  df_mw <- 
-    data.frame(fit_mw$time.series) %>% 
-    transmute(CPI_DS_MW = trend+remainder)
-  
-  df_so <- 
-    data.frame(fit_so$time.series) %>% 
-    transmute(CPI_DS_SO = trend+remainder)
-  
-  df_we <- 
-    data.frame(fit_we$time.series) %>% 
-    transmute(CPI_DS_WE = trend+remainder)
-  
-  cpi_monthly <- 
-    cpi_monthly %>%
-    mutate(CPI_DS_NE = df_ne$CPI_DS_NE,
-           CPI_DS_MW = df_mw$CPI_DS_MW,
-           CPI_DS_SO = df_so$CPI_DS_SO,
-           CPI_DS_WE = df_we$CPI_DS_WE)
-  
-  rm(data)
-  rm(list=ls(pattern="^df"))
-  rm(list=ls(pattern="^ts"))
-  rm(list=ls(pattern="^fit"))
-  
-  
-  
-}
