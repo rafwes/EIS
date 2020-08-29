@@ -18,7 +18,7 @@
 # conflict_prefer("as.Date", "base")
 # conflict_prefer("as.Date.numeric", "base")
 # 
-# #base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
+# base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # We have data from 2004 to 2017
@@ -227,7 +227,6 @@ for (i in 1:length(years)) {
   # Rename column names for consistency
   colnames(trips) <- trips_cols_new
 
-  
   # Join retailer data to trips data
   trips_retailers <- 
     trips %>% 
@@ -240,8 +239,8 @@ for (i in 1:length(years)) {
   # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
+    # remove this filter add all channels
     filter(CHANNEL_TYPE == "Grocery") %>% 
-    #filter(CHANNEL_TYPE %in% non_durables) %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
            PANEL_YEAR, 
@@ -253,13 +252,20 @@ for (i in 1:length(years)) {
   
   rm(trips_retailers)
   
-  # Gather region from panelists and join to consumption
+  # Gather panelist data and join to consumption
   consumption <-
     consumption %>%
     left_join(panelists_year %>% 
                 #filter(HOUSEHOLD_INCOME >= 15) %>%
                 select(HOUSEHOLD_CODE,
-                       FIPS_STATE_DESCR),
+                       FIPS_STATE_DESCR,
+                       HOUSEHOLD_INCOME,
+                       MALE_HEAD_AGE,
+                       MALE_HEAD_EDUCATION,
+                       FEMALE_HEAD_AGE,
+                       FEMALE_HEAD_EDUCATION,
+                       RACE,
+                       HISPANIC_ORIGIN),
               by = "HOUSEHOLD_CODE") %>% 
     drop_na()
   
@@ -267,30 +273,22 @@ for (i in 1:length(years)) {
   consumption_ne_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% northeast) %>% 
-    select(HOUSEHOLD_CODE,
-           PURCHASE_DATE,
-           TOTAL_SPENT)
+    select(-FIPS_STATE_DESCR)
   
   consumption_mw_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% midwest) %>% 
-    select(HOUSEHOLD_CODE,
-           PURCHASE_DATE,
-           TOTAL_SPENT)
+    select(-FIPS_STATE_DESCR)
   
   consumption_so_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% south) %>% 
-    select(HOUSEHOLD_CODE,
-           PURCHASE_DATE,
-           TOTAL_SPENT)
+    select(-FIPS_STATE_DESCR)
   
   consumption_we_year <- 
     consumption %>%
     filter(FIPS_STATE_DESCR %in% west) %>% 
-    select(HOUSEHOLD_CODE,
-           PURCHASE_DATE,
-           TOTAL_SPENT)
+    select(-FIPS_STATE_DESCR)
   
   rm(consumption)
   

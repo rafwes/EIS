@@ -24,19 +24,141 @@ base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code/financial_indexes.R"))
-source(file.path(base_path,"EIS/code/consumption_data-grocery_channel-all.R"))
+source(file.path(base_path,"EIS/code/consumption_data.R"))
+
+
+panelists_selection <- 
+  c("all",
+    "income_less25k",
+    "income_geq25k",
+    "income_geq50k",
+    "income_geq70k",
+    "age_malehead_leq34",
+    "age_malehead_geq35leq54",
+    "age_malehead_geq55",
+    "age_femalehead_leq34",
+    "age_femalehead_geq35leq54",
+    "age_femalehead_geq55",
+    "college_both",
+    "college_one",
+    "college_none",
+    "white",
+    "black",
+    "asian",
+    "hispanic"
+  )
+
+# Trims dataset according to panelist characteristics
+SelectPanelists <- function(df, selection) {
+
+  if (selection == "all") {
+    df_tmp <- df
+  } 
+  else if (selection == "income_less25k") {
+    df_tmp <- df %>% 
+      filter(HOUSEHOLD_INCOME < 15)
+  }
+  else if (selection == "income_geq25k") {
+    df_tmp <- df %>% 
+      filter(HOUSEHOLD_INCOME >= 15)
+    }
+  else if (selection == "income_geq50k") {
+    df_tmp <- df %>% 
+      filter(HOUSEHOLD_INCOME >= 21)
+  }
+  else if (selection == "income_geq70k") {
+    df_tmp <- df %>% 
+      filter(HOUSEHOLD_INCOME >= 26)
+  }
+  else if (selection == "age_malehead_leq34") {
+    df_tmp <- df %>%
+      filter(MALE_HEAD_AGE >= 1
+             & MALE_HEAD_AGE < 4)
+  }
+  else if (selection == "age_malehead_geq35leq54") {
+    df_tmp <- df %>% 
+      filter(MALE_HEAD_AGE >= 4
+             & MALE_HEAD_AGE < 8)
+  }
+  else if (selection == "age_malehead_geq55") {
+    df_tmp <- df %>% 
+      filter(FEMALE_HEAD_AGE == 8 
+             | FEMALE_HEAD_AGE == 9)
+  }
+  else if (selection == "age_femalehead_leq34") {
+    df_tmp <- df %>%
+      filter(FEMALE_HEAD_AGE >= 1
+             & FEMALE_HEAD_AGE < 4)
+  }
+  else if (selection == "age_femalehead_geq35leq54") {
+    df_tmp <- df %>% 
+      filter(FEMALE_HEAD_AGE >= 4
+             & FEMALE_HEAD_AGE < 8)
+  }
+  else if (selection == "age_femalehead_geq55") {
+    df_tmp <- df %>% 
+      filter(FEMALE_HEAD_AGE == 8 
+             | FEMALE_HEAD_AGE == 9)
+  }
+  else if (selection == "college_both") {
+    df_tmp <- df %>% 
+      filter(MALE_HEAD_EDUCATION >= 5 
+             & FEMALE_HEAD_EDUCATION >= 5)
+  }
+  else if (selection == "college_one") {
+    df_tmp <- df %>% 
+      filter((MALE_HEAD_EDUCATION >= 5 
+             & FEMALE_HEAD_EDUCATION < 5)
+             | (MALE_HEAD_EDUCATION < 5 
+                & FEMALE_HEAD_EDUCATION >= 5))
+  }
+  else if (selection == "college_none") {
+    df_tmp <- df %>% 
+      filter(MALE_HEAD_EDUCATION < 5 
+             & FEMALE_HEAD_EDUCATION < 5)
+  }
+  else if (selection == "white") {
+    df_tmp <- df %>% 
+      filter(RACE == 1)
+  }
+  else if (selection == "black") {
+    df_tmp <- df %>% 
+      filter(RACE == 2)
+  }
+  else if (selection == "asian") {
+    df_tmp <- df %>% 
+      filter(RACE == 3)
+  }
+  else if (selection == "hispanic") {
+    df_tmp <- df %>% 
+      filter(HISPANIC_ORIGIN == 1)
+  }
+  else {print("Wrong selection")}
+  
+  df_final <-
+    df_tmp %>%
+    select(HOUSEHOLD_CODE,
+           PURCHASE_DATE,
+           TOTAL_SPENT)
+  
+  #df_final <- df_tmp
+  
+  return(df_final)
+    
+}
+
 
 #####################################################################
 ## DEFLATING AND DESEASONALIZING REGIONAL DAILY CONSUMPTION 
 #####################################################################
 
 # Gathers inflation data and deflates consumption by region
-DeflateConsumption <- function(x) {
+DeflateConsumption <- function(df, region) {
   
-  region <- str_to_upper(str_sub(deparse(substitute(x)),-2,-1))
+  #region <- str_to_upper(str_sub(deparse(substitute(df)),-2,-1))
   INDEX_CPI_REGION = as.name(paste0("INDEX_CPI_",region))
   
-  x %>%
+  df %>%
     left_join(index_table %>%
                 select(DATE, !!INDEX_CPI_REGION),
               by = c("PURCHASE_DATE" = "DATE")) %>% 
@@ -52,16 +174,16 @@ DeflateConsumption <- function(x) {
 # prophet needs a single daily consumption value to deseasonalize.
 # first save structure of the panel, then pass mean daily consumption.
 # later reconstruct panel from deseasonalized consumption.
-DeseasonalizeConsumption <- function(x) {
+DeseasonalizeConsumption <- function(df) {
   
   perc <- 
-    x %>% 
+    df %>% 
     group_by(PURCHASE_DATE) %>% 
     mutate(PERCENTAGE = TOTAL_SPENT_DEF / sum(TOTAL_SPENT_DEF),
            NUM_PANELISTS = n())
   
   data_model <-
-    x %>%
+    df %>%
     group_by(PURCHASE_DATE) %>%
     summarise(MEAN_SPENT_DAY = sum(TOTAL_SPENT_DEF) / n()) %>%
     rename(ds = PURCHASE_DATE,
@@ -86,24 +208,33 @@ DeseasonalizeConsumption <- function(x) {
            TOTAL_SPENT_DS_DEF)
 }
 
+
 consumption_ds_def_ne <- 
-  DeseasonalizeConsumption(
-    DeflateConsumption(consumption_ne))
+  consumption_ne %>% 
+  SelectPanelists("all") %>% 
+  DeflateConsumption("NE") %>% 
+  DeseasonalizeConsumption()
 rm(consumption_ne)
 
 consumption_ds_def_mw <- 
-  DeseasonalizeConsumption(
-    DeflateConsumption(consumption_mw))
+  consumption_mw %>% 
+  SelectPanelists("all") %>% 
+  DeflateConsumption("MW") %>% 
+  DeseasonalizeConsumption()
 rm(consumption_mw)
 
 consumption_ds_def_so <- 
-  DeseasonalizeConsumption(
-    DeflateConsumption(consumption_so))
+  consumption_so %>% 
+  SelectPanelists("all") %>% 
+  DeflateConsumption("SO") %>% 
+  DeseasonalizeConsumption()
 rm(consumption_so)
 
 consumption_ds_def_we <- 
-  DeseasonalizeConsumption(
-    DeflateConsumption(consumption_we))
+  consumption_we %>% 
+  SelectPanelists("all") %>% 
+  DeflateConsumption("WE") %>% 
+  DeseasonalizeConsumption()
 rm(consumption_we)
 
 
@@ -185,15 +316,15 @@ rates_log_avg_qrtly <-
 #
 # Y calculation is prone to generate NA, therefore it's done earlier.
 
-QuarterlyEstimationData <- function(x) {
+QuarterlyEstimationData <- function(df) {
   
   # Extract region from dataframe name
-  region <- str_to_upper(str_sub(deparse(substitute(x)), -2, -1))
+  region <- str_to_upper(str_sub(deparse(substitute(df)), -2, -1))
   
   RATE_TB_DEF_REGION = as.name(paste0("RATE_TB_DEF_",region))
   RATE_INFL_REGION = as.name(paste0("RATE_INFL_",region))
   
-  x %>%
+  df %>%
     group_by(HOUSEHOLD_CODE,
              YEAR = year(PURCHASE_DATE),
              QUARTER = quarter(PURCHASE_DATE)) %>% 
