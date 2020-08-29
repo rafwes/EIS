@@ -184,7 +184,6 @@ colnames(retailers) <- retailers_cols_new
 
 ## Import all consumption data over the years
 for (i in 1:length(years)) {
-#i <- 6L
   
   # Select year
   year <- years[i]
@@ -239,7 +238,7 @@ for (i in 1:length(years)) {
   # Total spent cannot be zero, drop erroneous data.
   consumption <- 
     trips_retailers %>%
-    # remove this filter add all channels
+    # remove this filter to use all channels
     filter(CHANNEL_TYPE == "Grocery") %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
@@ -256,7 +255,6 @@ for (i in 1:length(years)) {
   consumption <-
     consumption %>%
     left_join(panelists_year %>% 
-                #filter(HOUSEHOLD_INCOME >= 15) %>%
                 select(HOUSEHOLD_CODE,
                        FIPS_STATE_DESCR,
                        HOUSEHOLD_INCOME,

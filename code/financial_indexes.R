@@ -259,3 +259,70 @@ index_table <-
          INDEX_TB_DEF_WE = 100 * INDEX_TB / INDEX_CPI_WE) %>%
   drop_na()
 
+#####################################################################
+## QUARTARLY GROWTH RATES FOR T-BILLS AND CPI
+#####################################################################
+
+# This lag defines growth over the last quarter
+lag_in_quarters = 1L
+
+# For each quarter, take the average observed t-bill index
+# and create a log rate over "lag_in_quarters"
+rates_log_avg_qrtly <- 
+  index_table %>%
+  group_by(YEAR = year(DATE),
+           QUARTER = quarter(DATE)) %>% 
+  summarise(AVG_INDEX_TB = mean(INDEX_TB),
+            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
+            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
+            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
+            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
+            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
+            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
+            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
+            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE)
+  ) %>%
+  ungroup() %>% 
+  arrange(YEAR,
+          QUARTER) %>% 
+  transmute(YEAR,
+            QUARTER,
+            RATE_TB = 
+              log(AVG_INDEX_TB) 
+            - log(lag(AVG_INDEX_TB,
+                      n = lag_in_quarters)),
+            RATE_INFL_NE =
+              log(AVG_INDEX_CPI_NE) 
+            - log(lag(AVG_INDEX_CPI_NE,
+                      n = lag_in_quarters)),
+            RATE_INFL_MW =
+              log(AVG_INDEX_CPI_MW) 
+            - log(lag(AVG_INDEX_CPI_MW,
+                      n = lag_in_quarters)),
+            RATE_INFL_SO =
+              log(AVG_INDEX_CPI_SO) 
+            - log(lag(AVG_INDEX_CPI_SO,
+                      n = lag_in_quarters)),
+            RATE_INFL_WE =
+              log(AVG_INDEX_CPI_WE) 
+            - log(lag(AVG_INDEX_CPI_WE,
+                      n = lag_in_quarters)),
+            RATE_TB_DEF_NE = 
+              log(AVG_INDEX_TB_DEF_NE) 
+            - log(lag(AVG_INDEX_TB_DEF_NE,
+                      n = lag_in_quarters)),
+            RATE_TB_DEF_MW = 
+              log(AVG_INDEX_TB_DEF_MW) 
+            - log(lag(AVG_INDEX_TB_DEF_MW,
+                      n = lag_in_quarters)),
+            RATE_TB_DEF_SO = 
+              log(AVG_INDEX_TB_DEF_SO) 
+            - log(lag(AVG_INDEX_TB_DEF_SO,
+                      n = lag_in_quarters)),
+            RATE_TB_DEF_WE = 
+              log(AVG_INDEX_TB_DEF_WE) 
+            - log(lag(AVG_INDEX_TB_DEF_WE,
+                      n = lag_in_quarters)),
+  ) %>%
+  drop_na()
+

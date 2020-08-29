@@ -42,11 +42,20 @@ panelists_selection <-
     "college_both",
     "college_one",
     "college_none",
-    "white",
-    "black",
-    "asian",
-    "hispanic"
+    "ethnicity_white",
+    "ethnicity_black",
+    "ethnicity_asian",
+    "ethnicity_hispanic"
   )
+
+# panelists_selection <- 
+#   c("all",
+#     "income_less25k"
+#   )
+
+# panelists_selection <- 
+#   c("income_less25k")
+
 
 # Trims dataset according to panelist characteristics
 SelectPanelists <- function(df, selection) {
@@ -117,19 +126,19 @@ SelectPanelists <- function(df, selection) {
       filter(MALE_HEAD_EDUCATION < 5 
              & FEMALE_HEAD_EDUCATION < 5)
   }
-  else if (selection == "white") {
+  else if (selection == "ethnicity_white") {
     df_tmp <- df %>% 
       filter(RACE == 1)
   }
-  else if (selection == "black") {
+  else if (selection == "ethnicity_black") {
     df_tmp <- df %>% 
       filter(RACE == 2)
   }
-  else if (selection == "asian") {
+  else if (selection == "ethnicity_asian") {
     df_tmp <- df %>% 
       filter(RACE == 3)
   }
-  else if (selection == "hispanic") {
+  else if (selection == "ethnicity_hispanic") {
     df_tmp <- df %>% 
       filter(HISPANIC_ORIGIN == 1)
   }
@@ -147,7 +156,6 @@ SelectPanelists <- function(df, selection) {
     
 }
 
-
 #####################################################################
 ## DEFLATING AND DESEASONALIZING REGIONAL DAILY CONSUMPTION 
 #####################################################################
@@ -155,7 +163,6 @@ SelectPanelists <- function(df, selection) {
 # Gathers inflation data and deflates consumption by region
 DeflateConsumption <- function(df, region) {
   
-  #region <- str_to_upper(str_sub(deparse(substitute(df)),-2,-1))
   INDEX_CPI_REGION = as.name(paste0("INDEX_CPI_",region))
   
   df %>%
@@ -208,102 +215,6 @@ DeseasonalizeConsumption <- function(df) {
            TOTAL_SPENT_DS_DEF)
 }
 
-
-consumption_ds_def_ne <- 
-  consumption_ne %>% 
-  SelectPanelists("all") %>% 
-  DeflateConsumption("NE") %>% 
-  DeseasonalizeConsumption()
-rm(consumption_ne)
-
-consumption_ds_def_mw <- 
-  consumption_mw %>% 
-  SelectPanelists("all") %>% 
-  DeflateConsumption("MW") %>% 
-  DeseasonalizeConsumption()
-rm(consumption_mw)
-
-consumption_ds_def_so <- 
-  consumption_so %>% 
-  SelectPanelists("all") %>% 
-  DeflateConsumption("SO") %>% 
-  DeseasonalizeConsumption()
-rm(consumption_so)
-
-consumption_ds_def_we <- 
-  consumption_we %>% 
-  SelectPanelists("all") %>% 
-  DeflateConsumption("WE") %>% 
-  DeseasonalizeConsumption()
-rm(consumption_we)
-
-
-#####################################################################
-## PREPARING DATA FOR QUARTER GROWTH 
-#####################################################################
-
-lag_in_quarters = 1L
-
-# For each quarter, take the average observed t-bill index
-# and create a log rate over "lag_in_quarters"
-rates_log_avg_qrtly <- 
-  index_table %>%
-  group_by(YEAR = year(DATE),
-           QUARTER = quarter(DATE)) %>% 
-  summarise(AVG_INDEX_TB = mean(INDEX_TB),
-            AVG_INDEX_CPI_NE = mean(INDEX_CPI_NE),
-            AVG_INDEX_CPI_MW = mean(INDEX_CPI_MW),
-            AVG_INDEX_CPI_SO = mean(INDEX_CPI_SO),
-            AVG_INDEX_CPI_WE = mean(INDEX_CPI_WE),
-            AVG_INDEX_TB_DEF_NE = mean(INDEX_TB_DEF_NE),
-            AVG_INDEX_TB_DEF_MW = mean(INDEX_TB_DEF_MW),
-            AVG_INDEX_TB_DEF_SO = mean(INDEX_TB_DEF_SO),
-            AVG_INDEX_TB_DEF_WE = mean(INDEX_TB_DEF_WE)
-            ) %>%
-  ungroup() %>% 
-  arrange(YEAR,
-          QUARTER) %>% 
-  transmute(YEAR,
-            QUARTER,
-            RATE_TB = 
-              log(AVG_INDEX_TB) 
-            - log(lag(AVG_INDEX_TB,
-                      n = lag_in_quarters)),
-            RATE_INFL_NE =
-              log(AVG_INDEX_CPI_NE) 
-            - log(lag(AVG_INDEX_CPI_NE,
-                      n = lag_in_quarters)),
-            RATE_INFL_MW =
-              log(AVG_INDEX_CPI_MW) 
-            - log(lag(AVG_INDEX_CPI_MW,
-                      n = lag_in_quarters)),
-            RATE_INFL_SO =
-              log(AVG_INDEX_CPI_SO) 
-            - log(lag(AVG_INDEX_CPI_SO,
-                      n = lag_in_quarters)),
-            RATE_INFL_WE =
-              log(AVG_INDEX_CPI_WE) 
-            - log(lag(AVG_INDEX_CPI_WE,
-                      n = lag_in_quarters)),
-            RATE_TB_DEF_NE = 
-              log(AVG_INDEX_TB_DEF_NE) 
-            - log(lag(AVG_INDEX_TB_DEF_NE,
-                      n = lag_in_quarters)),
-            RATE_TB_DEF_MW = 
-              log(AVG_INDEX_TB_DEF_MW) 
-            - log(lag(AVG_INDEX_TB_DEF_MW,
-                      n = lag_in_quarters)),
-            RATE_TB_DEF_SO = 
-              log(AVG_INDEX_TB_DEF_SO) 
-            - log(lag(AVG_INDEX_TB_DEF_SO,
-                      n = lag_in_quarters)),
-            RATE_TB_DEF_WE = 
-              log(AVG_INDEX_TB_DEF_WE) 
-            - log(lag(AVG_INDEX_TB_DEF_WE,
-                      n = lag_in_quarters)),
-            ) %>%
-  na.exclude()
-
 # Sums consumption over given period
 # Calculates lagged variables, drops observations for which no
 # lags could be calculated and then joins them with rates and
@@ -316,10 +227,9 @@ rates_log_avg_qrtly <-
 #
 # Y calculation is prone to generate NA, therefore it's done earlier.
 
-QuarterlyEstimationData <- function(df) {
+MatchRatesInstruments <- function(df, region) {
   
   # Extract region from dataframe name
-  region <- str_to_upper(str_sub(deparse(substitute(df)), -2, -1))
   
   RATE_TB_DEF_REGION = as.name(paste0("RATE_TB_DEF_",region))
   RATE_INFL_REGION = as.name(paste0("RATE_INFL_",region))
@@ -366,28 +276,63 @@ QuarterlyEstimationData <- function(df) {
   
 }
 
-estimation_data_1q <-
-  bind_rows(QuarterlyEstimationData(consumption_ds_def_ne),
-            QuarterlyEstimationData(consumption_ds_def_mw),
-            QuarterlyEstimationData(consumption_ds_def_so),
-            QuarterlyEstimationData(consumption_ds_def_we)) %>% 
-  arrange(HOUSEHOLD,DATE)
+for(var_selection in panelists_selection) {
+  
+  estimation_data_ne <- 
+    consumption_ne %>% 
+    SelectPanelists(var_selection) %>% 
+    DeflateConsumption("NE") %>% 
+    DeseasonalizeConsumption() %>% 
+    MatchRatesInstruments("NE")
 
-write_csv(estimation_data_1q,
-          file.path(base_path, 
-                    "csv_output/estimation_data_quarterly_1q.csv"))
+  estimation_data_mw <- 
+    consumption_mw %>% 
+    SelectPanelists(var_selection) %>% 
+    DeflateConsumption("MW") %>% 
+    DeseasonalizeConsumption() %>% 
+    MatchRatesInstruments("MW")
 
-zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
-          data = estimation_data_1q,
-          model = "pooling",
-          index = c("HOUSEHOLD", "DATE"))
+  estimation_data_so <- 
+    consumption_so %>% 
+    SelectPanelists(var_selection) %>% 
+    DeflateConsumption("SO") %>% 
+    DeseasonalizeConsumption() %>% 
+    MatchRatesInstruments("SO")
 
+  estimation_data_we <- 
+    consumption_we %>% 
+    SelectPanelists(var_selection) %>% 
+    DeflateConsumption("WE") %>% 
+    DeseasonalizeConsumption() %>% 
+    MatchRatesInstruments("WE")
 
+  
+  estimation_data <-
+    bind_rows(estimation_data_ne,
+              estimation_data_mw,
+              estimation_data_so,
+              estimation_data_we) %>% 
+    arrange(HOUSEHOLD,DATE)
+  
+  filename <- 
+    paste0("estimation_data_", 
+           var_selection, 
+           ".csv")
+  
+  write_csv(estimation_data,
+            file.path(base_path, 
+                      "csv_output",
+                      "grocery_channel",
+                      #"every_channel",
+                      filename))
+  
+  zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
+            data = estimation_data,
+            model = "pooling",
+            index = c("HOUSEHOLD", "DATE"))
+  
 cat("==============================================================\n")
-cat("Estimation for 1 Quarter\n")
+cat("Estimation for '", var_selection, "' panelists \n")
 cat("==============================================================\n")
 print(summary(zz_tb))
-
-rm(estimation_data_1q,
-   zz_tb, 
-   rates_log_avg_qrtly)
+}
