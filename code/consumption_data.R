@@ -10,8 +10,6 @@
 # library(ISOweek)
 # library(lubridate)
 # library(conflicted)
-# #library(grid)
-# #library(gridExtra)
 # 
 # conflict_prefer("filter", "dplyr")
 # conflict_prefer("lag", "dplyr")
@@ -239,7 +237,7 @@ for (i in 1:length(years)) {
   consumption <- 
     trips_retailers %>%
     # remove this filter to use all channels
-    filter(CHANNEL_TYPE == "Grocery") %>% 
+    #filter(CHANNEL_TYPE == "Grocery") %>% 
     select(HOUSEHOLD_CODE, 
            PURCHASE_DATE, 
            PANEL_YEAR, 

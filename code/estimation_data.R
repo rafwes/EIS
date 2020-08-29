@@ -21,7 +21,7 @@ conflict_prefer("as.Date.numeric", "base")
 conflict_prefer("between", "dplyr")
 
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code/financial_indexes.R"))
 source(file.path(base_path,"EIS/code/consumption_data.R"))
@@ -322,8 +322,8 @@ for(var_selection in panelists_selection) {
   write_csv(estimation_data,
             file.path(base_path, 
                       "csv_output",
-                      "grocery_channel",
-                      #"every_channel",
+                      #"grocery_channel",
+                      "every_channel",
                       filename))
   
   zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,
