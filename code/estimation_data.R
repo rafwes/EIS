@@ -21,7 +21,7 @@ conflict_prefer("as.Date.numeric", "base")
 conflict_prefer("between", "dplyr")
 
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code/financial_indexes.R"))
 source(file.path(base_path,"EIS/code/consumption_data.R"))
@@ -332,7 +332,7 @@ for(var_selection in panelists_selection) {
             index = c("HOUSEHOLD", "DATE"))
   
 cat("==============================================================\n")
-cat("Estimation for '", var_selection, "' panelists \n")
+cat("OLS Estimation for '", var_selection, "' panelists \n")
 cat("==============================================================\n")
 print(summary(zz_tb))
 }
