@@ -319,11 +319,12 @@ for(var_selection in panelists_selection) {
            var_selection, 
            ".csv")
   
+  # change directory according to channels selected on consumption_data.R
   write_csv(estimation_data,
             file.path(base_path, 
                       "csv_output",
-                      "grocery_channel",
-                      #"every_channel",
+                      #"grocery_channel",
+                      "every_channel",
                       filename))
   
   zz_tb <- plm(Y ~ X_TB | Z1 + Z2_TB + Z3,

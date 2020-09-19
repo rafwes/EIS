@@ -36,14 +36,14 @@ base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # Run each separately due to long calculation times!
 panelistSelection  <- 
-    "all"
+    # "all"
     # "income_less25k"
     # "income_geq25k"
     # "income_geq50k"
     # "income_geq70k"
     # "age_malehead_leq34"
     # "age_malehead_geq35leq54"
-    # "age_malehead_geq55"
+    "age_malehead_geq55"
     # "age_femalehead_leq34"
     # "age_femalehead_geq35leq54"
     # "age_femalehead_geq55"
