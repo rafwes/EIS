@@ -21,31 +21,31 @@ conflict_prefer("as.Date.numeric", "base")
 conflict_prefer("between", "dplyr")
 
 base_path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
-base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base_path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 source(file.path(base_path,"EIS/code/financial_indexes.R"))
 source(file.path(base_path,"EIS/code/consumption_data.R"))
 
 
 panelists_selection <- 
-  c("all",
-    "income_less25k",
-    "income_geq25k",
-    "income_geq50k",
-    "income_geq70k",
-    "age_malehead_leq34",
-    "age_malehead_geq35leq54",
-    "age_malehead_geq55",
-    "age_femalehead_leq34",
-    "age_femalehead_geq35leq54",
-    "age_femalehead_geq55",
-    "college_both",
-    "college_one",
-    "college_none",
-    "ethnicity_white",
-    "ethnicity_black",
-    "ethnicity_asian",
-    "ethnicity_hispanic"
+  c(# "all",
+    # "income_less25k",
+    # "income_geq25k",
+    # "income_geq50k",
+    # "income_geq70k",
+    # "age_malehead_leq34",
+    # "age_malehead_geq35leq54",
+    "age_malehead_geq55"
+    # "age_femalehead_leq34",
+    # "age_femalehead_geq35leq54",
+    # "age_femalehead_geq55",
+    # "college_both",
+    # "college_one",
+    # "college_none",
+    # "ethnicity_white",
+    # "ethnicity_black",
+    # "ethnicity_asian",
+    # "ethnicity_hispanic"
   )
 
 # panelists_selection <- 
@@ -91,8 +91,8 @@ SelectPanelists <- function(df, selection) {
   }
   else if (selection == "age_malehead_geq55") {
     df_tmp <- df %>% 
-      filter(FEMALE_HEAD_AGE == 8 
-             | FEMALE_HEAD_AGE == 9)
+      filter(MALE_HEAD_AGE == 8 
+             | MALE_HEAD_AGE == 9)
   }
   else if (selection == "age_femalehead_leq34") {
     df_tmp <- df %>%
