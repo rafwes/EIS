@@ -8,7 +8,7 @@ channelTypes <- c("every_channel",
 # Set cluster path
 base.path <- "/xdisk/agalvao/mig2020/extra/agalvao/eis_nielsen/rafael"
 # Set local sample path
-base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
+#base.path <- "/home/rafael/Sync/IMPA/2020.0/simulations/code"
 
 # Run each separately due to long calculation times!
 # panelistsSelectionList <- 
